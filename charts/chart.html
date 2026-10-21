@@ -46,6 +46,7 @@
   .explore-ctrl .ctrl { margin: 0; }
   .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #121212; color: #fff; font-size: 14px; cursor: pointer; flex: none; }
   .play:hover { background: #333; }
+  .play.replay { font-size: 20px; line-height: 1; }
   .explore-ctrl input[type=range] { flex: 1; accent-color: #121212; }
   .year-big { font-size: 34px; font-weight: 800; fill: #121212; font-variant-numeric: tabular-nums; }
   .readout { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -260,24 +261,20 @@ function explore(D) {
   const log = d3.scaleLog().domain([1.5, 450]).range([20, W - 20]);
   const countries = D.cohort.map(c => ({ name: c.name, v: Object.fromEntries(c.v) }));
 
-  // precompute a collision layout for every year on both scales
-  const layout = {};
-  ["linear", "log"].forEach(m => {
-    const sc = m === "log" ? log : lin;
-    layout[m] = {};
-    let prev = null;
-    YEARS.forEach(yr => {
-      const nodes = countries.filter(c => c.v[yr] != null).map(c => {
-        const p = prev && prev.get(c.name);
-        return { name: c.name, val: c.v[yr], x: sc(c.v[yr]), y: p ? p.y : ROWY };
-      });
-      d3.forceSimulation(nodes).force("x", d3.forceX(d => sc(d.val)).strength(1)).force("y", d3.forceY(ROWY).strength(0.07))
-        .force("c", d3.forceCollide(R + 0.6)).stop().tick(120);
-      prev = new Map(nodes.map(n => [n.name, n]));
-      layout[m][yr] = prev;
+  // collision layout per (scale, year), computed on first use and cached; each year starts from the
+  // previous year's vertical positions so dots glide instead of jumping
+  const cache = { linear: {}, log: {} };
+  function getLayout(m, yr) {
+    if (cache[m][yr]) return cache[m][yr];
+    const sc = m === "log" ? log : lin, prev = cache[m][yr - 1];
+    const nodes = countries.filter(c => c.v[yr] != null).map(c => {
+      const p = prev && prev.get(c.name);
+      return { name: c.name, val: c.v[yr], x: sc(c.v[yr]), y: p ? p.y : ROWY };
     });
-  });
-
+    d3.forceSimulation(nodes).force("x", d3.forceX(d => sc(d.val)).strength(1)).force("y", d3.forceY(ROWY).strength(0.07))
+      .force("c", d3.forceCollide(R + 0.6)).stop().tick(prev ? 40 : 120);
+    return (cache[m][yr] = new Map(nodes.map(n => [n.name, n])));
+  }
   const state = { year: 1960, mode: "linear", playing: false, timer: null };
 
   // ---- controls
@@ -341,7 +338,7 @@ function explore(D) {
   const upRatio = readout(W / 2 + 10, "ratio", "Ratio, 90th ÷ 10th", ORANGE, v => `${f1(v)}×`, 25);
 
   function render(dur) {
-    const sc = state.mode === "log" ? log : lin, L = layout[state.mode][state.year], s = S[state.year];
+    const sc = state.mode === "log" ? log : lin, L = getLayout(state.mode, state.year), s = S[state.year];
     yearLab.text(state.year);
     slider.property("value", state.year);
     drawAxis();
@@ -366,17 +363,20 @@ function explore(D) {
     upGap(state.year); upRatio(state.year);
   }
 
-  function stop() { state.playing = false; clearInterval(state.timer); play.html("&#9654;").attr("aria-label", "Play"); }
+  const ICON = { play: "&#9654;", pause: "&#10074;&#10074;", replay: "&#8635;" };
+  function setIcon(k) { play.html(ICON[k]).attr("aria-label", k[0].toUpperCase() + k.slice(1)).classed("replay", k === "replay"); }
+  function stop() { state.playing = false; clearInterval(state.timer); setIcon(state.year === 2019 ? "replay" : "play"); }
   play.on("click", () => {
     if (state.playing) return stop();
-    if (state.year === 2019) state.year = 1960;
-    state.playing = true; play.html("&#10074;&#10074;").attr("aria-label", "Pause");
+    if (state.year === 2019) { state.year = 1960; render(400); }
+    state.playing = true; setIcon("pause");
     state.timer = setInterval(() => {
       if (state.year >= 2019) return stop();
       state.year += 1; render(200);
+      if (state.year === 2019) stop();
     }, 230);
   });
-  slider.on("input", function () { stop(); state.year = +this.value; render(150); });
+  slider.on("input", function () { state.year = +this.value; stop(); render(150); });
   render(0);
   if (P.has("autoyear")) { state.year = +P.get("autoyear"); render(0); }
   if (P.has("autolog")) { seg.selectAll("button").nodes()[1].click(); }

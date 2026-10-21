@@ -58,6 +58,37 @@
             
             header.col { padding-top: 5rem; }
 
+
+            /* Figure 5, inline interactive */
+            .explorer { padding: 16px 18px 18px; position: relative; font-family: var(--sans); }
+            .ex-top { display: flex; align-items: center; gap: 12px; }
+            .ex-play { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #121212; color: #fff; font-size: 14px; cursor: pointer; }
+            .ex-play.replay { font-size: 20px; }
+            .ex-year { font-size: 30px; font-weight: 800; color: #121212; font-variant-numeric: tabular-nums; line-height: 1; }
+            .ex-seg { margin-left: auto; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+            .ex-seg button { font: 600 13px var(--sans); border: 0; background: #fff; color: var(--body); padding: 7px 12px; cursor: pointer; }
+            .ex-seg button + button { border-left: 1px solid var(--line); }
+            .ex-seg button[aria-pressed="true"] { background: #121212; color: #fff; }
+            .ex-slider { display: block; width: 100%; margin: 14px 0 6px; accent-color: #121212; }
+            .ex-chart { position: relative; width: 100%; }
+            .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
+            .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
+            .ex-pct { font-size: 11.5px; fill: #555; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+            .ex-tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 5px 8px; font-size: 12px; line-height: 1.35; box-shadow: 0 2px 6px rgba(0,0,0,.08); white-space: nowrap; }
+            .ex-tip b { display: block; color: #121212; }
+            .ex-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+            .ex-card { min-width: 0; border-top: 1px solid var(--line); padding-top: 10px; }
+            .ex-label { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #8c8c8c; }
+            .ex-val { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 2px; font-variant-numeric: tabular-nums; }
+            .ex-ch { font-size: 12px; color: #666; }
+            .ex-spark { display: block; width: 100%; margin-top: 6px; }
+            @media (max-width: 34em) {
+                .explorer { padding: 12px 12px 14px; }
+                .ex-year { font-size: 24px; }
+                .ex-val { font-size: 19px; }
+                .ex-cards { gap: 10px; }
+                .ex-x { display: none; }
+            }
             footer { height: 8rem; }
 
             a { color: var(--accent); text-decoration: none; }
@@ -114,7 +145,6 @@
             .toggle button[aria-pressed="true"] { background: var(--head); color: #fff; }
             .frame { border: 1px solid var(--line); border-radius: 6px; background: #fff; overflow: hidden; }
             .frame img { display: block; width: 100%; height: auto; }
-            .frame iframe { display: block; width: 100%; height: 556px; border: 0; }
             h4.fig { color: var(--head); font-size: 1rem; font-weight: 600; margin: 2.2rem 0 0.2rem; }
             figcaption { color: var(--dim); font-size: 0.85rem; line-height: 1.65; margin: 1.15rem 0 0; }
             figure.col figcaption { max-width: none; }
@@ -405,11 +435,11 @@
                     Figure 5 animates the full distribution of the 112 countries from 1960 to 2019. The two readouts track the
                     measures behind our two sides as the years advance: the difference between the 90th and 10th percentile
                     countries falls almost every year, while the ratio between them rises until 1999. Press play, drag the slider to
-                    any year, switch between linear and logarithmic scales, or hover over a dot to see the country.
+                    any year, switch between linear and logarithmic scales, or hover over or tap a dot to see the country.
                 </p>
 
                 <figure class="graphic">
-                    <div class="frame"><iframe src="charts/chart.html?v=explore&amp;embed" title="Interactive animation of under-five mortality in 112 countries from 1960 to 2019, with play, year slider, scale toggle and live readouts of the difference and ratio between the 90th and 10th percentile countries"></iframe></div>
+                    <div class="frame explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
                     <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. The shaded region spans the 10th to the 90th percentile; the readouts show the difference and the ratio between them for the selected year.</figcaption>
                 </figure>
 
@@ -563,12 +593,9 @@
             drawLedger();
             let ledgerW = window.innerWidth;
             window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
-
-            // size the embedded interactive figure to its content
-            window.addEventListener("message", (e) => {
-                if (!e.data || !e.data.chartHeight) return;
-                document.querySelectorAll("iframe").forEach((f) => { if (f.contentWindow === e.source) f.style.height = e.data.chartHeight + "px"; });
             });
         </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+        <script src="charts/explorer.js"></script>
     </body>
 </html>

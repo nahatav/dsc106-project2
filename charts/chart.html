@@ -42,6 +42,13 @@
   .ctrl button { font: 600 13px "Libre Franklin", Arial, sans-serif; border: 0; background: #fff; color: #444; padding: 7px 14px; cursor: pointer; }
   .ctrl button + button { border-left: 1px solid #ccc; }
   .ctrl button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .explore-ctrl { display: flex; align-items: center; gap: 14px; margin: 0 0 6px; }
+  .explore-ctrl .ctrl { margin: 0; }
+  .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #121212; color: #fff; font-size: 14px; cursor: pointer; flex: none; }
+  .play:hover { background: #333; }
+  .explore-ctrl input[type=range] { flex: 1; accent-color: #121212; }
+  .year-big { font-size: 34px; font-weight: 800; fill: #121212; font-variant-numeric: tabular-nums; }
+  .readout { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
   #tip { position: fixed; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 6px 9px;
          font-size: 12.5px; line-height: 1.35; box-shadow: 0 2px 6px rgba(0,0,0,.08); opacity: 0; transition: opacity .1s; }
   #tip b { display: block; color: var(--ink); }
@@ -84,7 +91,7 @@ function htmlMarker(id, n, color) {
 }
 
 d3.json("data.json").then(D => {
-  ({ for1, for2, against1, against2, morph, sens })[VIEW](D);
+  ({ for1, for2, against1, against2, morph, sens, explore })[VIEW](D);
   if (P.has("dump")) {   // marker centers, for the page's click targets
     const pts = [...document.querySelectorAll(".mk, .mkh")].map(el => {
       const r = el.getBoundingClientRect(), n = +el.textContent;
@@ -240,6 +247,139 @@ function sens(D) {
   });
   // divider between the published and reversed columns
   svg.append("line").attr("x1", PW + GAP / 2 - 6).attr("x2", PW + GAP / 2 - 6).attr("y1", 0).attr("y2", H - 10).attr("stroke", "#e4e4e4");
+}
+
+/* ---------- explorer: animated distribution, 1960 to 2019 ---------- */
+function explore(D) {
+  ["#title", "#dek", "#src"].forEach(s => d3.select(s).remove());
+  const YEARS = d3.range(1960, 2020), R = 4.4, ROWY = 150;
+  const H = 470;
+  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const S = Object.fromEntries(D.stats.map(s => [s.y, s]));
+  const lin = d3.scaleLinear().domain([0, 400]).range([20, W - 20]);
+  const log = d3.scaleLog().domain([1.5, 450]).range([20, W - 20]);
+  const countries = D.cohort.map(c => ({ name: c.name, v: Object.fromEntries(c.v) }));
+
+  // precompute a collision layout for every year on both scales
+  const layout = {};
+  ["linear", "log"].forEach(m => {
+    const sc = m === "log" ? log : lin;
+    layout[m] = {};
+    let prev = null;
+    YEARS.forEach(yr => {
+      const nodes = countries.filter(c => c.v[yr] != null).map(c => {
+        const p = prev && prev.get(c.name);
+        return { name: c.name, val: c.v[yr], x: sc(c.v[yr]), y: p ? p.y : ROWY };
+      });
+      d3.forceSimulation(nodes).force("x", d3.forceX(d => sc(d.val)).strength(1)).force("y", d3.forceY(ROWY).strength(0.07))
+        .force("c", d3.forceCollide(R + 0.6)).stop().tick(120);
+      prev = new Map(nodes.map(n => [n.name, n]));
+      layout[m][yr] = prev;
+    });
+  });
+
+  const state = { year: 1960, mode: "linear", playing: false, timer: null };
+
+  // ---- controls
+  const ctrl = d3.select("#ctrl").attr("class", "explore-ctrl");
+  const play = ctrl.append("button").attr("class", "play").attr("aria-label", "Play").html("&#9654;");
+  const slider = ctrl.append("input").attr("type", "range").attr("min", 1960).attr("max", 2019).attr("step", 1).attr("value", 1960)
+    .attr("aria-label", "Year");
+  const seg = ctrl.append("div").attr("class", "ctrl");
+  [["linear", "Linear"], ["log", "Logarithmic"]].forEach(([m, lab]) =>
+    seg.append("button").attr("aria-pressed", m === state.mode).text(lab).on("click", function () {
+      state.mode = m; seg.selectAll("button").attr("aria-pressed", false); d3.select(this).attr("aria-pressed", true); render(700);
+    }));
+
+  // ---- year label, axis, band
+  const yearLab = gBack.append("text").attr("x", 0).attr("y", 46).attr("class", "year-big").text(1960);
+  const axisG = gBack.append("g");
+  const band = g.append("rect").attr("y", ROWY - 58).attr("height", 116).attr("fill", "#121212").attr("opacity", 0.045).attr("rx", 4);
+  const p10l = g.append("line").attr("y1", ROWY - 60).attr("y2", ROWY + 60).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
+  const p90l = g.append("line").attr("y1", ROWY - 60).attr("y2", ROWY + 60).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
+  const p10t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - 66).text("10th");
+  const p90t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - 66).text("90th percentile");
+  const dotsG = g.append("g");
+  const tip = d3.select("#tip");
+
+  function drawAxis() {
+    axisG.selectAll("*").remove();
+    const sc = state.mode === "log" ? log : lin;
+    const ticks = state.mode === "log" ? [2, 5, 10, 20, 50, 100, 200, 400] : [0, 50, 100, 150, 200, 250, 300, 350, 400];
+    ticks.forEach(t => {
+      axisG.append("line").attr("class", "grid").attr("x1", sc(t)).attr("x2", sc(t)).attr("y1", ROWY - 74).attr("y2", ROWY + 70);
+      text(axisG, sc(t), ROWY + 88, t, "tick", null, "middle");
+    });
+    text(axisG, W - 20, ROWY + 106, state.mode === "log" ? "Deaths before age 5 per 1,000 births, logarithmic scale" : "Deaths before age 5 per 1,000 births", "tick", null, "end");
+  }
+
+  // ---- readouts: difference (teal) and ratio (orange) with sparklines
+  const RY = 296, RW = 300, RH = 60;
+  const readout = (ox, key, label, color, fmt, yMax) => {
+    const rg = gTop.append("g").attr("transform", `translate(${ox},${RY})`);
+    text(rg, 0, 0, label.toUpperCase(), "tick").style("font-weight", 700).style("letter-spacing", ".05em").style("font-size", "11px");
+    const val = text(rg, 0, 34, "", "readout", color);
+    const sx = d3.scaleLinear().domain([1960, 2019]).range([0, RW]);
+    const sy = d3.scaleLinear().domain([0, yMax]).range([RH + 76, 80]);
+    rg.append("line").attr("x1", 0).attr("x2", RW).attr("y1", sy(0)).attr("y2", sy(0)).attr("stroke", "#d0d0d0");
+    rg.append("path").datum(YEARS).attr("fill", "none").attr("stroke", color).attr("stroke-opacity", 0.25).attr("stroke-width", 2)
+      .attr("d", d3.line().x(y => sx(y)).y(y => sy(S[y][key])).curve(d3.curveMonotoneX));
+    const done = rg.append("path").attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.4);
+    const cur = rg.append("circle").attr("r", 4.5).attr("fill", color).attr("stroke", "#fff").attr("stroke-width", 1.5);
+    text(rg, 0, RH + 92, "1960", "tick").style("font-size", "11px");
+    text(rg, RW, RH + 92, "2019", "tick", null, "end").style("font-size", "11px");
+    const ch = text(rg, 0, 56, "", "sub");
+    return yr => {
+      val.text(fmt(S[yr][key]));
+      const c = S[yr][key] / S[1960][key] - 1;
+      ch.text(yr === 1960 ? "1960 baseline" : `${c > 0 ? "+" : "−"}${Math.round(Math.abs(c) * 100)}% since 1960`);
+      done.attr("d", d3.line().x(y => sx(y)).y(y => sy(S[y][key])).curve(d3.curveMonotoneX)(YEARS.filter(y => y <= yr)));
+      cur.attr("cx", sx(yr)).attr("cy", sy(S[yr][key]));
+    };
+  };
+  const upGap = readout(0, "gap", "Difference, 90th − 10th", TEAL, v => `${f0(v)} deaths`, 280);
+  const upRatio = readout(W / 2 + 10, "ratio", "Ratio, 90th ÷ 10th", ORANGE, v => `${f1(v)}×`, 25);
+
+  function render(dur) {
+    const sc = state.mode === "log" ? log : lin, L = layout[state.mode][state.year], s = S[state.year];
+    yearLab.text(state.year);
+    slider.property("value", state.year);
+    drawAxis();
+    const data = [...L.values()];
+    dotsG.selectAll("circle").data(data, d => d.name).join(
+      enter => enter.append("circle").attr("r", R).attr("cx", d => d.x).attr("cy", d => d.y).attr("fill", "#5c6670").attr("fill-opacity", 0.78)
+        .attr("stroke", "#fff").attr("stroke-width", 0.8)
+        .on("mousemove", (e, d) => {
+          const v = countries.find(c => c.name === d.name).v[state.year];
+          tip.style("opacity", 1).style("left", e.clientX + 12 + "px").style("top", e.clientY - 10 + "px")
+            .html(`<b>${d.name}</b>${state.year}: ${f1(v)} deaths per 1,000 births`);
+        })
+        .on("mouseleave", () => tip.style("opacity", 0)),
+      update => update, exit => exit.remove())
+      .transition().duration(dur).ease(d3.easeCubicInOut).attr("cx", d => d.x).attr("cy", d => d.y);
+    const x10 = sc(s.p10), x90 = sc(s.p90);
+    band.transition().duration(dur).attr("x", x10).attr("width", x90 - x10);
+    p10l.transition().duration(dur).attr("x1", x10).attr("x2", x10);
+    p90l.transition().duration(dur).attr("x1", x90).attr("x2", x90);
+    p10t.transition().duration(dur).attr("x", x10);
+    p90t.transition().duration(dur).attr("x", x90);
+    upGap(state.year); upRatio(state.year);
+  }
+
+  function stop() { state.playing = false; clearInterval(state.timer); play.html("&#9654;").attr("aria-label", "Play"); }
+  play.on("click", () => {
+    if (state.playing) return stop();
+    if (state.year === 2019) state.year = 1960;
+    state.playing = true; play.html("&#10074;&#10074;").attr("aria-label", "Pause");
+    state.timer = setInterval(() => {
+      if (state.year >= 2019) return stop();
+      state.year += 1; render(200);
+    }, 230);
+  });
+  slider.on("input", function () { stop(); state.year = +this.value; render(150); });
+  render(0);
+  if (P.has("autoyear")) { state.year = +P.get("autoyear"); render(0); }
+  if (P.has("autolog")) { seg.selectAll("button").nodes()[1].click(); }
 }
 
 /* ---------- beeswarm: 1960 vs 2019, linear or log ---------- */

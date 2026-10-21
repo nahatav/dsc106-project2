@@ -110,7 +110,7 @@
             .toggle button[aria-pressed="true"] { background: var(--head); color: #fff; }
             .frame { border: 1px solid var(--line); border-radius: 6px; background: #fff; overflow: hidden; }
             .frame img { display: block; width: 100%; height: auto; }
-            .frame iframe { display: block; width: 100%; height: 470px; border: 0; }
+            .frame iframe { display: block; width: 100%; height: 556px; border: 0; }
             h4.fig { color: var(--head); font-size: 1rem; font-weight: 600; margin: 2.2rem 0 0.2rem; }
             figcaption { color: var(--dim); font-size: 0.85rem; line-height: 1.65; margin: 1.15rem 0 0; }
             figure.col figcaption { max-width: none; }
@@ -194,8 +194,8 @@
                         2019, we test whether countries have moved closer together. Every country improved, and the median
                         rate fell from 149.4 to 15.0 deaths per 1,000 live births. Measured as a difference, the distance
                         between the 90th and 10th percentile countries fell by 75%. Measured as a ratio, it doubled, from
-                        9.5 to 19.1. We present two visualizations for the proposition, two against it, and two figures that test how
-                        much each verdict depends on a single design choice.
+                        9.5 to 19.1. We present two visualizations for the proposition, two against it, and an interactive figure that
+                        animates both measures from 1960 to 2019.
                     </p>
                 </div>
 
@@ -208,7 +208,7 @@
                         <li><a href="#against"><span>2</span>Visualizations against the proposition</a>
                             <ol><li><a href="#fig3"><span>2.1</span>Figure 3: Percentile ratio with bootstrap</a></li>
                                 <li><a href="#fig4"><span>2.2</span>Figure 4: Every country, logarithmic scale</a></li></ol></li>
-                        <li><a href="#interactive"><span>3</span>Sensitivity to design choices</a></li>
+                        <li><a href="#interactive"><span>3</span>Both measures, year by year</a></li>
                         <li><a href="#reflection"><span>4</span>Reflection</a></li>
                         <li><a href="#data"><span>5</span>Data and methods</a></li>
                     </ol>
@@ -395,28 +395,17 @@
                     </ol>
                 </section>
 
-                <h2 id="interactive"><span class="num">3</span>Sensitivity to design choices</h2>
+                <h2 id="interactive"><span class="num">3</span>Both measures, year by year</h2>
                 <p>
-                    Figures 2 and 4 plot identical values. Figure 5 places them in a single interactive view. Switching the
-                    scale moves each country to its position under the other reading, and hovering over a dot shows the
-                    country and its rates.
+                    Figure 5 animates the full distribution of the 112 countries from 1960 to 2019. The two readouts track the
+                    measures behind our two sides as the years advance: the difference between the 90th and 10th percentile
+                    countries falls almost every year, while the ratio between them rises until 1999. Press play, drag the slider to
+                    any year, switch between linear and logarithmic scales, or hover over a dot to see the country.
                 </p>
 
                 <figure class="graphic">
-                    <div class="frame"><iframe src="charts/chart.html?v=morph&amp;embed" title="Interactive beeswarm of under-five mortality in 112 countries, 1960 and 2019, switchable between linear and logarithmic scales" loading="lazy"></iframe></div>
-                    <figcaption><b>Figure 5.</b> Under-five mortality in the 112-country sample, 1960 and 2019. Select a scale to compare the two readings.</figcaption>
-                </figure>
-
-
-                <p>
-                    Figure 6 applies the same test to Figures 1 and 3. Each published chart is shown beside a version with one
-                    design choice reversed, and each headline is computed from the data in its panel. Changing the scale of
-                    Figure 1, or the starting year of Figure 3, is enough to reverse its conclusion.
-                </p>
-
-                <figure class="graphic">
-                    <div class="frame"><img src="images/sens.png" alt="Four small charts in a grid. Figure 1 as published says countries are 75% closer since 1960; on a logarithmic scale the same band shows countries twice as far apart. Figure 3 as published says countries are twice as far apart as in 1960; measured from 1999 the same ratio shows countries 17% closer." /></div>
-                    <figcaption><b>Figure 6.</b> Figures 1 and 3 with one design choice reversed. Headline color indicates the side the panel supports.</figcaption>
+                    <div class="frame"><iframe src="charts/chart.html?v=explore&amp;embed" title="Interactive animation of under-five mortality in 112 countries from 1960 to 2019, with play, year slider, scale toggle and live readouts of the difference and ratio between the 90th and 10th percentile countries" loading="lazy"></iframe></div>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. The shaded region spans the 10th to the 90th percentile; the readouts show the difference and the ratio between them for the selected year.</figcaption>
                 </figure>
 
                 <figure class="graphic">
@@ -432,7 +421,7 @@
                             <tr><td>Highest divided by lowest country</td><td>20.0×</td><td>55.0×</td><td class="up">+175%</td></tr>
                         </tbody>
                     </table></div>
-                    <figcaption><b>Figure 7.</b> Differences decline and ratios increase under both definitions of the range. The percentile ratio peaked at 23.1 in 1999.</figcaption>
+                    <figcaption><b>Figure 6.</b> Differences decline and ratios increase under both definitions of the range. The percentile ratio peaked at 23.1 in 1999.</figcaption>
                 </figure>
 
                 <figure class="graphic">
@@ -440,7 +429,7 @@
                     <p class="gfx-dek">From −2 (deceptive) to +2 (earnest)</p>
                     <svg id="ledger" viewBox="0 0 600 270" role="img"
                         aria-label="Dot plot of all twelve design decisions by figure on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg></div>
-                    <figcaption><b>Figure 8.</b> Each figure contains one decision that strengthens its credibility. The remaining decisions concern scale, measure and wording.</figcaption>
+                    <figcaption><b>Figure 7.</b> Each figure contains one decision that strengthens its credibility. The remaining decisions concern scale, measure and wording.</figcaption>
                 </figure>
 
                 <h2 id="reflection"><span class="num">4</span>Reflection</h2>
@@ -475,7 +464,7 @@
                     techniques we used is unusual in published graphics, which leads us to conclude that persuasion and
                     deception cannot be separated by a list of prohibited techniques. The distinction depends on whether
                     the combination of choices leaves readers with a conclusion they would revise after seeing both
-                    measures. Figures 5 and 6 are our attempt to show that test directly.
+                    measures, which Figure 5 lets readers do for themselves.
                 </p>
 
                 <section class="about" id="data">

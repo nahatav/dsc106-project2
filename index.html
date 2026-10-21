@@ -4,151 +4,223 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Project 2 Report</title>
-        <meta name="description" content="DSC 106 Project 2: one World Bank dataset, two charts that disagree about whether child mortality across countries is converging." />
+        <meta
+            name="description"
+            content="DSC 106 Project 2: one World Bank dataset, two opposing charts on whether child mortality is converging across countries."
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <style>
+            /* Design system: matches nahatav.github.io/sleep-mode */
             :root {
-                --ink: #121212;
-                --body: #2b2b2b;
-                --muted: #5f5f5f;
-                --rule: #dfdfdf;
+                --bg: #ffffff;
+                --raise: #fbfcfd;
+                --line: #e4e6eb;
+                --body: #3b3b44;
+                --head: #141416;
+                --dim: #71717e;
+                --accent: #c9a37e;
                 --gold: #a87b16;
                 --red: #b3261e;
-                --deceptive: #b3261e;
-                --earnest: #2f6690;
-                --serif: Georgia, "Times New Roman", serif;
-                --sans: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif;
-                --col: 720px;
+                --deceptive: #b4463e;
+                --earnest: #3f6c8f;
+                --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+                --col: 48rem;
             }
             * { box-sizing: border-box; }
-            html { background: #fff; color: var(--ink); scroll-behavior: smooth; }
-            body { margin: 0; font-family: var(--serif); }
-            .col { max-width: calc(var(--col) + 40px); margin: 0 auto; padding: 0 20px; }
-            a { color: #326891; text-decoration: none; }
+            html { background: var(--bg); scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+            html, body { overflow-x: hidden; max-width: 100vw; }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--body);
+                font-family: var(--sans);
+                font-size: 15.5px;
+                line-height: 1.8;
+                -webkit-font-smoothing: antialiased;
+            }
+            /* film grain */
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                opacity: 0.18;
+                pointer-events: none;
+                z-index: 999;
+                background-repeat: repeat;
+                background-size: 256px 256px;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+                mix-blend-mode: multiply;
+            }
+
+            .col { max-width: var(--col); margin: 0 auto; padding: 0 1.5rem; }
+            
+            header.col { padding-top: 5rem; }
+            footer { height: 8rem; }
+
+            a { color: var(--accent); text-decoration: none; }
             a:hover { text-decoration: underline; }
-            code { font: 0.86em ui-monospace, Consolas, monospace; }
+            p { margin: 0 0 1rem; }
+            strong { color: var(--head); font-weight: 600; }
+            code { background: #f4f4f6; border: 1px solid var(--line); border-radius: 3px; color: #27272a; font-size: 0.85em; padding: 0.08em 0.35em; font-family: Consolas, "Liberation Mono", Menlo, monospace; }
 
-            .bar { border-bottom: 1px solid var(--rule); padding: 10px 20px; display: flex; justify-content: space-between;
-                    font: 700 11px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; }
-            .bar span:last-child { color: var(--muted); font-weight: 500; }
+            /* Header */
+            .article-date { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.85rem; letter-spacing: -0.01em; }
+            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; margin: 0 0 0.85rem; text-wrap: balance; }
+            .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.65rem; color: var(--dim); font-size: 0.92rem; margin: 0 0 1.15rem; line-height: 1.4; }
+            .byline .avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); display: grid; place-items: center; color: var(--dim); }
+            .byline .author-name { color: #4b5563; }
+            .byline .sep { opacity: 0.7; }
+            .abstract { color: var(--dim); margin: 0 0 1.15rem; }
+            .abstract p { margin: 0 0 0.75rem; }
 
-            header { padding-top: 44px; }
-            .kicker { font: 700 13px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 14px; }
-            h1 { font: italic 700 clamp(30px, 4.4vw, 44px)/1.14 var(--serif); margin: 0 0 14px; text-wrap: balance; }
-            .deck { font: 400 clamp(19px, 2.3vw, 23px)/1.4 var(--serif); color: #4d4d4d; margin: 0 0 24px; text-wrap: pretty; }
-            .byline { font: 700 14px/1.5 var(--sans); margin: 0; }
-            .byline span { display: block; font-weight: 500; color: var(--muted); font-size: 13px; }
-            .dateline { font: 500 13px var(--sans); color: var(--muted); margin: 6px 0 0; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+            .prop { border: 1px solid var(--line); background: var(--raise); border-radius: 6px; padding: 1rem 1.4rem; margin: 0 0 0.85rem; }
+            .prop .label { color: #3b404d; font-weight: 600; font-size: 0.9rem; }
+            .prop .text { color: var(--head); font-size: 1.25rem; line-height: 1.4; margin: 0.15rem 0 0; }
 
-            article p { font: 400 21px/1.55 var(--serif); color: var(--body); margin: 0 0 22px; }
-            article .first { margin-top: 28px; }
-            article h2 { font: 700 30px/1.2 var(--serif); margin: 52px 0 16px; }
+            .toc { border: 1px solid var(--line); background: var(--raise); border-radius: 6px; padding: 1.4rem 1.6rem; margin: 0 0 0.85rem; font-size: 0.9rem; line-height: 2.1; }
+            .toc-title { color: #3b404d; font-weight: 600; font-size: 0.9rem; margin: 0 0 0.5rem; }
+            .toc ol { list-style: none; margin: 0; padding: 0; }
+            .toc ol ol { padding-left: 1.6rem; }
+            .toc a { display: block; color: var(--body); }
+            .toc ol ol a { color: var(--dim); }
+            .toc a span { color: var(--dim); margin-right: 0.4em; }
 
-            .prop { margin: 32px 0 30px; padding: 18px 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
-            .prop .label { font: 700 11px var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-            .prop .text { font: 700 28px/1.25 var(--serif) !important; color: var(--ink) !important; margin: 6px 0 0 !important; }
+            .resource-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0 0 2.5rem; }
+            .resource-btn { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500; padding: 0.42rem 0.85rem; border-radius: 6px; text-decoration: none !important; color: var(--head) !important; background: var(--raise); border: 1px solid var(--line); transition: all 0.2s ease; }
+            .resource-btn svg { flex-shrink: 0; }
+            .resource-btn:hover { border-color: #94949e; background: #e2e4ea; color: #000 !important; transform: translateY(-1px); }
 
-            figure.graphic { margin: 32px 0 34px; }
-            figure.graphic img { display: block; width: 100%; height: auto; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-            .gfx-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
-            .side { font: 700 11px var(--sans); letter-spacing: 0.1em; text-transform: uppercase; padding-left: 10px; border-left: 3px solid currentColor; }
-            .side.for { color: var(--gold); }
-            .side.against { color: var(--red); }
-            .toggle { display: inline-flex; border: 1px solid #ccc; border-radius: 3px; overflow: hidden; }
-            .toggle button { font: 600 12px var(--sans); border: 0; background: #fff; color: #444; padding: 6px 12px; cursor: pointer; }
-            .toggle button + button { border-left: 1px solid #ccc; }
-            .toggle button[aria-pressed="true"] { background: var(--ink); color: #fff; }
-            figcaption { font: 500 14px/1.45 var(--sans); color: var(--muted); margin-top: 10px; }
-            figcaption b { color: var(--ink); font-weight: 700; }
+            /* Headings */
+            article h2 { color: var(--head); font-size: 1.375rem; font-weight: 400; line-height: 1.35; margin: 3.5rem 0 1rem; }
+            h3 { color: var(--head); font-size: 1.125rem; font-weight: 400; line-height: 1.4; margin: 0 0 0.25rem; }
+            .num { color: var(--dim); font-weight: 400; margin-right: 0.45em; }
 
-            .method { margin: 34px 0 46px; border-top: 1px solid var(--ink); padding-top: 14px; }
-            .method h3 { font: 700 13px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 2px; }
-            .method .note { font: 500 13px/1.5 var(--sans) !important; color: var(--muted) !important; margin: 0 0 6px !important; }
-            ol.decisions { list-style: none; padding: 0; margin: 0; counter-reset: d; }
-            ol.decisions > li { counter-increment: d; position: relative; padding: 16px 0 16px 36px; border-bottom: 1px solid var(--rule); }
-            ol.decisions > li::before { content: counter(d); position: absolute; left: 0; top: 17px; width: 22px; height: 22px; border-radius: 50%;
-                                         background: var(--accent); color: #fff; font: 700 12px/22px var(--sans); text-align: center; }
-            .for-list { --accent: var(--gold); }
-            .against-list { --accent: var(--red); }
-            .dec-head { display: grid; grid-template-columns: 1fr auto; gap: 6px 18px; align-items: start; }
-            .dec-title { font: 700 17px/1.35 var(--sans); color: var(--ink); }
-            ol.decisions p { font: 500 16.5px/1.6 var(--sans); color: var(--body); margin: 6px 0 0; }
+            /* Figures */
+            figure.graphic { margin: 1.75rem auto; }
+            .gfx-tools { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0 0 0.6rem; font-size: 0.85rem; color: var(--dim); }
+            .side { font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; color: var(--head); }
+            .side::before { content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%; }
+            .side.for::before { background: var(--gold); }
+            .side.against::before { background: var(--red); }
+            .toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--raise); }
+            .toggle button { font: 500 0.82rem var(--sans); border: 0; background: transparent; color: var(--body); padding: 0.38rem 0.8rem; cursor: pointer; }
+            .toggle button + button { border-left: 1px solid var(--line); }
+            .toggle button[aria-pressed="true"] { background: var(--head); color: #fff; }
+            .frame { border: 1px solid var(--line); border-radius: 6px; background: #fff; overflow: hidden; }
+            .frame img { display: block; width: 100%; height: auto; }
+            figcaption { color: var(--dim); font-size: 0.85rem; line-height: 1.65; margin: 1.15rem 0 0; }
+            figure.col figcaption { max-width: none; }
+            figcaption b { color: var(--body); font-weight: 400; }
 
-            .score { display: inline-flex; align-items: center; gap: 8px; margin-top: 3px; font: 600 11px var(--sans); color: var(--muted); white-space: nowrap; }
-            .score .track { position: relative; width: 112px; height: 12px; }
-            .score .track::before { content: ""; position: absolute; left: 0; right: 0; top: 5.5px; height: 1px; background: #bbb; }
-            .score .track i { position: absolute; top: 2px; width: 1px; height: 8px; background: #bbb; }
-            .score .track i.mid { background: #777; height: 10px; top: 1px; }
+            /* Decisions */
+            .method { margin: 2.5rem 0 1rem; }
+            .method .scale-note { color: var(--dim); font-size: 0.9rem; margin: 0 0 0.75rem; }
+            ol.decisions { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); counter-reset: d; }
+            ol.decisions > li { counter-increment: d; position: relative; padding: 1.1rem 0 1.1rem 2.2rem; border-bottom: 1px solid var(--line); margin: 0; }
+            ol.decisions > li::before { content: counter(d); position: absolute; left: 0; top: 1.3rem; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-c); color: #fff; font-size: 0.75rem; font-weight: 600; line-height: 1.4rem; text-align: center; }
+            .for-list { --accent-c: var(--gold); }
+            .against-list { --accent-c: var(--red); }
+            .dec-head { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 0.3rem 1.2rem; }
+            .dec-title { color: var(--head); font-weight: 600; line-height: 1.5; }
+            ol.decisions p { margin: 0.35rem 0 0; }
+
+            .score { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--dim); white-space: nowrap; margin-top: 0.3rem; }
+            .score .track { position: relative; width: 6.5rem; height: 12px; }
+            .score .track::before { content: ""; position: absolute; left: 0; right: 0; top: 5.5px; height: 1px; background: #c9cbd2; }
+            .score .track i { position: absolute; top: 2px; width: 1px; height: 8px; background: #c9cbd2; }
+            .score .track i.mid { background: #8a8a96; height: 10px; top: 1px; }
             .score .track b { position: absolute; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; }
-            .score .val { font: 700 13px var(--sans); min-width: 30px; font-variant-numeric: tabular-nums; }
+            .score .val { font-weight: 600; font-size: 0.85rem; min-width: 2.2em; font-variant-numeric: tabular-nums; }
 
-            table.truths { width: 100%; border-collapse: collapse; font: 500 15px/1.4 var(--sans); font-variant-numeric: tabular-nums; }
-            table.truths caption { text-align: left; font: 700 18px/1.3 var(--sans); padding-bottom: 4px; }
-            table.truths caption span { display: block; font: 500 14px var(--sans); color: var(--muted); margin-top: 3px; }
-            table.truths th, table.truths td { padding: 9px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
-            table.truths th:first-child, table.truths td:first-child { text-align: left; padding-left: 0; }
-            table.truths thead th { font: 600 12px var(--sans); color: var(--muted); border-bottom: 1px solid #999; }
-            .up { color: var(--red); font-weight: 700; }
-            .down { color: var(--earnest); font-weight: 700; }
+            /* Tables as data cards */
+            .data-card { border: 1px solid var(--line); border-radius: 6px; background: var(--raise); padding: 0.5rem 1.1rem; overflow-x: auto; }
+            table.truths { width: 100%; border-collapse: collapse; font-size: 0.83rem; line-height: 1.55; color: var(--body); font-variant-numeric: tabular-nums; }
+            table.truths caption { text-align: left; color: var(--head); font-weight: 600; font-size: 0.9rem; padding: 0.6rem 0 0.3rem; }
+            table.truths caption span { display: block; color: var(--dim); font-weight: 400; }
+            table.truths th, table.truths td { border-bottom: 1px solid var(--line); padding: 0.55rem 0.75rem 0.55rem 0; text-align: right; }
+            table.truths th:first-child, table.truths td:first-child { text-align: left; }
+            table.truths th { color: var(--head); font-weight: 600; white-space: nowrap; }
+            table.truths tr:last-child td { border-bottom: none; }
+            .up { color: var(--deceptive); font-weight: 600; }
+            .down { color: var(--earnest); font-weight: 600; }
 
+            .ledger-card { border: 1px solid var(--line); border-radius: 6px; background: var(--raise); padding: 1rem 1.2rem 0.6rem; }
             #ledger { display: block; width: 100%; height: auto; }
             #ledger text { font-family: var(--sans); }
-            .gfx-head { font: 700 18px/1.3 var(--sans) !important; color: var(--ink) !important; margin: 0 !important; }
-            .gfx-dek { font: 500 14px/1.45 var(--sans) !important; color: var(--muted) !important; margin: 3px 0 10px !important; }
+            .gfx-head { color: var(--head); font-weight: 600; margin: 0; }
+            .gfx-dek { color: var(--dim); font-size: 0.85rem; margin: 0 0 0.4rem; }
 
-            .about { margin-top: 50px; padding-top: 14px; border-top: 1px solid var(--ink); }
-            .about h3 { font: 700 13px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 8px; }
-            .about p { font: 500 14.5px/1.6 var(--sans) !important; color: #444 !important; margin: 0 0 10px !important; }
-            footer { height: 80px; }
+            .about { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+            .about h3 { margin-bottom: 0.75rem; }
+            .about p { color: var(--dim); font-size: 0.9rem; }
 
-            @media (max-width: 640px) {
-                .bar span:last-child { display: none; }
-                article p { font-size: 18px; }
-                .prop .text { font-size: 22px !important; }
+            @media screen and (max-width: 48em) {
+                header.col { padding-top: 3rem; }
+                h1 { font-size: 1.85rem; line-height: 1.22; letter-spacing: -0.02em; }
+                .toc { padding: 1.1rem 1.25rem; line-height: 1.9; }
                 .dec-head { grid-template-columns: 1fr; }
-                .score .track { width: 84px; }
+            }
+            @media screen and (max-width: 34em) {
+                body { font-size: 15px; }
+                h1 { font-size: 1.6rem; }
+                article h2 { font-size: 1.2rem; margin-top: 2.5rem; }
+                .resource-links { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+                .resource-btn { justify-content: center; }
             }
         </style>
     </head>
 
     <body>
-        <div class="bar"><span>DSC 106 · Project 2</span><span>Persuasive or Deceptive Visualization?</span></div>
-
         <article>
             <header class="col">
-                <p class="kicker">Global Health</p>
-                <h1>Child Deaths Have Plunged Everywhere. Whether Countries Are Converging Depends on the Math.</h1>
-                <p class="deck">We used one World Bank dataset to make two charts that disagree. Every number in both of them is correct.</p>
-                <p class="byline">By [Member 1], [Member 2], [Member 3] and [Member 4]
-                    <span>[email1]@ucsd.edu · [email2]@ucsd.edu · [email3]@ucsd.edu · [email4]@ucsd.edu</span></p>
-                <p class="dateline">Oct. 21, 2026</p>
+                <div class="article-date">October 21, 2026</div>
+                <h1>Child deaths have plunged everywhere. Whether countries are converging depends on the math</h1>
+                <div class="byline">
+                    <span class="avatar" aria-hidden="true"><svg height="15" width="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+                    <span class="author-name">[Member 1], [Member 2], [Member 3] and [Member 4]</span>
+                    <span style="flex-basis:100%;padding-left:calc(28px + 0.65rem)">[email1]@ucsd.edu, [email2]@ucsd.edu, [email3]@ucsd.edu, [email4]@ucsd.edu</span>
+                </div>
             </header>
 
             <div class="col">
-                <p class="first">
-                    In 1960, the typical country among the 112 with records going back that far lost about 149 of
-                    every 1,000 children before their fifth birthday. By 2019 the figure was 15. Every one of those
-                    countries improved.
-                </p>
-                <p>
-                    The harder question, and the one our group argued about, is whether countries moved closer
-                    together while they improved. We took the proposition below and made one chart for it and one
-                    against it, using the same countries, the same years and the same summary statistics.
-                </p>
+                <div class="abstract">
+                    <p>
+                        In 1960, the typical country among the 112 with records going back that far lost about 149 of
+                        every 1,000 children before their fifth birthday. By 2019 the figure was 15, and every one of those
+                        countries improved. The harder question, and the one our group argued about, is whether countries
+                        moved closer together while they improved. We made one chart for the proposition below and one
+                        against it, using the same countries, the same years and the same summary statistics. Every number
+                        in both charts is correct.
+                    </p>
+                </div>
 
                 <div class="prop">
                     <div class="label">Proposition</div>
                     <p class="text">The gap in under-five mortality rates between countries is narrowing.</p>
                 </div>
 
-                <p>
-                    Each chart has a <strong>Show decision markers</strong> button. It numbers the spots on the chart
-                    that match the design decisions listed below it.
-                </p>
+                <nav class="toc" aria-label="Contents">
+                    <p class="toc-title">Contents</p>
+                    <ol>
+                        <li><a href="#for"><span>1</span>The case for</a>
+                            <ol><li><a href="#for-decisions"><span>1.1</span>How we made this chart</a></li></ol></li>
+                        <li><a href="#against"><span>2</span>The case against</a>
+                            <ol><li><a href="#against-decisions"><span>2.1</span>How we made this chart</a></li></ol></li>
+                        <li><a href="#two-stories"><span>3</span>Same data, two answers</a></li>
+                        <li><a href="#learned"><span>4</span>What we learned</a></li>
+                        <li><a href="#data"><span>5</span>About the data</a></li>
+                    </ol>
+                </nav>
 
-                <h2>The case for</h2>
+                <div class="resource-links">
+                    <a href="https://github.com/nahatav/dsc106-project2" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Codebase</span></a>
+                    <a href="https://github.com/vsinha99/dsc106-project2" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Checkpoint charts</span></a>
+                    <a href="https://github.com/light-and-salt/World-Bank-Data-by-Indicators" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg><span>World Bank Indicators</span></a>
+                    <a href="https://dsc106.com/projects/project2/" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>DSC 106</span></a>
+                </div>
+
+                <h2 id="for"><span class="num">1</span>The case for</h2>
                 <p>
                     Look at the distance between countries in plain deaths per 1,000 births, and it shrinks
                     dramatically. In 1960, the country at the 90th percentile lost 285 children per 1,000 and the
@@ -164,13 +236,14 @@
                             <button type="button" aria-pressed="false" data-target="img-for" data-src="images/for_reveal.png">Show decision markers</button>
                         </span>
                     </div>
-                    <img id="img-for" src="images/for.png" alt="Two panels. Top: under-five mortality for 112 countries from 1960 to 2019 on a linear scale, with a gold band between the 10th and 90th percentile countries narrowing from 255.2 deaths per 1,000 apart to 63.4. Bottom: bars counting countries by how much their rate fell, all between 50 and 100 percent." />
+                    <div class="frame"><img id="img-for" src="images/for.png"
+                        alt="Two panels. Top: under-five mortality for 112 countries from 1960 to 2019 on a linear scale, with a gold band from the 10th- to the 90th-percentile country narrowing from a 255.2 gap to 63.4. Bottom: horizontal bars counting countries by percentage reduction, all between 50 and 100 percent." /></div>
                     <figcaption><b>Figure 1.</b> The chart for the proposition. The top panel shows the range from the 10th to the 90th percentile country over time, and the bottom panel shows how much each country’s rate fell.</figcaption>
                 </figure>
 
-                <section class="method">
-                    <h3>How we made this chart</h3>
-                    <p class="note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                <section class="method" id="for-decisions">
+                    <h3><span class="num">1.1</span>How we made this chart</h3>
+                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions for-list">
                         <li>
                             <div class="dec-head">
@@ -210,7 +283,7 @@
                     </ol>
                 </section>
 
-                <h2>The case against</h2>
+                <h2 id="against"><span class="num">2</span>The case against</h2>
                 <p>
                     Divide instead of subtract, and the picture flips. In 1960, the country at the 90th percentile had
                     9.5 times the rate of the country at the 10th. In 2019 it had 19.1 times. Both improved, but the
@@ -225,13 +298,14 @@
                             <button type="button" aria-pressed="false" data-target="img-against" data-src="images/against_reveal.png">Show decision markers</button>
                         </span>
                     </div>
-                    <img id="img-against" src="images/against.png" alt="Two panels. Top: the ratio of the 90th to the 10th percentile country's under-five mortality rate, 1960 to 2019, rising from 9.5 to a peak of 23.1 in 1999 and ending at 19.1. Bottom: 2019 country rates by World Bank region, with Sub-Saharan Africa in red at a median of 60.1 and Europe and Central Asia at 3.8." />
+                    <div class="frame"><img id="img-against" src="images/against.png"
+                        alt="Two panels. Top: the ratio of the 90th- to the 10th-percentile country's under-five mortality rate, 1960 to 2019, rising from 9.5 to a peak of 23.1 in 1999 and ending at 19.1. Bottom: 2019 country rates by World Bank region, with Sub-Saharan Africa in red and a median of 60.1 against Europe and Central Asia's 3.8." /></div>
                     <figcaption><b>Figure 2.</b> The chart against the proposition. The top panel uses the same 112 countries and percentiles as Figure 1, divided instead of subtracted. The bottom panel is a 2019 snapshot by region.</figcaption>
                 </figure>
 
-                <section class="method">
-                    <h3>How we made this chart</h3>
-                    <p class="note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                <section class="method" id="against-decisions">
+                    <h3><span class="num">2.1</span>How we made this chart</h3>
+                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions against-list">
                         <li>
                             <div class="dec-head">
@@ -271,14 +345,14 @@
                     </ol>
                 </section>
 
-                <h2>Same data, two answers</h2>
+                <h2 id="two-stories"><span class="num">3</span>Same data, two answers</h2>
                 <p>
                     Both charts start from the same two percentiles in the same two years. The first subtracts them
                     and the second divides them.
                 </p>
 
                 <figure class="graphic">
-                    <table class="truths">
+                    <div class="data-card"><table class="truths">
                         <caption>Converging or not?<span>Countries at the 90th and 10th percentiles, same 112 countries</span></caption>
                         <thead><tr><th>Measure</th><th>1960</th><th>2019</th><th>Change</th></tr></thead>
                         <tbody>
@@ -288,18 +362,19 @@
                             <tr><td>Difference in survival to age 5, points</td><td>25.5</td><td>6.3</td><td class="down">−75%</td></tr>
                             <tr><td>Ratio</td><td>9.5×</td><td>19.1×</td><td class="up">+102%</td></tr>
                         </tbody>
-                    </table>
+                    </table></div>
                     <figcaption><b>Figure 3.</b> Subtracting says countries are converging and dividing says they are not. The ratio peaked at 23.1 in 1999 and has fallen 17% since.</figcaption>
                 </figure>
 
                 <figure class="graphic">
-                    <p class="gfx-head">Where our 10 decisions fall</p>
+                    <div class="ledger-card"><p class="gfx-head">Where our 10 decisions fall</p>
                     <p class="gfx-dek">Scored from −2 (deceptive) to +2 (earnest)</p>
-                    <svg id="ledger" viewBox="0 0 600 210" role="img" aria-label="Dot plot of all ten design decisions on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg>
+                    <svg id="ledger" viewBox="0 0 600 210" role="img"
+                        aria-label="Dot plot of all ten design decisions on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg></div>
                     <figcaption><b>Figure 4.</b> Each chart has one choice that earns the reader’s trust. The most misleading choices are the bottom panels, which answer a different question from the headline above them.</figcaption>
                 </figure>
 
-                <h2>What we learned</h2>
+                <h2 id="learned"><span class="num">4</span>What we learned</h2>
                 <p>
                     At the checkpoint we leaned toward the side arguing for the proposition. Most people hear
                     “narrowing” as a shrinking difference, and the case against relied on ratios that swing around
@@ -332,8 +407,8 @@
                     the line when its reader would change their mind after seeing the table above.
                 </p>
 
-                <section class="about">
-                    <h3>About the data</h3>
+                <section class="about" id="data">
+                    <h3><span class="num">5</span>About the data</h3>
                     <p>
                         Data come from the World Bank’s Human Development Indicators, 1960 to 2020, in the cleaned copy
                         linked from the assignment (<a href="https://github.com/light-and-salt/World-Bank-Data-by-Indicators">light-and-salt/World-Bank-Data-by-Indicators</a>,

@@ -47,7 +47,10 @@
   .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #121212; color: #fff; font-size: 14px; cursor: pointer; flex: none; }
   .play:hover { background: #333; }
   .play.replay { font-size: 20px; line-height: 1; }
-  .explore-ctrl input[type=range] { flex: 1; accent-color: #121212; }
+  .explore-ctrl input[type=range] { flex: 1; min-width: 140px; accent-color: #121212; }
+  .explore-ctrl { flex-wrap: wrap; }
+  body.embed svg.fixed { width: auto; height: auto; }
+  @media (max-width: 520px) { .year-big { font-size: 28px; } .readout { font-size: 24px; } }
   .year-big { font-size: 34px; font-weight: 800; fill: #121212; font-variant-numeric: tabular-nums; }
   .readout { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
   #tip { position: fixed; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 6px 9px;
@@ -253,9 +256,13 @@ function sens(D) {
 /* ---------- explorer: animated distribution, 1960 to 2019 ---------- */
 function explore(D) {
   ["#title", "#dek", "#src"].forEach(s => d3.select(s).remove());
-  const YEARS = d3.range(1960, 2020), R = 4.4, ROWY = 150;
-  const H = 470;
-  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  // lay out for the real width of the frame, so text stays readable on phones
+  const W = P.has("embed") ? Math.max(300, Math.min(672, document.getElementById("wrap").clientWidth - 32)) : 672;
+  const narrow = W < 520;
+  const YEARS = d3.range(1960, 2020), R = narrow ? 3 : 4.4, ROWY = narrow ? 135 : 150, HB = narrow ? 64 : 58;
+  const RY = narrow ? 268 : 296, RW = narrow ? W : 300, RH = narrow ? 48 : 60, RSTEP = narrow ? 168 : 0;
+  const H = narrow ? RY + 2 * RSTEP - 6 : 470;
+  svg.attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`).style("width", W + "px").style("height", H + "px");
   const S = Object.fromEntries(D.stats.map(s => [s.y, s]));
   const lin = d3.scaleLinear().domain([0, 400]).range([20, W - 20]);
   const log = d3.scaleLog().domain([1.5, 450]).range([20, W - 20]);
@@ -289,31 +296,32 @@ function explore(D) {
     }));
 
   // ---- year label, axis, band
-  const yearLab = gBack.append("text").attr("x", 0).attr("y", 46).attr("class", "year-big").text(1960);
+  const yearLab = gBack.append("text").attr("x", 0).attr("y", narrow ? 36 : 46).attr("class", "year-big").text(1960);
   const axisG = gBack.append("g");
-  const band = g.append("rect").attr("y", ROWY - 58).attr("height", 116).attr("fill", "#121212").attr("opacity", 0.045).attr("rx", 4);
-  const p10l = g.append("line").attr("y1", ROWY - 60).attr("y2", ROWY + 60).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
-  const p90l = g.append("line").attr("y1", ROWY - 60).attr("y2", ROWY + 60).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
-  const p10t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - 66).text("10th");
-  const p90t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - 66).text("90th percentile");
+  const band = g.append("rect").attr("y", ROWY - HB).attr("height", 2 * HB).attr("fill", "#121212").attr("opacity", 0.045).attr("rx", 4);
+  const p10l = g.append("line").attr("y1", ROWY - HB - 2).attr("y2", ROWY + HB + 2).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
+  const p90l = g.append("line").attr("y1", ROWY - HB - 2).attr("y2", ROWY + HB + 2).attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3");
+  const p10t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - HB - 8).text("10th");
+  const p90t = gTop.append("text").attr("class", "sub halo").attr("text-anchor", "middle").attr("y", ROWY - HB - 8).text(narrow ? "90th" : "90th percentile");
   const dotsG = g.append("g");
   const tip = d3.select("#tip");
 
   function drawAxis() {
     axisG.selectAll("*").remove();
     const sc = state.mode === "log" ? log : lin;
-    const ticks = state.mode === "log" ? [2, 5, 10, 20, 50, 100, 200, 400] : [0, 50, 100, 150, 200, 250, 300, 350, 400];
+    const ticks = state.mode === "log" ? (narrow ? [2, 10, 50, 200] : [2, 5, 10, 20, 50, 100, 200, 400])
+                                       : (narrow ? [0, 100, 200, 300, 400] : [0, 50, 100, 150, 200, 250, 300, 350, 400]);
     ticks.forEach(t => {
-      axisG.append("line").attr("class", "grid").attr("x1", sc(t)).attr("x2", sc(t)).attr("y1", ROWY - 74).attr("y2", ROWY + 70);
-      text(axisG, sc(t), ROWY + 88, t, "tick", null, "middle");
+      axisG.append("line").attr("class", "grid").attr("x1", sc(t)).attr("x2", sc(t)).attr("y1", ROWY - HB - 16).attr("y2", ROWY + HB + 12);
+      text(axisG, sc(t), ROWY + HB + 30, t, "tick", null, "middle");
     });
-    text(axisG, W - 20, ROWY + 106, state.mode === "log" ? "Deaths before age 5 per 1,000 births, logarithmic scale" : "Deaths before age 5 per 1,000 births", "tick", null, "end");
+    const unit = narrow ? "Deaths per 1,000 births" : "Deaths before age 5 per 1,000 births";
+    text(axisG, W - 20, ROWY + HB + 48, state.mode === "log" ? unit + (narrow ? ", log scale" : ", logarithmic scale") : unit, "tick", null, "end");
   }
 
-  // ---- readouts: difference (teal) and ratio (orange) with sparklines
-  const RY = 296, RW = 300, RH = 60;
+  // ---- readouts: difference and ratio with sparklines (side by side, or stacked on phones)
   const readout = (ox, key, label, color, fmt, yMax) => {
-    const rg = gTop.append("g").attr("transform", `translate(${ox},${RY})`);
+    const rg = gTop.append("g").attr("transform", narrow ? `translate(0,${RY + ox})` : `translate(${ox},${RY})`);
     text(rg, 0, 0, label.toUpperCase(), "tick").style("font-weight", 700).style("letter-spacing", ".05em").style("font-size", "11px");
     const val = text(rg, 0, 34, "", "readout", color);
     const sx = d3.scaleLinear().domain([1960, 2019]).range([0, RW]);
@@ -335,7 +343,7 @@ function explore(D) {
     };
   };
   const upGap = readout(0, "gap", "Difference, 90th − 10th", TEAL, v => `${f0(v)} deaths`, 280);
-  const upRatio = readout(W / 2 + 10, "ratio", "Ratio, 90th ÷ 10th", ORANGE, v => `${f1(v)}×`, 25);
+  const upRatio = readout(narrow ? RSTEP : W / 2 + 10, "ratio", "Ratio, 90th ÷ 10th", ORANGE, v => `${f1(v)}×`, 25);
 
   function render(dur) {
     const sc = state.mode === "log" ? log : lin, L = getLayout(state.mode, state.year), s = S[state.year];
@@ -378,6 +386,10 @@ function explore(D) {
   });
   slider.on("input", function () { state.year = +this.value; stop(); render(150); });
   render(0);
+  const report = () => parent !== window && parent.postMessage({ chartHeight: document.documentElement.scrollHeight }, "*");
+  report(); setTimeout(report, 300);
+  let lastW = window.innerWidth;
+  window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - lastW) > 30) location.reload(); });
   if (P.has("autoyear")) { state.year = +P.get("autoyear"); render(0); }
   if (P.has("autolog")) { seg.selectAll("button").nodes()[1].click(); }
 }

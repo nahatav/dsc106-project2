@@ -9,57 +9,66 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
+  :root { --ink: #121212; --mid: #666; --soft: #8c8c8c; --rule: #ececec;
+          --teal: #1b7c76; --teal-2: #7fc0b8; --teal-fill: #e1f1ee;
+          --orange: #d9622b; --orange-2: #f2b38f; }
   html, body { margin: 0; background: #fff; }
   body { font-family: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif; color: #333; }
-  #wrap { width: 720px; padding: 24px 24px 18px; box-sizing: border-box; }
-  h1 { color: #121212; font-weight: 700; font-size: 21px; line-height: 1.25; margin: 0 0 6px; text-wrap: balance; }
-  .dek { font-size: 14px; line-height: 1.45; color: #555; font-weight: 500; margin: 0 0 18px; }
-  .src { font-size: 11.5px; color: #777; font-weight: 500; margin-top: 12px; line-height: 1.5; }
+  #wrap { width: 720px; padding: 26px 24px 20px; box-sizing: border-box; }
+  body.embed #wrap { width: 100%; padding: 0; }
+  body.embed svg { width: 100%; height: auto; }
+  body.embed #wrap { padding: 14px 16px 0; }
+  h1 { color: var(--ink); font-weight: 700; font-size: 21px; line-height: 1.25; margin: 0 0 5px; text-wrap: balance; }
+  .dek { font-size: 14px; line-height: 1.45; color: var(--mid); font-weight: 500; margin: 0 0 16px; }
+  .src { font-size: 11px; color: #999; font-weight: 500; margin-top: 18px; }
   svg { display: block; overflow: visible; }
   svg text { font-family: inherit; }
-  .tick { font-size: 12px; font-weight: 500; fill: #737373; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
-  .grid { stroke: #ebebeb; stroke-width: 1; shape-rendering: crispEdges; }
-  .base { stroke: #8f8f8f; stroke-width: 1; shape-rendering: crispEdges; }
-  .country { fill: none; stroke: #000; stroke-opacity: 0.07; stroke-width: 0.8; stroke-linejoin: round; }
-  .ann { font-size: 13px; font-weight: 500; fill: #222; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
-  .ann-b { font-weight: 800; fill: #121212; }
-  .lab { font-size: 12.5px; font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
-  .val { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tick { font-size: 12px; font-weight: 500; fill: var(--soft); font-variant-numeric: tabular-nums; }
+  .halo { paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .grid { stroke: var(--rule); stroke-width: 1; shape-rendering: crispEdges; }
+  .base { stroke: #9a9a9a; stroke-width: 1; shape-rendering: crispEdges; }
+  .country { fill: none; stroke: #000; stroke-opacity: 0.06; stroke-width: 0.8; }
+  .lab { font-size: 13px; font-weight: 700; }
+  .sub { font-size: 12px; font-weight: 500; fill: var(--mid); }
+  .row { font-size: 15px; font-weight: 800; fill: var(--ink); }
+  svg > g { transition: opacity .35s; }
   .mk circle { stroke: #fff; stroke-width: 2; }
   .mk text { font-size: 11.5px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
   .mkh { display: inline-grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; margin-right: 8px; vertical-align: 2px;
          font-size: 11.5px; font-weight: 700; color: #fff; line-height: 1; }
+  .ctrl { display: inline-flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; margin: 0 0 14px; }
+  .ctrl button { font: 600 13px "Libre Franklin", Arial, sans-serif; border: 0; background: #fff; color: #444; padding: 7px 14px; cursor: pointer; }
+  .ctrl button + button { border-left: 1px solid #ccc; }
+  .ctrl button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  #tip { position: fixed; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 6px 9px;
+         font-size: 12.5px; line-height: 1.35; box-shadow: 0 2px 6px rgba(0,0,0,.08); opacity: 0; transition: opacity .1s; }
+  #tip b { display: block; color: var(--ink); }
 </style>
 </head>
 <body>
 <div id="wrap">
   <h1 id="title"></h1>
   <p class="dek" id="dek"></p>
+  <div id="ctrl"></div>
   <svg id="chart"></svg>
-  <div class="src" id="src"></div>
+  <div class="src" id="src">Source: World Bank Human Development Indicators. The 112 countries with data in both 1960 and 2019.</div>
 </div>
+<div id="tip"></div>
 <script>
-const params = new URLSearchParams(location.search);
-const WHICH = params.get("v") || "for";
-const REVEAL = params.has("reveal");
-const W = 672, H = 380, M = { t: 10, r: 112, b: 26, l: 30 };
-const svg = d3.select("#chart").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+const P = new URLSearchParams(location.search);
+const VIEW = P.get("v") || "for1";
+const REVEAL = P.has("reveal");
+if (P.has("embed")) document.body.classList.add("embed");
+const C = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const TEAL = C("--teal"), TEAL2 = C("--teal-2"), TFILL = C("--teal-fill"), ORANGE = C("--orange"), ORANGE2 = C("--orange-2");
+const W = 672;
+const svg = d3.select("#chart").attr("width", W);
 const gBack = svg.append("g"), g = svg.append("g"), gTop = svg.append("g"), gMk = svg.append("g");
-const f1 = v => (Math.round(v * 10 + 1e-9) / 10).toFixed(1);   // one decimal, half up
-const x = d3.scaleLinear().domain([1960, 2019]).range([M.l, W - M.r]);
-const Y0 = H - M.b;
-
-function block(sel, x, y, lines, opts = {}) {
-  const t = sel.append("text").attr("x", x).attr("y", y).attr("class", opts.cls || "ann").attr("text-anchor", opts.anchor || "start");
-  lines.forEach((ln, i) => {
-    ln.forEach(([s, c], j) => {
-      const ts = t.append("tspan").text(s);
-      if (c) ts.attr("class", c);
-      if (j === 0) ts.attr("x", x).attr("dy", i === 0 ? 0 : (opts.lh || 18));
-    });
-  });
-  return t;
-}
+const f1 = v => (Math.round(v * 10 + 1e-9) / 10).toFixed(1);
+const f0 = v => String(Math.round(v));
+const text = (sel, x, y, s, cls, fill, anchor = "start") =>
+  sel.append("text").attr("x", x).attr("y", y).attr("class", cls).attr("fill", fill || null).attr("text-anchor", anchor).text(s);
+const dot = (cx, cy, c, r = 4.2) => g.append("circle").attr("cx", cx).attr("cy", cy).attr("r", r).attr("fill", c).attr("stroke", "#fff").attr("stroke-width", 1.6);
 function marker(n, x, y, color) {
   if (!REVEAL) return;
   const m = gMk.append("g").attr("class", "mk").attr("transform", `translate(${x},${y})`);
@@ -71,98 +80,161 @@ function htmlMarker(id, n, color) {
   const el = document.createElement("span"); el.className = "mkh"; el.style.background = color; el.textContent = n;
   document.querySelector(id).prepend(el);
 }
-function axes(y, ticks, topLabel, fmt) {
-  ticks.forEach(v => {
+
+d3.json("data.json").then(D => ({ for1, for2, against1, against2, morph })[VIEW](D));
+
+/* ---------- time series frame shared by for1 / against1 ---------- */
+function timeFrame(H, yDomain, ticks, fmt, topLabel, right) {
+  const M = { t: 12, r: right, b: 26, l: 30 };
+  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear().domain([1960, 2019]).range([M.l, W - M.r]);
+  const y = d3.scaleLinear().domain(yDomain).range([H - M.b, M.t]);
+  ticks.forEach((v, i) => {
     gBack.append("line").attr("class", "grid").attr("x1", 0).attr("x2", W - M.r).attr("y1", y(v)).attr("y2", y(v));
-    gTop.append("text").attr("class", "tick").attr("x", 0).attr("y", y(v) - 5).text(v === ticks[ticks.length - 1] ? topLabel : fmt(v));
+    text(gTop, 0, y(v) - 5, i === ticks.length - 1 ? topLabel : fmt(v), "tick halo");
   });
-  g.append("line").attr("class", "base").attr("x1", 0).attr("x2", W - M.r).attr("y1", Y0).attr("y2", Y0);
-  [1960, 1970, 1980, 1990, 2000, 2010, 2019].forEach(v => gTop.append("text").attr("class", "tick").attr("x", x(v)).attr("y", Y0 + 18)
-    .attr("text-anchor", v === 2019 ? "end" : "middle").text(v));
+  g.append("line").attr("class", "base").attr("x1", 0).attr("x2", W - M.r).attr("y1", y(yDomain[0])).attr("y2", y(yDomain[0]));
+  [1960, 1970, 1980, 1990, 2000, 2010, 2019].forEach(v => text(gTop, x(v), H - M.b + 18, v, "tick", null, v === 2019 ? "end" : "middle"));
+  return { x, y, M };
 }
-const dot = (cx, cy, c) => g.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 4).attr("fill", c).attr("stroke", "#fff").attr("stroke-width", 1.5);
 
-d3.json("data.json").then(D => (WHICH === "for" ? drawFor : drawAgainst)(D));
-
-function drawFor(D) {
-  const GOLD = "#a87b16", FILL = "#f6ecd4";
+function for1(D) {
   const S = D.stats, s0 = S[0], s1 = S[S.length - 1];
   const drop = Math.round(100 * (1 - s1.gap / s0.gap));
-  d3.select("#title").text(`Countries are ${drop}% closer in child survival than in 1960`);
-  d3.select("#dek").text("Deaths before age 5 per 1,000 live births in the 112 countries with data in both 1960 and 2019. Each gray line is a country, and the band spans the 10th to the 90th percentile.");
-  d3.select("#src").text("Source: World Bank Human Development Indicators, 1960 to 2020. Percentiles use the nearest rank and weight every country equally.");
-
-  const y = d3.scaleLinear().domain([0, 400]).range([Y0, M.t]);
-  axes(y, [100, 200, 300, 400], "400 deaths per 1,000 births", String);
-  g.append("path").datum(S).attr("fill", FILL)
+  d3.select("#title").text(`Countries have moved ${drop}% closer together since 1960`);
+  d3.select("#dek").text("Deaths before age 5 per 1,000 births. The band spans the 10th to the 90th percentile country.");
+  const { x, y } = timeFrame(360, [0, 400], [100, 200, 300, 400], String, "400 deaths per 1,000", 96);
+  g.append("path").datum(S).attr("fill", TFILL)
     .attr("d", d3.area().x(d => x(d.y)).y0(d => y(d.p10)).y1(d => y(d.p90)).curve(d3.curveMonotoneX));
   const line = d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveMonotoneX);
   g.append("g").selectAll("path").data(D.cohort).join("path").attr("class", "country").attr("d", c => line(c.v));
-  ["p10", "p90"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", GOLD).attr("stroke-width", 2.4)
+  ["p10", "p90"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", TEAL).attr("stroke-width", 2.4)
     .attr("d", d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX)));
-  [s0, s1].forEach(s => { dot(x(s.y), y(s.p90), GOLD); dot(x(s.y), y(s.p10), GOLD); });
-
-  // distance brackets at both ends
-  const bracket = (s, dx) => {
-    const bx = x(s.y) + dx, t = 4 * Math.sign(dx);
-    gTop.append("path").attr("fill", "none").attr("stroke", "#121212").attr("stroke-width", 1.2)
-      .attr("d", `M${bx - t},${y(s.p90)} H${bx} V${y(s.p10)} H${bx - t}`);
-    return bx;
+  [s0, s1].forEach(s => { dot(x(s.y), y(s.p90), TEAL); dot(x(s.y), y(s.p10), TEAL); });
+  const span = (s, bx, lx) => {
+    gTop.append("line").attr("x1", bx).attr("x2", bx).attr("y1", y(s.p90) + 7).attr("y2", y(s.p10) - 7)
+      .attr("stroke", "#121212").attr("stroke-width", 1.2).attr("stroke-dasharray", "2 3");
+    text(gTop, lx, y((s.p10 + s.p90) / 2) - 2, f0(s.gap), "lab halo", "#121212").style("font-size", "20px");
+    text(gTop, lx, y((s.p10 + s.p90) / 2) + 16, "apart", "sub halo");
   };
-  const bl = bracket(s0, 10);
-  block(gTop, bl + 9, y((s0.p10 + s0.p90) / 2) - 6, [[[f1(s0.gap), "ann-b"]], [["deaths apart", ""]]]);
-  bracket(s1, 10);
-  const RX = W - M.r + 24;
-  block(gTop, RX, y(s1.p90) - 30, [[[f1(s1.gap), "ann-b"]], [["deaths apart", ""]]]);
-  block(gTop, x(s0.y) + 8, y(s0.p90) - 10, [[["90th percentile ", "lab"], [f1(s0.p90), "lab val"]]]).attr("fill", GOLD);
-  block(gTop, RX, y(s1.p90) + 14, [[["90th pct. ", "lab"], [f1(s1.p90), "lab val"]]]).attr("fill", GOLD);
-  block(gTop, RX, y(s1.p10) + 4, [[["10th pct. ", "lab"], [f1(s1.p10), "lab val"]]]).attr("fill", GOLD);
+  span(s0, x(1960) + 16, x(1960) + 26);
+  span(s1, x(2019) + 18, x(2019) + 28);
+  text(gTop, x(1960) + 10, y(s0.p90) - 10, "90th percentile", "lab halo", TEAL);
+  text(gTop, x(1960) + 10, y(s0.p10) + 20, "10th", "lab halo", TEAL);
 
-  block(gTop, x(1984), y(330), [
-    [["The countries at the 90th and 10th percentiles", ""]],
-    [["were ", ""], [f1(s0.gap), "ann-b"], [" deaths per 1,000 births apart in 1960", ""]],
-    [["and ", ""], [f1(s1.gap), "ann-b"], [" apart in 2019.", ""]],
-  ]);
-
-  htmlMarker("#title", 4, GOLD);                                   // headline wording
-  htmlMarker("#dek", 1, GOLD);                                     // fixed cohort
-  marker(2, 212, y(s0.p90) - 14, GOLD);                  // percentiles
-  marker(3, 196, y(400) - 9, GOLD);                                // linear scale of raw rates
-  marker(5, x(1996), y(262), GOLD);                                // every country shown
+  marker(1, x(1990), y(S[30].p90) - 22, TEAL);         // percentile band, fixed cohort
+  marker(2, x(1960) + 66, y(s0.p10) - 26, TEAL);       // linear scale on raw rates
+  htmlMarker("#title", 3, TEAL);                       // "closer" without naming the measure
 }
 
-function drawAgainst(D) {
-  const RED = "#b3261e";
+function against1(D) {
   const S = D.stats, s0 = S[0], s1 = S[S.length - 1];
   const peak = S.reduce((a, b) => (b.ratio > a.ratio ? b : a));
-  d3.select("#title").text("Child survival is twice as unequal as it was in 1960");
-  d3.select("#dek").text("How many times higher the death rate before age 5 is in the country at the 90th percentile than in the country at the 10th, among the 112 countries with data in both 1960 and 2019.");
-  d3.select("#src").text("Source: World Bank Human Development Indicators, 1960 to 2020. Percentiles use the nearest rank and weight every country equally.");
-
-  const y = d3.scaleLinear().domain([0, 25]).range([Y0, M.t]);
-  axes(y, [5, 10, 15, 20, 25], "25 times as high", v => `${v}×`);
-  g.append("line").attr("x1", x(1960)).attr("x2", W - M.r).attr("y1", y(s0.ratio)).attr("y2", y(s0.ratio))
-    .attr("stroke", "#8a8a8a").attr("stroke-width", 1).attr("stroke-dasharray", "3 3");
-  gTop.append("text").attr("class", "tick").attr("x", x(1990)).attr("y", y(s0.ratio) + 16).text(`1960 level, ${f1(s0.ratio)}×`);
-  g.append("path").datum(S).attr("fill", "none").attr("stroke", RED).attr("stroke-width", 2.6)
+  d3.select("#title").text("Child mortality is twice as unequal as it was in 1960");
+  d3.select("#dek").text("Death rate before age 5 in the 90th percentile country, as a multiple of the 10th percentile country.");
+  const { x, y } = timeFrame(330, [0, 25], [5, 10, 15, 20, 25], v => `${v}×`, "25 times", 70);
+  g.append("line").attr("x1", x(1960)).attr("x2", x(2019)).attr("y1", y(s0.ratio)).attr("y2", y(s0.ratio))
+    .attr("stroke", "#9a9a9a").attr("stroke-width", 1).attr("stroke-dasharray", "3 3");
+  text(gTop, x(1975), y(s0.ratio) + 17, "1960 level", "sub halo");
+  g.append("path").datum(S).attr("fill", "none").attr("stroke", ORANGE).attr("stroke-width", 3)
     .attr("d", d3.line().x(d => x(d.y)).y(d => y(d.ratio)).curve(d3.curveMonotoneX));
-  [s0, peak, s1].forEach(d => dot(x(d.y), y(d.ratio), RED));
-  block(gTop, x(s0.y) + 8, y(s0.ratio) - 10, [[[`${f1(s0.ratio)}×`, "lab val"]]]).attr("fill", RED);
-  block(gTop, x(peak.y), y(peak.ratio) - 12, [[[`${f1(peak.ratio)}×`, "lab val"], [` in ${peak.y}`, "lab"]]], { anchor: "middle" }).attr("fill", RED);
-  block(gTop, W - M.r + 12, y(s1.ratio) - 2, [[[`${f1(s1.ratio)}×`, "lab val"]], [["in 2019", "lab"]]], { lh: 16 }).attr("fill", RED);
+  [s0, peak, s1].forEach(d => dot(x(d.y), y(d.ratio), ORANGE, 4.6));
+  text(gTop, x(s0.y) + 8, y(s0.ratio) - 11, `${f1(s0.ratio)}×`, "lab halo", ORANGE);
+  text(gTop, x(peak.y), y(peak.ratio) - 12, `${f1(peak.ratio)}× in ${peak.y}`, "lab halo", ORANGE, "middle");
+  text(gTop, x(2019) + 10, y(s1.ratio) + 6, `${f1(s1.ratio)}×`, "lab halo", ORANGE).style("font-size", "20px");
 
-  block(gTop, x(1964), y(22), [
-    [["In 2019, a child in the country at the", ""]],
-    [["90th percentile was ", ""], [`${f1(s1.ratio)} times`, "ann-b"], [" as likely", ""]],
-    [["to die before age 5 as a child in the", ""]],
-    [["country at the 10th percentile.", ""]],
-  ]);
+  htmlMarker("#title", 1, ORANGE);                     // ratio described as inequality
+  marker(2, x(1975) - 16, y(s0.ratio) + 12, ORANGE);   // 1960 baseline
+  marker(3, x(1985), y(14), ORANGE);                   // same cohort and percentiles as Figure 1
+}
 
-  htmlMarker("#title", 1, RED);                                    // ratio framed as "unequal"
-  htmlMarker("#dek", 2, RED);                                      // same cohort and percentiles
-  marker(3, x(1990) - 16, y(s0.ratio) + 12, RED);                  // 1960 baseline
-  marker(4, x(1993), y(19.5) + 20, RED);                           // red line
-  marker(5, x(1964) - 16, y(22) - 5, RED);                         // "times as likely" annotation
+/* ---------- beeswarm: 1960 vs 2019, linear or log ---------- */
+function swarm(D, mode, opts = {}) {
+  const H = 380, M = { l: 70, r: 20 }, rows = { 1960: 96, 2019: 262 }, R = 4;
+  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const lin = d3.scaleLinear().domain([0, 400]).range([M.l, W - M.r]);
+  const log = d3.scaleLog().domain([1.5, 450]).range([M.l, W - M.r]);
+  const pts = [];
+  D.cohort.forEach(c => {
+    const v = Object.fromEntries(c.v);
+    [1960, 2019].forEach(yr => pts.push({ name: c.name, yr, val: v[yr], v60: v[1960], v19: v[2019] }));
+  });
+  const layout = sc => {
+    const nodes = pts.map(p => ({ ...p, x: sc(p.val), y: rows[p.yr] }));
+    d3.forceSimulation(nodes).force("x", d3.forceX(d => sc(d.val)).strength(1)).force("y", d3.forceY(d => rows[d.yr]).strength(0.06))
+      .force("c", d3.forceCollide(R + 0.7)).stop().tick(260);
+    return nodes;
+  };
+  const pos = { linear: layout(lin), log: layout(log) };
+  const colorFor = (yr, m) => m === "log" ? (yr === 2019 ? ORANGE : ORANGE2) : (yr === 2019 ? TEAL : TEAL2);
+
+  const axisG = gBack.append("g"), labG = gTop.append("g");
+  function drawAxis(m) {
+    axisG.selectAll("*").remove(); labG.selectAll("*").remove();
+    const sc = m === "log" ? log : lin;
+    const ticks = m === "log" ? [2, 5, 10, 20, 50, 100, 200, 400] : [0, 50, 100, 150, 200, 250, 300, 350, 400];
+    ticks.forEach(t => {
+      axisG.append("line").attr("class", "grid").attr("x1", sc(t)).attr("x2", sc(t)).attr("y1", 20).attr("y2", H - 34);
+      text(axisG, sc(t), H - 14, t, "tick", null, "middle");
+    });
+    text(axisG, W - M.r, H + 6, m === "log" ? "Deaths per 1,000 births, logarithmic scale" : "Deaths per 1,000 births", "tick", null, "end");
+    [1960, 2019].forEach(yr => {
+      const vals = pts.filter(p => p.yr === yr).map(p => p.val);
+      const lo = d3.min(vals), hi = d3.max(vals), yy = d3.min(pos[m].filter(n => n.yr === yr), n => n.y) - 16;
+      text(labG, 0, rows[yr] + 5, yr, "row");
+      labG.append("path").attr("fill", "none").attr("stroke", "#121212").attr("stroke-width", 1)
+        .attr("d", `M${sc(lo)},${yy + 5} V${yy} H${sc(hi)} V${yy + 5}`);
+      const label = m === "log" ? `${f0(hi / lo)}× from lowest to highest` : `${f0(hi - lo)} deaths from lowest to highest`;
+      text(labG, (sc(lo) + sc(hi)) / 2, yy - 7, label, "lab halo", yr === 2019 ? colorFor(2019, m) : "#121212", "middle");
+    });
+  }
+  const dots = g.selectAll("circle").data(pos[mode]).join("circle")
+    .attr("cx", d => d.x).attr("cy", d => d.y).attr("r", R).attr("fill", d => colorFor(d.yr, mode))
+    .attr("stroke", "#fff").attr("stroke-width", 0.8);
+  drawAxis(mode);
+
+  if (opts.interactive) {
+    const tip = d3.select("#tip");
+    dots.on("mousemove", (e, d) => tip.style("opacity", 1).style("left", e.clientX + 12 + "px").style("top", e.clientY - 10 + "px")
+        .html(`<b>${d.name}</b>1960: ${f1(d.v60)} &nbsp; 2019: ${f1(d.v19)}<br>deaths per 1,000 births`))
+      .on("mouseleave", () => tip.style("opacity", 0));
+    const ctrl = d3.select("#ctrl").append("div").attr("class", "ctrl");
+    [["linear", "Linear scale"], ["log", "Logarithmic scale"]].forEach(([m, lab]) =>
+      ctrl.append("button").attr("aria-pressed", m === mode).text(lab).on("click", function () {
+        ctrl.selectAll("button").attr("aria-pressed", false); d3.select(this).attr("aria-pressed", true);
+        const byKey = new Map(pos[m].map(n => [n.name + n.yr, n]));
+        dots.transition().duration(1100).ease(d3.easeCubicInOut)
+          .attr("cx", d => byKey.get(d.name + d.yr).x).attr("cy", d => byKey.get(d.name + d.yr).y).attr("fill", d => colorFor(d.yr, m));
+        labG.style("opacity", 0); setTimeout(() => { drawAxis(m); labG.style("opacity", 1); }, 650);
+      }));
+  }
+  return { lin, log, rows };
+}
+
+function for2(D) {
+  d3.select("#title").text("Nearly every country now sits close to zero");
+  d3.select("#dek").text("Each dot is a country. Deaths before age 5 per 1,000 births.");
+  const { lin, rows } = swarm(D, "linear");
+  marker(1, lin(270), rows[2019], TEAL);    // linear scale
+  marker(2, 18, rows[1960] - 34, TEAL);          // two endpoint years only
+  marker(3, lin(350), rows[1960] + 22, TEAL);    // every country shown
+}
+
+function against2(D) {
+  d3.select("#title").text("Countries are further apart than they were in 1960");
+  d3.select("#dek").text("Each dot is a country, on a scale where every step multiplies the rate.");
+  const { log, rows } = swarm(D, "log");
+  marker(1, log(300), rows[2019] + 26, ORANGE);  // log scale
+  marker(2, log(2.6), rows[2019] - 50, ORANGE);  // extremes, single countries
+  marker(3, log(60), rows[2019] + 30, ORANGE);   // color
+}
+
+function morph(D) {
+  d3.select("#title").remove();
+  d3.select("#dek").remove();
+  d3.select("#src").remove();
+  swarm(D, "linear", { interactive: true });
+  if (P.has("clicklog")) setTimeout(() => document.querySelectorAll(".ctrl button")[1].click(), 300);
 }
 </script>
 </body>

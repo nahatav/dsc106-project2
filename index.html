@@ -20,9 +20,9 @@
                 --head: #141416;
                 --dim: #71717e;
                 --accent: #c9a37e;
-                --gold: #a87b16;
-                --red: #b3261e;
-                --deceptive: #b4463e;
+                --gold: #1b7c76;
+                --red: #d9622b;
+                --deceptive: #c2452d;
                 --earnest: #3f6c8f;
                 --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
                 --col: 48rem;
@@ -109,6 +109,8 @@
             .toggle button[aria-pressed="true"] { background: var(--head); color: #fff; }
             .frame { border: 1px solid var(--line); border-radius: 6px; background: #fff; overflow: hidden; }
             .frame img { display: block; width: 100%; height: auto; }
+            .frame iframe { display: block; width: 100%; height: 470px; border: 0; }
+            h4.fig { color: var(--head); font-size: 1rem; font-weight: 600; margin: 2.2rem 0 0.2rem; }
             figcaption { color: var(--dim); font-size: 0.85rem; line-height: 1.65; margin: 1.15rem 0 0; }
             figure.col figcaption { max-width: none; }
             figcaption b { color: var(--body); font-weight: 400; }
@@ -189,11 +191,11 @@
                         We examine whether child mortality has converged across countries, using the World Bank’s
                         under-five mortality series for the 112 countries with data in both 1960 and 2019. Over that
                         period the median rate fell from 149.4 to 15.0 deaths per 1,000 live births, and every country
-                        in the sample recorded a decline. Whether the distribution also narrowed depends on the measure.
-                        The absolute difference between the countries at the 90th and 10th percentiles fell by 75%, from
-                        255.2 to 63.4 deaths per 1,000 live births, while the ratio between them rose from 9.5 to 19.1.
-                        We present one visualization built on each measure, document the design decisions that make each
-                        persuasive, and score each decision on a scale from deceptive to earnest.
+                        in the sample recorded a decline. Whether countries also moved closer together depends on the
+                        measure. The absolute difference between the countries at the 90th and 10th percentiles fell by
+                        75%, while the ratio between them rose from 9.5 to 19.1. We present two visualizations supporting
+                        the proposition and two opposing it, document the design decisions behind each, and include an
+                        interactive figure that moves between the two readings.
                     </p>
                 </div>
 
@@ -205,11 +207,13 @@
                 <nav class="toc" aria-label="Contents">
                     <p class="toc-title">Contents</p>
                     <ol>
-                        <li><a href="#for"><span>1</span>Visualization for the proposition</a>
-                            <ol><li><a href="#for-decisions"><span>1.1</span>Design decisions</a></li></ol></li>
-                        <li><a href="#against"><span>2</span>Visualization against the proposition</a>
-                            <ol><li><a href="#against-decisions"><span>2.1</span>Design decisions</a></li></ol></li>
-                        <li><a href="#comparison"><span>3</span>Comparison of the two measures</a></li>
+                        <li><a href="#for"><span>1</span>Visualizations for the proposition</a>
+                            <ol><li><a href="#fig1"><span>1.1</span>Figure 1: Percentile band</a></li>
+                                <li><a href="#fig2"><span>1.2</span>Figure 2: Every country, linear scale</a></li></ol></li>
+                        <li><a href="#against"><span>2</span>Visualizations against the proposition</a>
+                            <ol><li><a href="#fig3"><span>2.1</span>Figure 3: Percentile ratio</a></li>
+                                <li><a href="#fig4"><span>2.2</span>Figure 4: Every country, logarithmic scale</a></li></ol></li>
+                        <li><a href="#interactive"><span>3</span>One dataset, two scales</a></li>
                         <li><a href="#reflection"><span>4</span>Reflection</a></li>
                         <li><a href="#data"><span>5</span>Data and methods</a></li>
                     </ol>
@@ -224,194 +228,252 @@
 
                 <p>
                     The <strong>Show decision markers</strong> control above each figure numbers the elements that
-                    correspond to the design decisions discussed below it.
+                    correspond to the design decisions listed below it.
                 </p>
 
-                <h2 id="for"><span class="num">1</span>Visualization for the proposition</h2>
+                <h2 id="for"><span class="num">1</span>Visualizations for the proposition</h2>
                 <p>
-                    Figure 1 measures dispersion as the absolute difference between the countries at the 90th and 10th
-                    percentiles of under-five mortality. In 1960 those countries recorded 285.3 and 30.1 deaths per
-                    1,000 live births. In 2019 they recorded 66.9 and 3.5. The difference fell from 255.2 to 63.4.
+                    Both visualizations for the proposition measure distance between countries in deaths per 1,000 live
+                    births. Figure 1 follows the 10th and 90th percentile countries over time. Figure 2 shows every
+                    country in the first and last years.
                 </p>
+
+                <section class="method" id="fig1">
+                    <h3><span class="num">1.1</span>Figure 1: Percentile band</h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-for" data-src="images/for.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for" data-src="images/for_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-for" src="images/for.png" alt="Line chart of under-five mortality for 112 countries from 1960 to 2019 on a linear scale. A shaded band between the 10th and 90th percentile countries narrows from 255.2 deaths per 1,000 births apart in 1960 to 63.4 in 2019." /></div>
+                    <div class="frame"><img id="img-for1" src="images/for1.png" alt="Line chart of under-five mortality for 112 countries from 1960 to 2019 on a linear scale. A teal band between the 10th and 90th percentile countries narrows from 255 deaths per 1,000 births apart in 1960 to 63 apart in 2019." /></div>
                     <figcaption><b>Figure 1.</b> Under-five mortality in the 112-country sample, 1960 to 2019, with the range between the 10th and 90th percentile countries shaded.</figcaption>
                 </figure>
-
-                <section class="method" id="for-decisions">
-                    <h3><span class="num">1.1</span>Design decisions</h3>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
-                    <ol class="decisions for-list">
+                    <ol class="decisions for-list" data-fig="for1">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Restrict the sample to countries observed in 1960 and 2019</span>
-                                <span class="score" data-score="0.5"></span>
-                            </div>
-                            <p>A fixed sample prevents changes in coverage from producing an apparent trend. It also excludes 81 countries, including Nigeria, Niger, Mali, Chad, Somalia and South Sudan, which had some of the highest rates in 2019. Across all 193 countries reporting in 2019, the 90th percentile is 74.2 rather than 66.9. The restriction is methodologically sound, and it also lowers the 2019 upper bound in a way that favors the proposition.</p>
-                        </li>
-                        <li>
-                            <div class="dec-head">
-                                <span class="dec-title">Summarize dispersion with the 10th and 90th percentiles</span>
+                                <span class="dec-title">Summarize the spread with percentiles of a fixed sample</span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
-                            <p>Percentiles are a conventional way to limit the influence of outliers. They also exclude the 11 most extreme countries at each end of the distribution. In 2019 the Central African Republic (110.1) and Sierra Leone (109.2) lie well above the 90th percentile (66.9), so the countries with the slowest progress do not enter the headline figure.</p>
+                            <p>The band uses the 10th and 90th percentiles of the 112 countries observed in both 1960 and 2019. A fixed sample keeps changes in coverage from producing a trend, and percentiles limit the influence of outliers. Together they also remove the countries with the slowest progress. The 81 excluded countries include Nigeria, Niger, Chad and Somalia, and within the sample the Central African Republic (110.1) and Sierra Leone (109.2) lie well above the 2019 upper bound of 66.9.</p>
                         </li>
                         <li>
                             <div class="dec-head">
                                 <span class="dec-title">Plot rates on a linear scale</span>
                                 <span class="score" data-score="-1"></span>
                             </div>
-                            <p>On a linear scale, a uniform proportional decline reduces absolute differences, so the band narrows even when every country improves at the same percentage rate. The scale is the default and is unlikely to be read as a choice. On a logarithmic scale, the upper and lower bounds would appear to fall roughly in parallel.</p>
+                            <p>When every country improves at a similar percentage rate, absolute differences shrink, so on a linear scale the band narrows almost automatically. The scale is the default and is unlikely to be read as a choice. On a logarithmic scale the two bounds would fall roughly in parallel.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">State the reduction as a percentage in the title</span>
+                                <span class="dec-title">Report “closer” without naming the measure</span>
                                 <span class="score" data-score="-1.5"></span>
                             </div>
-                            <p>The title reports a 75% reduction in the absolute difference between the two percentiles without naming the measure. Expressed as a ratio, the same two percentiles moved further apart over the period. Readers are likely to take “closer” as a general statement about inequality in child survival rather than a statement about one measure of it.</p>
-                        </li>
-                        <li>
-                            <div class="dec-head">
-                                <span class="dec-title">Show every country in the sample</span>
-                                <span class="score" data-score="1"></span>
-                            </div>
-                            <p>Each of the 112 countries is drawn as a thin gray line behind the band, including those above the 90th percentile. This discloses the full distribution and allows a careful reader to see which countries the band leaves out. The lines are deliberately faint, which keeps attention on the band.</p>
+                            <p>The title states that countries moved 75% closer, which is the reduction in the absolute difference between the two percentiles, from 255 to 63 deaths per 1,000 births. Measured as a ratio, the same two percentiles moved further apart. Readers are likely to take the title as a general statement about inequality in child survival.</p>
                         </li>
                     </ol>
                 </section>
 
-                <h2 id="against"><span class="num">2</span>Visualization against the proposition</h2>
+                <section class="method" id="fig2">
+                    <h3><span class="num">1.2</span>Figure 2: Every country, linear scale</h3>
+
+                <figure class="graphic">
+                    <div class="gfx-tools">
+                        <span class="side for">For the proposition</span>
+                        <span class="toggle" role="group" aria-label="Chart view">
+                            <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png">Show decision markers</button>
+                        </span>
+                    </div>
+                    <div class="frame"><img id="img-for2" src="images/for2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
+                    <figcaption><b>Figure 2.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a linear scale.</figcaption>
+                </figure>
+                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <ol class="decisions for-list" data-fig="for2">
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Use a linear axis that compresses low rates</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>In 2019, 73 of the 112 countries had rates below 25 and 41 had rates below 10. On a linear axis running to 400, those countries collapse into one dense cluster, so a country at 2 and a country at 20, a tenfold difference, look almost identical. The compression is what makes 2019 appear uniform.</p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Compare only the first and last years</span>
+                                <span class="score" data-score="-0.5"></span>
+                            </div>
+                            <p>Two rows are easy to read and invite a before and after comparison. Showing only 1960 and 2019 omits the intervening decades, including the period around 2010 when the relative distance between the lowest and highest countries was largest. The years are standard endpoints, but the choice removes any sign that the trend was uneven.</p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Show every country without trimming</span>
+                                <span class="score" data-score="1.5"></span>
+                            </div>
+                            <p>Each of the 112 countries appears as a dot in both years, with no percentile trimming and no omitted outliers. The countries with the highest 2019 rates are visible at the right of the cluster, and the bracket reports the full range. The chart persuades through scale rather than selection.</p>
+                        </li>
+                    </ol>
+                </section>
+
+                <h2 id="against"><span class="num">2</span>Visualizations against the proposition</h2>
                 <p>
-                    Figure 2 measures dispersion as the ratio of the same two percentiles. The rate at the 90th
-                    percentile was 9.5 times the rate at the 10th percentile in 1960 and 19.1 times in 2019. Both
-                    percentiles declined, but the 10th percentile fell by 88% and the 90th by 77%, so the ratio
-                    increased.
+                    Both visualizations against the proposition measure distance between countries in proportional terms.
+                    Figure 3 divides the same two percentiles used in Figure 1. Figure 4 shows the same dots as Figure 2
+                    on a logarithmic scale.
                 </p>
+
+                <section class="method" id="fig3">
+                    <h3><span class="num">2.1</span>Figure 3: Percentile ratio</h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-against" data-src="images/against.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against" data-src="images/against_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-against" src="images/against.png" alt="Line chart of the ratio of the 90th to the 10th percentile country's under-five mortality rate, 1960 to 2019. The ratio rises from 9.5 in 1960 to a peak of 23.1 in 1999 and ends at 19.1 in 2019, above a dashed line marking the 1960 level." /></div>
-                    <figcaption><b>Figure 2.</b> Ratio of the 90th to the 10th percentile under-five mortality rate in the same 112-country sample, 1960 to 2019.</figcaption>
+                    <div class="frame"><img id="img-against1" src="images/against1.png" alt="Line chart of the ratio of the 90th to the 10th percentile country's under-five mortality rate, 1960 to 2019. The ratio rises from 9.5 in 1960 to a peak of 23.1 in 1999 and ends at 19.1 in 2019, above a dashed line marking the 1960 level." /></div>
+                    <figcaption><b>Figure 3.</b> Ratio of the 90th to the 10th percentile under-five mortality rate in the 112-country sample, 1960 to 2019.</figcaption>
                 </figure>
-
-                <section class="method" id="against-decisions">
-                    <h3><span class="num">2.1</span>Design decisions</h3>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
-                    <ol class="decisions against-list">
+                    <ol class="decisions against-list" data-fig="against1">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Measure dispersion as a ratio and describe it as inequality</span>
+                                <span class="dec-title">Measure dispersion as a ratio and call it inequality</span>
                                 <span class="score" data-score="-1"></span>
                             </div>
-                            <p>The ratio of the 90th to the 10th percentile is a standard measure of relative inequality. It is also sensitive to its denominator. The 10th percentile fell from 30.1 to 3.5, so small absolute changes at the low end move the ratio substantially. The title presents this single measure as the state of inequality in child survival.</p>
+                            <p>The ratio of the 90th to the 10th percentile is a standard measure of relative inequality, but it is sensitive to its denominator. The 10th percentile fell from 30.1 to 3.5, so small absolute changes at the low end move the ratio substantially. The title presents this one measure as the state of inequality in child mortality.</p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Compare 2019 with 1960</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>The ratio rose from 9.5 in 1960 to 23.1 in 1999 and fell to 19.1 by 2019. The peak is labeled, but the title and the dashed reference line compare 2019 with 1960, the lowest value in the series. Measured from 1999, the ratio declined by 17%.</p>
                         </li>
                         <li>
                             <div class="dec-head">
                                 <span class="dec-title">Use the same sample and percentiles as Figure 1</span>
                                 <span class="score" data-score="1.5"></span>
                             </div>
-                            <p>The ratio is computed from the same 112 countries and the same percentiles as Figure 1, so the two figures differ only in whether the percentiles are subtracted or divided. The result cannot be attributed to a different sample, and the comparison between the two figures is direct.</p>
-                        </li>
-                        <li>
-                            <div class="dec-head">
-                                <span class="dec-title">Measure change from 1960</span>
-                                <span class="score" data-score="-1"></span>
-                            </div>
-                            <p>The ratio rose from 9.5 in 1960 to a peak of 23.1 in 1999 and declined to 19.1 by 2019. The peak is labeled, but the title, the dashed reference line and the annotation all compare 2019 with 1960, the minimum of the series. Measured from 1999, the ratio fell by 17%.</p>
-                        </li>
-                        <li>
-                            <div class="dec-head">
-                                <span class="dec-title">Draw the series in red against a dashed 1960 baseline</span>
-                                <span class="score" data-score="-0.5"></span>
-                            </div>
-                            <p>Red is associated with risk and loss, and the dashed baseline makes the distance above the 1960 level the most salient feature of the chart. Both conventions are common in published graphics. Together they encourage reading the series as a deterioration, although both percentiles declined throughout the period.</p>
-                        </li>
-                        <li>
-                            <div class="dec-head">
-                                <span class="dec-title">Restate the ratio as a relative risk for an individual child</span>
-                                <span class="score" data-score="-1"></span>
-                            </div>
-                            <p>The annotation converts the ratio into the statement that a child in one country was 19.1 times as likely to die before age 5 as a child in another. The statement is correct. Framing it at the level of an individual child gives the ratio more emotional weight than the aggregate measure, and the annotation does not mention that both risks fell sharply.</p>
+                            <p>The ratio is computed from the same 112 countries and the same two percentiles as Figure 1, so Figures 1 and 3 differ only in whether the percentiles are subtracted or divided. The result cannot be attributed to a different sample.</p>
                         </li>
                     </ol>
                 </section>
 
-                <h2 id="comparison"><span class="num">3</span>Comparison of the two measures</h2>
+                <section class="method" id="fig4">
+                    <h3><span class="num">2.2</span>Figure 4: Every country, logarithmic scale</h3>
+
+                <figure class="graphic">
+                    <div class="gfx-tools">
+                        <span class="side against">Against the proposition</span>
+                        <span class="toggle" role="group" aria-label="Chart view">
+                            <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png">Show decision markers</button>
+                        </span>
+                    </div>
+                    <div class="frame"><img id="img-against2" src="images/against2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
+                    <figcaption><b>Figure 4.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a logarithmic scale.</figcaption>
+                </figure>
+                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <ol class="decisions against-list" data-fig="against2">
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Use a logarithmic axis</span>
+                                <span class="score" data-score="-0.5"></span>
+                            </div>
+                            <p>Logarithmic scales are standard for mortality rates because equal distances represent equal proportional differences, and the scale is stated in the subtitle and on the axis. Most readers nevertheless read horizontal distance as an absolute difference, so the 2019 row appears wider than the 1960 row even though every country in it has a lower rate.</p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Measure the range from the single lowest to the single highest country</span>
+                                <span class="score" data-score="-1.5"></span>
+                            </div>
+                            <p>The brackets compare the most extreme country at each end: Sweden (19.6) and Sierra Leone (391.7) in 1960, and Iceland (2.0) and the Central African Republic (110.1) in 2019. The 2019 multiple of 55 depends heavily on one country with a rate of 2.0. Using the 10th and 90th percentiles of the same countries gives 19.1.</p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Draw 2019 in a saturated color and 1960 in a pale one</span>
+                                <span class="score" data-score="-0.5"></span>
+                            </div>
+                            <p>The warm orange draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
+                        </li>
+                    </ol>
+                </section>
+
+                <h2 id="interactive"><span class="num">3</span>One dataset, two scales</h2>
                 <p>
-                    Figure 3 reports both measures for the same two percentiles. The absolute difference fell by 75% and
-                    the ratio rose by 102%. The difference in the probability of survival to age 5, which equals the
-                    absolute difference divided by 10, fell by the same proportion as the absolute difference.
+                    Figures 2 and 4 plot identical values. Figure 5 places them in a single interactive view. Switching the
+                    scale moves each country to its position under the other reading, and hovering over a dot shows the
+                    country and its rates.
                 </p>
 
                 <figure class="graphic">
+                    <div class="frame"><iframe src="charts/chart.html?v=morph&amp;embed" title="Interactive beeswarm of under-five mortality in 112 countries, 1960 and 2019, switchable between linear and logarithmic scales" loading="lazy"></iframe></div>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in the 112-country sample, 1960 and 2019. Select a scale to compare the two readings.</figcaption>
+                </figure>
+
+                <figure class="graphic">
                     <div class="data-card"><table class="truths">
-                        <caption>Absolute and relative dispersion<span>Countries at the 90th and 10th percentiles, 112-country sample</span></caption>
+                        <caption>Absolute and relative measures<span>112-country sample</span></caption>
                         <thead><tr><th>Measure</th><th>1960</th><th>2019</th><th>Change</th></tr></thead>
                         <tbody>
                             <tr><td>90th percentile, deaths per 1,000</td><td>285.3</td><td>66.9</td><td>−77%</td></tr>
                             <tr><td>10th percentile, deaths per 1,000</td><td>30.1</td><td>3.5</td><td>−88%</td></tr>
-                            <tr><td>Absolute difference, deaths per 1,000</td><td>255.2</td><td>63.4</td><td class="down">−75%</td></tr>
-                            <tr><td>Difference in survival to age 5, points</td><td>25.5</td><td>6.3</td><td class="down">−75%</td></tr>
-                            <tr><td>Ratio</td><td>9.5×</td><td>19.1×</td><td class="up">+102%</td></tr>
+                            <tr><td>90th minus 10th percentile</td><td>255.2</td><td>63.4</td><td class="down">−75%</td></tr>
+                            <tr><td>90th divided by 10th percentile</td><td>9.5×</td><td>19.1×</td><td class="up">+102%</td></tr>
+                            <tr><td>Highest minus lowest country</td><td>372.1</td><td>108.1</td><td class="down">−71%</td></tr>
+                            <tr><td>Highest divided by lowest country</td><td>20.0×</td><td>55.0×</td><td class="up">+175%</td></tr>
                         </tbody>
                     </table></div>
-                    <figcaption><b>Figure 3.</b> Absolute and relative measures of dispersion between the 90th and 10th percentile countries. The ratio peaked at 23.1 in 1999 and has declined by 17% since.</figcaption>
+                    <figcaption><b>Figure 6.</b> Differences decline and ratios increase under both definitions of the range. The percentile ratio peaked at 23.1 in 1999.</figcaption>
                 </figure>
 
                 <figure class="graphic">
-                    <div class="ledger-card"><p class="gfx-head">Scores for the ten design decisions</p>
+                    <div class="ledger-card"><p class="gfx-head">Scores for the twelve design decisions</p>
                     <p class="gfx-dek">From −2 (deceptive) to +2 (earnest)</p>
-                    <svg id="ledger" viewBox="0 0 600 210" role="img"
-                        aria-label="Dot plot of all ten design decisions on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg></div>
-                    <figcaption><b>Figure 4.</b> Scores for the design decisions documented above. Each visualization contains one decision that strengthens its credibility: the fixed sample in Figure 1 and the shared sample in Figure 2.</figcaption>
+                    <svg id="ledger" viewBox="0 0 600 270" role="img"
+                        aria-label="Dot plot of all twelve design decisions by figure on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg></div>
+                    <figcaption><b>Figure 7.</b> Each figure contains one decision that strengthens its credibility. The remaining decisions concern scale, measure and wording.</figcaption>
                 </figure>
 
                 <h2 id="reflection"><span class="num">4</span>Reflection</h2>
                 <p>
                     At the checkpoint, our group favored the visualizations supporting the proposition, on the grounds
                     that convergence is usually understood in absolute terms and that the ratio is unstable when the
-                    lower percentile approaches zero. Producing the final pair changed our view of which argument was
-                    harder to construct. When every country improves, most default choices, including a linear scale
-                    and a fixed sample, produce the appearance of convergence. The argument against required more
-                    deliberate choices, and its persuasive force came mainly from text and color: the 1960 baseline in
-                    the title, the description of a ratio as inequality, and the restatement of the ratio as a risk to
-                    an individual child. This is consistent with Kennedy et al., who argue that conventions such as clean
-                    baselines and cited sources give visualizations an appearance of objectivity. In our case, the fixed
-                    sample and the dashed reference line made the most slanted title in the project appear careful.
+                    lower percentile approaches zero. Producing the final set changed our view of which argument was
+                    harder to construct. When every country improves, most default choices, including a linear scale and
+                    a fixed sample, produce the appearance of convergence. The argument against required more deliberate
+                    choices, and the most striking result of the project was that Figures 2 and 4 make opposite arguments
+                    from identical values, differing only in the axis and the color. Kennedy et al. argue that
+                    conventions such as clean axes and cited sources give visualizations an appearance of objectivity. A
+                    logarithmic scale carries that authority, and it was the single most effective choice on the side
+                    against the proposition.
                 </p>
                 <p>
                     We define ethical analysis and visualization as the practice of making choices that could be defended
                     to a reader who has seen the alternatives. Three questions were useful in applying this definition.
                     The first is whether the choice would have been made if it favored the other side. The fixed sample
                     meets this standard, and the 1960 baseline for the ratio does not. The second is whether the choice
-                    is disclosed where readers look. The use of percentiles is stated only in the source note, which is
-                    a partial disclosure. The third is whether the visualization encourages a belief the data do not
-                    support. Describing the ratio as inequality in child survival does so, because survival probabilities
-                    converged. Kong et al. found that slanted titles affect what readers recall even when the chart
-                    itself is neutral. In our work, the most effective persuasive choices were likewise made in titles
-                    and annotations rather than in the visual encoding.
+                    is disclosed where readers look. The logarithmic scale is labeled in the subtitle and on the axis, yet
+                    most readers will still read horizontal distance as an absolute difference, so disclosure alone is
+                    not sufficient. The third is whether the visualization encourages a belief the data do not support.
+                    Describing the ratio as inequality in child mortality does so, because the probability of survival
+                    converged. Kong et al. found that slanted titles affect what readers recall even when the chart is
+                    neutral, and in our work the titles carried much of the persuasion.
                 </p>
                 <p>
-                    Our own reading of the data is that child mortality converged in absolute terms and in survival
-                    probability, while relative dispersion increased until 1999 and has declined modestly since. Each
-                    visualization misleads chiefly by omitting the other measure. None of the techniques we used is
-                    unusual in published graphics, which leads us to conclude that persuasion and deception cannot be
-                    separated by a list of prohibited techniques. The distinction depends on whether the combination of
-                    choices leaves readers with a conclusion they would revise after seeing both measures.
+                    Our own reading of the data is that child mortality converged in absolute terms and in the
+                    probability of survival, while relative dispersion increased until about 1999 and has declined
+                    modestly since. Each visualization misleads chiefly by omitting the other measure. None of the
+                    techniques we used is unusual in published graphics, which leads us to conclude that persuasion and
+                    deception cannot be separated by a list of prohibited techniques. The distinction depends on whether
+                    the combination of choices leaves readers with a conclusion they would revise after seeing both
+                    measures, which is the purpose of Figure 5.
                 </p>
 
                 <section class="about" id="data">
@@ -427,9 +489,9 @@
                         The sample consists of the 112 countries with a value in both 1960 and 2019. Annual 10th and 90th
                         percentiles are computed by the nearest rank method, and every country is weighted equally. These
                         definitions follow our checkpoint (<a href="https://github.com/vsinha99/dsc106-project2">vsinha99/dsc106-project2</a>).
-                        Figures were drawn with D3. Code is available at
-                        <a href="https://github.com/nahatav/dsc106-project2">nahatav/dsc106-project2</a>, with interactive versions of
-                        <a href="charts/chart.html?v=for">Figure 1</a> and <a href="charts/chart.html?v=against">Figure 2</a>.
+                        Figures were drawn with D3, and the dot positions in Figures 2, 4 and 5 come from a collision layout
+                        that keeps each country at its exact value on the horizontal axis. Code is available at
+                        <a href="https://github.com/nahatav/dsc106-project2">nahatav/dsc106-project2</a>.
                     </p>
                     <p>
                         References: Kennedy, H., Hill, R. L., Aiello, G. and Allen, W. (2016). The work that visualisation conventions
@@ -460,13 +522,13 @@
                     document.getElementById(btn.dataset.target).src = btn.dataset.src;
                 });
             });
-            ["images/for_reveal.png", "images/against_reveal.png"].forEach((src) => (new Image().src = src));
+            ["for1", "for2", "against1", "against2"].map((k) => `images/${k}_reveal.png`).forEach((src) => (new Image().src = src));
 
-            // ledger dot plot, built from the decision lists
+            // ledger dot plot, one row per figure
             (function () {
                 const svg = document.getElementById("ledger");
                 const NS = "http://www.w3.org/2000/svg";
-                const W = 600, L = 92, R = 20, x = (s) => L + ((s + 2) / 4) * (W - L - R);
+                const W = 600, L = 96, R = 20, x = (s) => L + ((s + 2) / 4) * (W - L - R);
                 const el = (tag, attrs, text) => {
                     const n = document.createElementNS(NS, tag);
                     for (const k in attrs) n.setAttribute(k, attrs[k]);
@@ -475,26 +537,22 @@
                     return n;
                 };
                 [-2, -1, 0, 1, 2].forEach((s) => {
-                    el("line", { x1: x(s), x2: x(s), y1: 22, y2: 182, stroke: s === 0 ? "#888" : "#e2e2e2", "stroke-width": 1 });
-                    el("text", { x: x(s), y: 202, "text-anchor": "middle", "font-size": 12, fill: "#727272" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
+                    el("line", { x1: x(s), x2: x(s), y1: 26, y2: 238, stroke: s === 0 ? "#8a8a96" : "#e4e6eb", "stroke-width": 1 });
+                    el("text", { x: x(s), y: 260, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
                 });
-                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#b3261e", "font-weight": 700, "letter-spacing": "0.06em" }, "← MORE DECEPTIVE");
-                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#2f6690", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, "MORE EARNEST →");
-                [
-                    { label: "For", sel: ".for-list", color: "#a87b16", y: 66 },
-                    { label: "Against", sel: ".against-list", color: "#b3261e", y: 140 },
-                ].forEach((r) => {
-                    const scores = [...document.querySelectorAll(r.sel + " .score")].map((e) => parseFloat(e.dataset.score));
-                    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-                    el("text", { x: 0, y: r.y + 1, "font-size": 14, "font-weight": 700, fill: r.color }, r.label);
-                    el("text", { x: 0, y: r.y + 18, "font-size": 11.5, fill: "#727272" }, `average ${mean > 0 ? "+" : mean < 0 ? "−" : ""}${Math.abs(mean).toFixed(1)}`);
-                    el("line", { x1: x(-2), x2: x(2), y1: r.y, y2: r.y, stroke: "#cfcfcf", "stroke-width": 1 });
+                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#c2452d", "font-weight": 700, "letter-spacing": "0.06em" }, "← MORE DECEPTIVE");
+                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#3f6c8f", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, "MORE EARNEST →");
+                [["for1", "Figure 1", "#1b7c76"], ["for2", "Figure 2", "#1b7c76"], ["against1", "Figure 3", "#d9622b"], ["against2", "Figure 4", "#d9622b"]].forEach(([key, label, color], r) => {
+                    const y = 58 + r * 52;
+                    el("text", { x: 0, y: y + 5, "font-size": 13.5, "font-weight": 700, fill: color }, label);
+                    el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });
                     const seen = {};
-                    scores.forEach((s, i) => {
+                    document.querySelectorAll(`ol[data-fig="${key}"] .score`).forEach((sc, i) => {
+                        const s = parseFloat(sc.dataset.score);
                         const k = (seen[s] = (seen[s] || 0) + 1) - 1;
-                        const cy = r.y + (k === 0 ? 0 : (k % 2 ? -22 : 22) * Math.ceil(k / 2));
-                        el("circle", { cx: x(s), cy, r: 10.5, fill: r.color, stroke: "#fff", "stroke-width": 2 });
-                        el("text", { x: x(s), y: cy + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#fff" }, i + 1);
+                        const cx = x(s) + (k === 0 ? 0 : (k % 2 ? 1 : -1) * 23 * Math.ceil(k / 2));
+                        el("circle", { cx, cy: y, r: 10.5, fill: color, stroke: "#fff", "stroke-width": 2 });
+                        el("text", { x: cx, y: y + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#fff" }, i + 1);
                     });
                 });
             })();

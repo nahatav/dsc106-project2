@@ -251,6 +251,29 @@
             }
             .about h3 { font: 700 13px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 8px; }
             .about p { font: 500 14px/1.55 var(--sans) !important; color: #3d3d3d !important; margin: 0 0 10px !important; }
+
+            /* Contents (after the sleep-mode layout) */
+            html { scroll-behavior: smooth; }
+            [id] { scroll-margin-top: 24px; }
+            .toc {
+                margin: 34px 0 10px;
+                padding: 20px 26px 18px;
+                background: #f7f7f8;
+                border: 1px solid #e6e6e9;
+                border-radius: 10px;
+                font-family: var(--sans);
+            }
+            .toc-title { font: 700 15px var(--sans) !important; color: var(--ink) !important; margin: 0 0 10px !important; }
+            .toc ol { list-style: none; margin: 0; padding: 0; }
+            .toc ol ol { padding-left: 24px; }
+            .toc li { margin: 0; }
+            .toc a { display: block; padding: 4px 0; font: 500 16px/1.4 var(--sans); color: #262626; }
+            .toc ol ol a { font-size: 15px; color: var(--muted); }
+            .toc a:hover { color: #326891; text-decoration: none; }
+            .toc a span { display: inline-block; min-width: 1.15em; }
+            .toc ol ol a span { min-width: 1.9em; }
+            .toc a span, h2 .num, h3 .num { color: #9a9a9a; font-variant-numeric: tabular-nums; margin-right: 10px; }
+            h2 .num { font-weight: 400; }
             footer { height: 80px; }
 
             @media (max-width: 640px) {
@@ -307,7 +330,20 @@
                     where each design decision lives.
                 </p>
 
-                <h2>The case for convergence</h2>
+                <nav class="toc" aria-label="Contents">
+                    <p class="toc-title">Contents</p>
+                    <ol>
+                        <li><a href="#for"><span>1</span>The case for convergence</a>
+                            <ol><li><a href="#for-decisions"><span>1.1</span>How we made the FOR chart</a></li></ol></li>
+                        <li><a href="#against"><span>2</span>The case against</a>
+                            <ol><li><a href="#against-decisions"><span>2.1</span>How we made the AGAINST chart</a></li></ol></li>
+                        <li><a href="#two-stories"><span>3</span>Same numbers, two stories</a></li>
+                        <li><a href="#learned"><span>4</span>What we learned</a></li>
+                        <li><a href="#data"><span>5</span>About the data</a></li>
+                    </ol>
+                </nav>
+
+                <h2 id="for"><span class="num">1</span>The case for convergence</h2>
                 <p>
                     Count children instead of countries, and the picture is a funnel. In 1970, the
                     middle 80 percent of the world’s newborns lived in countries where somewhere
@@ -336,8 +372,8 @@
             </figure>
 
             <div class="col">
-                <section class="method">
-                    <h3>How we made this chart</h3>
+                <section class="method" id="for-decisions">
+                    <h3><span class="num">1.1</span>How we made this chart</h3>
                     <p class="scale-note">
                         Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).
                     </p>
@@ -421,7 +457,7 @@
                     </ol>
                 </section>
 
-                <h2>The case against</h2>
+                <h2 id="against"><span class="num">2</span>The case against</h2>
                 <p>
                     Now compare countries instead of children, and measure the gap as a ratio. Among
                     the 112 countries with records back to 1960, the tenth with the highest child
@@ -451,8 +487,8 @@
             </figure>
 
             <div class="col">
-                <section class="method">
-                    <h3>How we made this chart</h3>
+                <section class="method" id="against-decisions">
+                    <h3><span class="num">2.1</span>How we made this chart</h3>
                     <p class="scale-note">
                         Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).
                     </p>
@@ -537,7 +573,7 @@
                     </ol>
                 </section>
 
-                <h2>Same numbers, two stories</h2>
+                <h2 id="two-stories"><span class="num">3</span>Same numbers, two stories</h2>
                 <p>
                     The disagreement fits in a single table. Between the worst-off and best-off tenth
                     of the same 112 countries, the difference in child mortality shrank by 72 percent,
@@ -580,7 +616,7 @@
             </figure>
 
             <div class="col">
-                <h2>What we learned</h2>
+                <h2 id="learned"><span class="num">4</span>What we learned</h2>
                 <p>
                     The decisions that mattered most were made before any line was drawn. Our two
                     charts share a dataset, a chart type, a gray-line look and almost every year of
@@ -621,8 +657,8 @@
                     above.
                 </p>
 
-                <section class="about">
-                    <h3>About the data</h3>
+                <section class="about" id="data">
+                    <h3><span class="num">5</span>About the data</h3>
                     <p>
                         Data come from the course’s copy of the World Bank’s World Development
                         Indicators (<a href="https://github.com/light-and-salt/World-Bank-Data-by-Indicators">light-and-salt/World-Bank-Data-by-Indicators</a>,

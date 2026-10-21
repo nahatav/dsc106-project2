@@ -46,6 +46,13 @@ for year in range(1960, 2020):
     p10, p90 = quantile_nearest(vals, 0.1), quantile_nearest(vals, 0.9)
     stats.append({"y": year, "n": len(vals), "p10": p10, "med": median(vals), "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
 
+# all countries reporting in each year (not a fixed sample), for the interactive builder
+stats_all = []
+for year in range(1960, 2020):
+    vals = [v[year] for v in series.values() if year in v]
+    p10, p90 = quantile_nearest(vals, 0.1), quantile_nearest(vals, 0.9)
+    stats_all.append({"y": year, "n": len(vals), "p10": p10, "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
+
 changes = {c: 100 * (v[1960] - v[2019]) / v[1960] for c, v in cohort.items()}
 bins = [[lo, sum(lo <= x < lo + 10 for x in changes.values()) if lo < 90 else sum(lo <= x <= 100 for x in changes.values())] for lo in range(50, 100, 10)]
 
@@ -62,6 +69,7 @@ regions_out.sort(key=lambda r: r["med"])
 out = {
     "cohort": [{"code": c, "name": names[c], "v": sorted([[y, round(x, 2)] for y, x in v.items() if 1960 <= y <= 2019])} for c, v in cohort.items()],
     "stats": [{k: (round(x, 3) if isinstance(x, float) else x) for k, x in s.items()} for s in stats],
+    "stats_all": [{k: (round(x, 3) if isinstance(x, float) else x) for k, x in s.items()} for s in stats_all],
     "bins": bins,
     "n_improved": sum(v[2019] < v[1960] for v in cohort.values()),
     "median_change": round(median(changes.values()), 2),

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Child Mortality Chart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root { --ink: #121212; --mid: #5a5a5a; --soft: #8a8a8a; --rule: #e2e2e2; }
+  html, body { margin: 0; background: #fff; }
+  body { font-family: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif; color: var(--ink); }
+  #wrap { width: 960px; padding: 28px 32px 22px; box-sizing: border-box; }
+  h1 { text-wrap: balance; font-weight: 700; font-size: 27px; line-height: 1.16; letter-spacing: -0.012em; margin: 0 0 8px; max-width: 860px; }
+  .dek { font-size: 15.5px; line-height: 1.42; color: #363636; margin: 0 0 14px; max-width: 800px; font-weight: 400; }
+  .src { font-size: 11.5px; color: var(--soft); margin-top: 6px; line-height: 1.45; }
+  svg { display: block; overflow: visible; }
+  svg text { font-family: inherit; }
+  .tick { font-size: 12px; fill: #7a7a7a; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+  .grid { stroke: var(--rule); stroke-width: 1; shape-rendering: crispEdges; }
+  .base { stroke: #9a9a9a; stroke-width: 1; shape-rendering: crispEdges; }
+  .country { fill: none; stroke: #000; stroke-opacity: 0.11; stroke-width: 0.9; stroke-linejoin: round; }
+  .ann { font-size: 13.5px; fill: #2a2a2a; paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; }
+  .halo { paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .ann-b { font-weight: 700; }
+  .lab { font-size: 13px; font-weight: 600; }
+  .lab-sub { font-size: 12px; font-weight: 400; fill: var(--mid); }
+  .leader { stroke: #333; stroke-width: 0.8; fill: none; }
+  .mk circle { stroke: #fff; stroke-width: 2; }
+  .mk text { font-size: 13px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1 id="title"></h1>
+  <p class="dek" id="dek"></p>
+  <svg id="chart"></svg>
+  <div class="src" id="src"></div>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const WHICH = params.get("v") || "for";
+const REVEAL = params.has("reveal");
+const W = 896, H = 470, M = { t: 18, r: 150, b: 34, l: 6 };
+const iw = W - M.l - M.r, ih = H - M.t - M.b;
+const svg = d3.select("#chart").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+const root = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+const gBack = root.append("g"), g = root.append("g"), gTop = root.append("g");
+const fmt = d3.format(".0f");
+
+// Wrapped multi-line text helper: lines = array of strings or [text, cls] pairs
+function block(sel, x, y, lines, opts = {}) {
+  const t = sel.append("text").attr("x", x).attr("y", y).attr("class", opts.cls || "ann")
+    .attr("text-anchor", opts.anchor || "start");
+  lines.forEach((ln, i) => {
+    const parts = Array.isArray(ln) ? ln : [[ln, ""]];
+    parts.forEach(([s, c], j) => {
+      const ts = t.append("tspan").text(s);
+      if (c) ts.attr("class", c);
+      if (j === 0) ts.attr("x", x).attr("dy", i === 0 ? 0 : (opts.lh || 18));
+    });
+  });
+  return t;
+}
+function marker(n, x, y, color) {
+  if (!REVEAL) return;
+  const m = svg.append("g").attr("class", "mk").attr("transform", `translate(${x},${y})`);
+  m.append("circle").attr("r", 12).attr("fill", color);
+  m.append("text").text(n);
+}
+
+d3.json("data.json").then(D => (WHICH === "for" ? drawFor : drawAgainst)(D));
+
+function drawFor(D) {
+  const GOLD = "#a87b16", GOLD_FILL = "#f3e4bd";
+  d3.select("#title").text("The world’s children now face far more similar odds of reaching age 5");
+  d3.select("#dek").html("Deaths before age 5 per 1,000 live births, 1970–2019. Each gray line is a country; the shaded band holds the middle 80 percent of all babies born in the world that year.");
+  d3.select("#src").html("Source: World Bank, World Development Indicators. Band weights each country by its annual births (population × crude birth rate); 1970 covers 140 countries and 93% of births, 2019 covers 186.");
+
+  const x = d3.scaleLinear().domain([1970, 2019]).range([0, iw]);
+  const y = d3.scaleLinear().domain([0, 400]).range([ih, 0]);
+  [100, 200, 300, 400].forEach(v => {
+    gBack.append("line").attr("class", "grid").attr("x1", 0).attr("x2", iw).attr("y1", y(v)).attr("y2", y(v));
+    gTop.append("text").attr("class", "tick").attr("x", 0).attr("y", y(v) - 6).text(v === 400 ? "400 deaths per 1,000 births" : v);
+  });
+  g.append("line").attr("class", "base").attr("x1", 0).attr("x2", iw).attr("y1", ih).attr("y2", ih);
+  [1970, 1980, 1990, 2000, 2010, 2019].forEach(v =>
+    gTop.append("text").attr("class", "tick").attr("x", x(v)).attr("y", ih + 20)
+      .attr("text-anchor", v === 1970 ? "start" : v === 2019 ? "end" : "middle").text(v));
+
+  const band = D.band;
+  g.append("path").datum(band).attr("fill", GOLD_FILL).attr("opacity", 0.72)
+    .attr("d", d3.area().x(d => x(d.y)).y0(d => y(d.p10)).y1(d => y(d.p90)).curve(d3.curveMonotoneX));
+  const line = d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveMonotoneX);
+  g.append("g").selectAll("path").data(D.all).join("path").attr("class", "country")
+    .attr("d", c => line(c.v.filter(p => p[0] >= 1970)));
+  ["p10", "p90"].forEach(k => g.append("path").datum(band).attr("fill", "none").attr("stroke", GOLD)
+    .attr("stroke-width", 1.1).attr("stroke-dasharray", "3 2.5")
+    .attr("d", d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX)));
+
+  // Highlighted countries: the two that shape the band most
+  const hi = { IND: "India", CHN: "China" };
+  D.all.filter(c => hi[c.code]).forEach(c => {
+    const pts = c.v.filter(p => p[0] >= 1970);
+    g.append("path").attr("d", line(pts)).attr("fill", "none").attr("stroke", "#1d1d1d").attr("stroke-width", 1.8);
+    const [ly, lv] = pts[pts.length - 1];
+    g.append("circle").attr("cx", x(ly)).attr("cy", y(lv)).attr("r", 2.6).attr("fill", "#1d1d1d");
+  });
+
+  const b0 = band[0], b1 = band[band.length - 1];
+  // right-edge labels
+  const R = iw + 12;
+  block(gTop, R, y((b1.p10 + b1.p90) / 2) - 12, [[["In 2019, the", "lab"]], [["middle 80%:", "lab"]], [[`${fmt(b1.p10)} to ${fmt(b1.p90)}`, "lab"]]], { lh: 16 })
+    .attr("fill", GOLD);
+  const lab = (txt, yr, code, dy) => {
+    const v = D.all.find(c => c.code === code).v.find(p => p[0] === yr)[1];
+    gTop.append("text").attr("class", "lab halo").attr("x", x(yr)).attr("y", y(v) + dy).text(txt);
+  };
+  lab("India", 1981, "IND", -9);
+  lab("China", 1981, "CHN", -9);
+  const ex = x(2019) - 10;
+  g.append("path").attr("stroke", GOLD).attr("stroke-width", 1.4).attr("fill", "none")
+    .attr("d", `M${ex - 6},${y(b1.p90)} H${ex} V${y(b1.p10)} H${ex - 6}`);
+  // left-edge 1970 bracket
+  const bx = x(1970) + 10;
+  gTop.append("path").attr("stroke", GOLD).attr("stroke-width", 1.4).attr("fill", "none")
+    .attr("d", `M${bx + 6},${y(b0.p90)} H${bx} V${y(b0.p10)} H${bx + 6}`);
+  block(gTop, bx + 12, y((b0.p10 + b0.p90) / 2) - 4, [[["In 1970, the middle 80%", "ann-b"]], [["of births spanned ", ""], [`${fmt(b0.p10)} to ${fmt(b0.p90)}`, "ann-b"]]], { lh: 17 }).style("stroke", "#f6ecd2");
+
+  // the takeaway annotation
+  block(gTop, x(1993), y(325), [
+    [["In 1970, ", ""], [`${Math.round(b0.over100 * 100)} percent`, "ann-b"], [" of the world’s babies were born", ""]],
+    [["in countries where more than 1 in 10 children", ""]],
+    [["died before their fifth birthday. By 2019, ", ""], [`${Math.round(b1.over100 * 100)} percent`, "ann-b"], [" were.", ""]],
+  ], { lh: 19 });
+
+  marker(1, M.l + x(1990), M.t + y(D.band.find(b => b.y === 1990).p90) - 2, GOLD);                      // births-weighted band
+  marker(2, M.l + 52, M.t + y(300) - 10, GOLD);              // linear axis
+  marker(3, M.l + x(1993) - 16, M.t + y(325) - 5, GOLD); // over-100 statistic
+  marker(4, M.l + bx + 2, M.t + y(b0.p90) - 18, GOLD); // 1970 start / bracket
+  marker(5, M.l + x(1981) + 78, M.t + y(160) - 16, GOLD);   // highlight India + China
+}
+
+function drawAgainst(D) {
+  const RED = "#b3261e";
+  const T = D.tenths, t0 = T[0], t1 = T[T.length - 1];
+  d3.select("#title").text("The survival gap between the world’s best- and worst-off countries has more than doubled");
+  d3.select("#dek").html(`Deaths before age 5 per 1,000 live births in the ${D.n_cohort} countries with records back to 1960. Each gray line is a country; the bold lines average the highest- and lowest-mortality tenths each year.`);
+  d3.select("#src").html(`Source: World Bank, World Development Indicators. Tenths are ${Math.round(D.n_cohort / 10)} countries each, re-ranked every year. Vertical scale is logarithmic: each gridline step is the same multiple.`);
+
+  const x = d3.scaleLinear().domain([1960, 2019]).range([0, iw]);
+  const y = d3.scaleLog().domain([1.5, 500]).range([ih, 0]);
+  [2, 5, 10, 20, 50, 100, 200, 500].forEach(v => {
+    gBack.append("line").attr("class", "grid").attr("x1", 0).attr("x2", iw).attr("y1", y(v)).attr("y2", y(v));
+    gTop.append("text").attr("class", "tick").attr("x", 0).attr("y", y(v) - 6).text(v === 500 ? "500 deaths per 1,000 births" : v);
+  });
+  g.append("line").attr("class", "base").attr("x1", 0).attr("x2", iw).attr("y1", ih).attr("y2", ih);
+  [1960, 1970, 1980, 1990, 2000, 2010, 2019].forEach(v =>
+    gTop.append("text").attr("class", "tick").attr("x", x(v)).attr("y", ih + 20)
+      .attr("text-anchor", v === 1960 ? "start" : v === 2019 ? "end" : "middle").text(v));
+
+  const line = d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveMonotoneX);
+  g.append("g").selectAll("path").data(D.cohort).join("path").attr("class", "country").attr("d", c => line(c.v));
+  const tl = k => d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX);
+  g.append("path").datum(T).attr("fill", "none").attr("stroke", RED).attr("stroke-width", 3).attr("d", tl("top"));
+  g.append("path").datum(T).attr("fill", "none").attr("stroke", "#1d1d1d").attr("stroke-width", 3).attr("d", tl("bot"));
+
+  // multiples between the two lines
+  [1960, 1980, 2000, 2019].forEach(yr => {
+    const d = T.find(t => t.y === yr), r = d.top / d.bot, xx = x(yr) + (yr === 1960 ? 46 : yr === 2019 ? -14 : 0);
+    g.append("line").attr("x1", xx).attr("x2", xx).attr("y1", y(d.top) + 6).attr("y2", y(d.bot) - 6)
+      .attr("stroke", RED).attr("stroke-width", 1).attr("stroke-dasharray", "2 3");
+    const ym = y(Math.sqrt(d.top * d.bot)), last = yr === 2019;
+    g.append("rect").attr("x", xx - (last ? 30 : 25)).attr("y", ym - (last ? 15 : 13)).attr("width", last ? 60 : 50)
+      .attr("height", last ? 30 : 26).attr("rx", 3).attr("fill", "#fff");
+    g.append("text").attr("x", xx).attr("y", ym).attr("text-anchor", "middle").attr("dominant-baseline", "central")
+      .attr("font-size", last ? 24 : 19).attr("font-weight", 800).attr("fill", RED).text(`${Math.round(r)}×`);
+  });
+
+  const R = iw + 12;
+  block(gTop, R, y(t1.top) - 6, [[["Highest-mortality", "lab"]], [["tenth: ", "lab"], [fmt(t1.top), "lab"]]], { lh: 16 }).attr("fill", RED);
+  block(gTop, R, y(t1.bot) - 6, [[["Lowest-mortality", "lab"]], [["tenth: ", "lab"], [t1.bot.toFixed(1), "lab"]]], { lh: 16 });
+
+  const dTop = Math.round(100 * (1 - t1.top / t0.top)), dBot = Math.round(100 * (1 - t1.bot / t0.bot));
+  block(gTop, x(1964), y(5.6), [
+    [["Since 1960, the lowest-mortality countries", ""]],
+    [["cut child deaths by ", ""], [`${dBot} percent`, "ann-b"], [". The highest", ""]],
+    [["cut them by only ", ""], [`${dTop} percent`, "ann-b"], [". A child in", ""]],
+    [["the worst-off countries now faces ", ""], [`${Math.round(t1.top / t1.bot)} times`, "ann-b"]],
+    [["the risk, up from ", ""], [`${Math.round(t0.top / t0.bot)} times`, "ann-b"], [".", ""]],
+  ], { lh: 19 });
+
+  marker(1, M.l + x(1990), M.t + y(420), RED);                          // fixed 1960 cohort
+  marker(2, M.l + 4, M.t + y(30), RED);                  // log scale
+  marker(3, M.l + x(2019) - 14, M.t + y(Math.sqrt(t1.top * t1.bot)) - 30, RED); // multiples framing
+  marker(5, M.l + x(1964) - 16, M.t + y(5.6) - 5, RED);  // percent-cut annotation + 'only'
+  marker(4, M.l + iw + 140, M.t + y(t1.top) - 18, RED);  // extreme tenths as the comparison
+}
+</script>
+</body>
+</html>

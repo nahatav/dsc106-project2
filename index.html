@@ -1,198 +1,715 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Project 2 Report</title>
+        <meta
+            name="description"
+            content="DSC 106 Project 2: one World Bank dataset, two opposing charts on whether child mortality is converging across countries."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
         <style>
             :root {
-                --color-neutral-95: hsl(220 10% 95%);
-                --color-neutral-90: hsl(220 10% 90%);
-                --color-neutral-80: hsl(220 10% 80%);
-                --color-neutral-70: hsl(220 10% 70%);
-                --color-neutral-60: hsl(220 10% 60%);
-                --color-neutral-50: hsl(220 10% 50%);
-                --color-neutral-40: hsl(220 10% 40%);
-                --color-neutral-30: hsl(220 10% 30%);
-                --color-neutral-20: hsl(220 10% 20%);
-                --color-neutral-10: hsl(220 10% 10%);
+                --ink: #121212;
+                --body: #363636;
+                --muted: #727272;
+                --rule: #dfdfdf;
+                --wash: #f7f7f7;
+                --gold: #a87b16;
+                --red: #b3261e;
+                --deceptive: #b3261e;
+                --earnest: #2f6690;
+                --serif: Georgia, "Times New Roman", serif;
+                --sans: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif;
+                --col: 600px;
+                --wide: 960px;
             }
 
-            html {
-                font: 100%/1.5 system-ui;
-                counter-reset: figure;
-                background: var(--color-neutral-95);
-                max-width: min(75vw, 80em);
-                margin: 0 auto;
+            * { box-sizing: border-box; }
+
+            html { background: #fff; color: var(--ink); -webkit-text-size-adjust: 100%; }
+
+            body { margin: 0; font-family: var(--serif); }
+
+            /* Top bar */
+            .bar {
+                border-bottom: 1px solid var(--rule);
+                padding: 10px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font: 600 11px var(--sans);
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--ink);
             }
+            .bar span:last-child { color: var(--muted); font-weight: 500; }
 
-            /* Headings */
+            .col, .wide { margin-inline: auto; padding-inline: 20px; }
+            .col { max-width: calc(var(--col) + 40px); }
+            .wide { max-width: calc(var(--wide) + 40px); }
 
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6 {
-                line-height: 1.1;
-                font-weight: 600;
+            /* Header */
+            header { padding-top: 44px; }
+            .kicker {
+                font: 700 13px var(--sans);
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--ink);
+                margin: 0 0 14px;
+            }
+            h1 {
+                font: 700 clamp(30px, 4.6vw, 42px)/1.12 var(--serif);
+                letter-spacing: -0.005em;
+                margin: 0 0 14px;
                 text-wrap: balance;
             }
-
-            h1,
-            h2 {
-                border-bottom: 1px solid var(--color-neutral-80);
-                padding-bottom: 0.2em;
+            .deck {
+                font: 400 clamp(19px, 2.3vw, 22px)/1.4 var(--serif);
+                color: #5a5a5a;
+                margin: 0 0 26px;
+                text-wrap: pretty;
+            }
+            .byline {
+                font: 700 14px/1.5 var(--sans);
+                color: var(--ink);
+                margin: 0;
+            }
+            .byline .emails { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+            .dateline {
+                font: 400 13px var(--sans);
+                color: var(--muted);
+                margin: 6px 0 0;
+                padding-bottom: 26px;
+                border-bottom: 1px solid var(--rule);
             }
 
-            h1 {
-                margin-block: 1em 0.5rem;
-                font-size: clamp(2.5em, 150% + 2vh + 2vw, 10vmin);
-                font-weight: 800;
+            /* Body copy */
+            article p {
+                font: 400 20px/1.5 var(--serif);
+                color: var(--body);
+                margin: 0 0 22px;
+            }
+            article p.first::first-letter { font-weight: 700; }
+            article h2 {
+                font: 700 26px/1.2 var(--serif);
+                margin: 46px 0 16px;
+                color: var(--ink);
+            }
+            strong { color: var(--ink); }
+            a { color: #326891; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            code { font: 0.86em ui-monospace, Consolas, monospace; }
 
-                small {
-                    display: block;
-                    width: fit-content;
-                    padding: 0.2em 0.5em;
-                    margin-inline: auto;
-                    color: white;
-                    background: var(--color-neutral-40);
-                    font-size: 40%;
-                    text-transform: uppercase;
-                    white-space: nowrap;
-                }
+            /* Proposition pull */
+            .prop {
+                margin: 34px 0 30px;
+                padding: 18px 0;
+                border-top: 2px solid var(--ink);
+                border-bottom: 1px solid var(--rule);
+            }
+            .prop .label {
+                font: 700 11px var(--sans);
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+            .prop .text {
+                font: 700 26px/1.25 var(--serif);
+                margin: 6px 0 0;
+                color: var(--ink);
             }
 
-            h2 {
-                font-size: 180%;
-                color: var(--color-neutral-30);
+            /* Graphics */
+            figure.graphic { margin: 34px auto 30px; }
+            figure.graphic img { display: block; width: 100%; height: auto; }
+            .gfx-tools {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin: 0 0 8px;
+                font: 500 12px var(--sans);
+                color: var(--muted);
             }
-
-            h3 {
-                font-size: 130%;
+            .side {
+                font: 700 11px var(--sans);
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 3px 0 3px 10px;
+                border-left: 3px solid currentColor;
             }
-
-            /* Lists */
-
-            ul,
-            ol {
-                padding-inline-start: 2em;
+            .side.for { color: var(--gold); }
+            .side.against { color: var(--red); }
+            .toggle { display: inline-flex; border: 1px solid #ccc; border-radius: 3px; overflow: hidden; }
+            .toggle button {
+                font: 600 12px var(--sans);
+                border: 0;
+                background: #fff;
+                color: #555;
+                padding: 6px 12px;
+                cursor: pointer;
             }
-
-            li {
-                &::marker {
-                    color: var(--color-neutral-40);
-                }
-
-                + li {
-                    margin-top: 0.2em;
-                }
+            .toggle button + button { border-left: 1px solid #ccc; }
+            .toggle button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+            figcaption {
+                font: 400 14px/1.45 var(--sans);
+                color: var(--muted);
+                margin: 10px auto 0;
+                max-width: var(--col);
             }
+            figcaption b { color: #333; font-weight: 600; }
 
-            /* Sectioning elements */
-
-            header {
-                padding-block: 1em;
+            /* "How we made this chart" panel */
+            .method {
+                margin: 30px 0 40px;
+                border-top: 1px solid var(--ink);
+                padding-top: 14px;
+            }
+            .method h3 {
+                font: 700 13px var(--sans);
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                margin: 0 0 2px;
+            }
+            .method .scale-note {
+                font: 400 13px/1.5 var(--sans);
+                color: var(--muted);
+                margin: 0 0 6px;
+            }
+            ol.decisions { list-style: none; padding: 0; margin: 0; counter-reset: d; }
+            ol.decisions > li {
+                counter-increment: d;
+                padding: 16px 0 16px 36px;
+                border-bottom: 1px solid var(--rule);
+                position: relative;
+            }
+            ol.decisions > li::before {
+                content: counter(d);
+                position: absolute;
+                left: 0;
+                top: 17px;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: var(--accent);
+                color: #fff;
+                font: 700 12px/22px var(--sans);
                 text-align: center;
             }
-
-            main {
-                background: white;
-                color: var(--color-neutral-20);
-                border-radius: 1rem;
-                padding: 0.1rem 2rem;
+            .for-list { --accent: var(--gold); }
+            .against-list { --accent: var(--red); }
+            .dec-head {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                align-items: start;
+                gap: 6px 18px;
+            }
+            .dec-head .score { margin-top: 3px; }
+            .dec-title { font: 700 16px/1.35 var(--sans); color: var(--ink); }
+            ol.decisions p {
+                font: 400 16px/1.55 var(--sans);
+                color: #444;
+                margin: 6px 0 0;
             }
 
-            /* Figures */
+            .score { display: inline-flex; align-items: center; gap: 8px; font: 500 11px var(--sans); color: var(--muted); white-space: nowrap; }
+            .score .track { position: relative; width: 112px; height: 12px; }
+            .score .track::before { content: ""; position: absolute; left: 0; right: 0; top: 5.5px; height: 1px; background: #bbb; }
+            .score .track i { position: absolute; top: 2px; width: 1px; height: 8px; background: #bbb; }
+            .score .track i.mid { background: #777; height: 10px; top: 1px; }
+            .score .track b { position: absolute; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; }
+            .score .val { font: 700 13px var(--sans); min-width: 30px; font-variant-numeric: tabular-nums; }
 
-            figure {
-                margin: 1em 0;
-                padding: 0.5rem;
-                margin-inline: -0.5em;
-                border: 1px solid var(--color-neutral-80);
-                box-shadow: 0 0.1em 0.2em var(--color-neutral-95);
-                text-align: center;
-                background: white;
+            /* Table */
+            table.truths { width: 100%; border-collapse: collapse; font: 400 15px/1.4 var(--sans); font-variant-numeric: tabular-nums; }
+            table.truths caption { text-align: left; font: 700 18px/1.3 var(--sans); color: var(--ink); padding-bottom: 4px; }
+            table.truths caption span { display: block; font: 400 14px/1.4 var(--sans); color: var(--muted); margin-top: 3px; }
+            table.truths th, table.truths td { padding: 9px 8px; border-bottom: 1px solid var(--rule); text-align: right; }
+            table.truths th:first-child, table.truths td:first-child { text-align: left; padding-left: 0; }
+            table.truths thead th { font: 600 12px var(--sans); color: var(--muted); border-bottom: 1px solid #999; vertical-align: bottom; }
+            .up { color: var(--red); font-weight: 700; }
+            .down { color: var(--earnest); font-weight: 700; }
 
-                > figcaption {
-                    font: 500 75% var(--font-sans);
-                    background: var(--color-neutral-95);
-                    padding: 0.5rem;
-                    margin: -0.5rem;
-                    margin-top: 0.5rem;
-                    counter-increment: figure;
-                    text-align: left;
+            #ledger { display: block; width: 100%; height: auto; }
+            #ledger text { font-family: var(--sans); }
+            .gfx-head { font: 700 18px/1.3 var(--sans); margin: 0; color: var(--ink); }
+            .gfx-dek { font: 400 14px/1.45 var(--sans); color: var(--muted); margin: 3px 0 10px; }
 
-                    &::before {
-                        content: "Figure " counter(figure) ": ";
-                        font-weight: bold;
-                        color: var(--color-neutral-40);
-                    }
+            /* Footer note */
+            .about {
+                margin-top: 50px;
+                padding-top: 14px;
+                border-top: 1px solid var(--ink);
+            }
+            .about h3 { font: 700 13px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 8px; }
+            .about p { font: 400 14px/1.55 var(--sans) !important; color: #555 !important; margin: 0 0 10px !important; }
+            footer { height: 80px; }
 
-                    a:not(:hover, :focus, :active) {
-                        color: inherit;
-                        text-decoration: underline;
-                        text-decoration-color: color-mix(
-                            in lab,
-                            currentColor,
-                            transparent 70%
-                        );
-                    }
-                }
+            @media (max-width: 640px) {
+                .bar span:last-child { display: none; }
+                .dec-head { grid-template-columns: 1fr; }
+                article p { font-size: 18px; }
+                .prop .text { font-size: 22px; }
+                .score .track { width: 84px; }
             }
         </style>
     </head>
 
     <body>
-        <header>
-            <h1>
-                <small>Project 2</small>
-                Persuasive or Deceptive Visualization?
-            </h1>
+        <div class="bar"><span>DSC 106 · Project 2</span><span>Persuasive or Deceptive Visualization?</span></div>
 
-            <p><strong>Your Name</strong> — <em>Your UCSD Email Address</em></p>
-        </header>
+        <article>
+            <header class="col">
+                <p class="kicker">Global Health</p>
+                <h1>Are the World’s Children Converging on the Same Odds of Survival? It Depends How You Count.</h1>
+                <p class="deck">
+                    We used one World Bank dataset to build two charts that reach opposite
+                    conclusions. Neither contains a false number.
+                </p>
+                <p class="byline">
+                    By [Member 1], [Member 2], [Member 3] and [Member 4]
+                    <span class="emails">[email1]@ucsd.edu · [email2]@ucsd.edu · [email3]@ucsd.edu · [email4]@ucsd.edu</span>
+                </p>
+                <p class="dateline">Oct. 21, 2026</p>
+            </header>
 
-        <main>
-            <h2>Proposition: [STATE PROPOSITION]</h2>
+            <div class="col">
+                <p class="first" style="margin-top: 28px">
+                    In 1970, about one in seven children worldwide died before turning 5. By 2019 it
+                    was about one in 27, and seven in 10 babies were born in countries where more than
+                    95 percent of children survive. Few statistics have improved so much, so broadly. But has that progress pulled countries together, or has it
+                    left the worst-off countries further behind?
+                </p>
+                <p>
+                    We took one side and then the other, using the World Bank’s under-five
+                    mortality series for 1960 to 2019, and tried to make each chart as persuasive as
+                    we could. Here is the proposition we argued over.
+                </p>
 
-            <section>
-                <h3>FOR the Proposition</h3>
+                <div class="prop">
+                    <div class="label">Proposition</div>
+                    <p class="text">Under-five mortality rates are converging across countries.</p>
+                </div>
 
-                <figure>
-                    <img src="IMAGE_FILENAME" alt="" />
-                    <figcaption>BRIEF CAPTION HERE.</figcaption>
-                </figure>
+                <p>
+                    Both charts below draw every country as a thin gray line and use the same
+                    underlying numbers. What differs is what counts as a unit (a child or a
+                    country), what counts as a gap (a difference or a ratio) and a handful of
+                    words. Use the <strong>Show decision markers</strong> button on each chart to see
+                    where each design decision lives.
+                </p>
 
-                <p>Design Decisions and Rationale:</p>
+                <h2>The case for convergence</h2>
+                <p>
+                    Count children instead of countries, and the picture is a funnel. In 1970, the
+                    middle 80 percent of the world’s newborns lived in countries where somewhere
+                    between 33 and 234 of every 1,000 children died before age 5. By 2019, that range
+                    had narrowed to 7 to 85.
+                </p>
+            </div>
 
-                <ul>
-                    <li>RATIONALE_1</li>
-                    <li>RATIONALE_2</li>
-                    <li>RATIONALE_3</li>
-                </ul>
-            </section>
+            <figure class="graphic wide">
+                <div class="gfx-tools">
+                    <span class="side for">For the proposition</span>
+                    <span class="toggle" role="group" aria-label="Chart view">
+                        <button type="button" aria-pressed="true" data-target="img-for" data-src="images/for.png">Chart</button>
+                        <button type="button" aria-pressed="false" data-target="img-for" data-src="images/for_reveal.png">Show decision markers</button>
+                    </span>
+                </div>
+                <img
+                    id="img-for"
+                    src="images/for.png"
+                    alt="Line chart of under-five mortality for every country, 1970 to 2019, on a linear scale. A gold band holding the middle 80 percent of the world’s births narrows from 33–234 deaths per 1,000 in 1970 to 7–85 in 2019. India and China are highlighted."
+                />
+                <figcaption>
+                    <b>Figure 1.</b> The FOR chart. Countries are weighted by their annual births, so
+                    the band shows where the world’s babies were born, not where its countries sit.
+                </figcaption>
+            </figure>
 
-            <section>
-                <h3>AGAINST the Proposition</h3>
+            <div class="col">
+                <section class="method">
+                    <h3>How we made this chart</h3>
+                    <p class="scale-note">
+                        Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).
+                    </p>
+                    <ol class="decisions for-list">
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Count children, not countries</span>
+                                <span class="score" data-score="0.5"></span>
+                            </div>
+                            <p>
+                                We estimated each country’s births (population × crude birth rate) and
+                                used them to weight the band’s 10th and 90th percentiles. That fits a
+                                proposition about children’s odds, which makes it defensible. It is also
+                                the most flattering lens available. India and China, which had 41
+                                percent of 1970 births, cut child mortality steeply and carried most of
+                                the world’s newborns into the low range with them. Small countries that
+                                are still far behind, like Sierra Leone, Chad and the Central African
+                                Republic, barely move a births-weighted band. They survive only as faint
+                                lines above it. An unweighted band also narrows, but much less dramatically.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">A linear axis, and a headline that assumes it</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>
+                                Deaths per 1,000 on an ordinary linear scale is the default nobody
+                                questions. But when every rate is falling, absolute distances shrink
+                                almost automatically, so the lines funnel together. On a log scale, as
+                                in the AGAINST chart, the same lines run nearly parallel. The headline,
+                                “far more similar odds,” quietly adopts the absolute reading. We did not
+                                truncate the axis or stretch the aspect ratio, since those tricks are
+                                easy to catch. The default does the work on its own.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">A threshold picked for its contrast</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>
+                                The annotation reports the share of babies born where more than 1 in 10
+                                children die before age 5: 78 percent in 1970, 7 percent in 2019. “One in
+                                10” sounds like a natural cutoff. We chose it because it produces the
+                                most striking before-and-after. At 50 deaths per 1,000, the same
+                                statistic falls from 87 to 29 percent, which is still impressive but
+                                less arresting. Collapsing a distribution into a yes-or-no share also
+                                hides how far above the line the remaining 7 percent are.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Start in 1970, when the data can support weighting</span>
+                                <span class="score" data-score="1.5"></span>
+                            </div>
+                            <p>
+                                The 1960 data cover only 112 countries and 64 percent of births (China and
+                                Nigeria are missing). By 1970 the series covers 140 countries and 93
+                                percent of births. Starting earlier would have made the band look
+                                wider at the start, but it would compare different sets of children at
+                                each end. The source line discloses both coverage figures. This decision
+                                is earnest, and it costs the argument very little.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Highlight the success stories, leave the laggard gray</span>
+                                <span class="score" data-score="-1.5"></span>
+                            </div>
+                            <p>
+                                We labeled India and China because they have the most births, which
+                                sounds neutral. They also have two of the steepest declines in the
+                                dataset: 213 to 34, and 112 to 8. Nigeria has the third-largest birth
+                                cohort and still loses 117 children per 1,000. It has improved only 1.7
+                                percent a year since 2010 and accounts for about 16 percent of all child
+                                deaths, yet it stays an unlabeled gray line. Selective highlighting
+                                looks like editorial curation, not omission.
+                            </p>
+                        </li>
+                    </ol>
+                </section>
 
-                <figure>
-                    <img src="IMAGE_FILENAME" alt="" />
-                    <figcaption>BRIEF CAPTION HERE.</figcaption>
-                </figure>
+                <h2>The case against</h2>
+                <p>
+                    Now compare countries instead of children, and measure the gap as a ratio. Among
+                    the 112 countries with records back to 1960, the tenth with the highest child
+                    mortality had 13 times the rate of the tenth with the lowest. By 2019 it was 32
+                    times. Both groups improved, but the countries that started best cut their rates
+                    by a larger share: 89 percent versus 73 percent.
+                </p>
+            </div>
 
-                <p>Design Decisions and Rationale:</p>
+            <figure class="graphic wide">
+                <div class="gfx-tools">
+                    <span class="side against">Against the proposition</span>
+                    <span class="toggle" role="group" aria-label="Chart view">
+                        <button type="button" aria-pressed="true" data-target="img-against" data-src="images/against.png">Chart</button>
+                        <button type="button" aria-pressed="false" data-target="img-against" data-src="images/against_reveal.png">Show decision markers</button>
+                    </span>
+                </div>
+                <img
+                    id="img-against"
+                    src="images/against.png"
+                    alt="Line chart on a logarithmic scale of under-five mortality in 112 countries, 1960 to 2019. A red line averages the highest-mortality tenth and a black line the lowest-mortality tenth. Labels between them show the ratio growing from 13 times in 1960 to 22, 35 and 32 times."
+                />
+                <figcaption>
+                    <b>Figure 2.</b> The AGAINST chart. Same series, a fixed set of countries and a
+                    logarithmic scale, on which equal vertical distances mean equal multiples.
+                </figcaption>
+            </figure>
 
-                <ul>
-                    <li>RATIONALE_1</li>
-                    <li>RATIONALE_2</li>
-                    <li>RATIONALE_3</li>
-                </ul>
-            </section>
+            <div class="col">
+                <section class="method">
+                    <h3>How we made this chart</h3>
+                    <p class="scale-note">
+                        Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).
+                    </p>
+                    <ol class="decisions against-list">
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">A fixed group of 112 countries since 1960</span>
+                                <span class="score" data-score="1"></span>
+                            </div>
+                            <p>
+                                Keeping only countries observed in every year means the trend can’t be
+                                an artifact of new countries entering the data. This is the textbook
+                                choice, and it actually cuts <em>against</em> our argument. Nigeria,
+                                Niger, Mali, Chad and Somalia have no 1960 figures, and adding them
+                                would push the 2019 ratio higher. It buys credibility (“records back to
+                                1960”) at a small cost. It falls short of +2 because starting in 1960
+                                also anchors the comparison at the ratio’s low point.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">A logarithmic scale</span>
+                                <span class="score" data-score="-0.5"></span>
+                            </div>
+                            <p>
+                                Demographers plot mortality on log scales because equal distances
+                                mean equal percentage changes. On this scale a steady ratio looks like
+                                a steady gap, so the space between the red and black lines never
+                                closes. Most readers, though, read vertical distance as an absolute
+                                difference. On a linear scale, the same two lines close from 303 deaths
+                                per 1,000 apart to 85. We disclosed the scale in the source line and
+                                through the uneven tick values (2, 5, 10, 20), which is honest but easy
+                                to miss.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Calling a ratio of death rates a “survival gap”</span>
+                                <span class="score" data-score="-2"></span>
+                            </div>
+                            <p>
+                                The headline says the “survival gap” more than doubled, and the large
+                                “13×” and “32×” labels supply the proof. Those labels are ratios of
+                                <em>death</em> rates. Measured as survival, the gap shrank. In 1960, 67
+                                percent of children in the worst-off tenth reached age 5, against 98
+                                percent in the best-off: a 30-point gap. In 2019 it was 91 percent
+                                against 99.7 percent, or 8 points. “Gap” lets readers pick whichever
+                                meaning they like, and the chart supplies only ours. It is the most
+                                consequential decision in either chart, and it is entirely verbal.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">Compare the extremes, call them “tenths”</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>
+                                We averaged the 11 highest- and 11 lowest-mortality countries each year,
+                                re-ranked annually. In 2019 the bottom group is Iceland, Finland,
+                                Norway, Japan, Singapore and their peers, at 2 to 3 deaths per 1,000.
+                                Dividing by a number that small inflates any ratio. Using the
+                                births-weighted range from the FOR chart, the ratio still rises, but
+                                only from 7 to 12. The extremes make the strongest headline, and the
+                                word “tenths” makes them sound representative.
+                            </p>
+                        </li>
+                        <li>
+                            <div class="dec-head">
+                                <span class="dec-title">“Only 73 percent,” in alarm red</span>
+                                <span class="score" data-score="-1"></span>
+                            </div>
+                            <p>
+                                Cutting child deaths by 73 percent is one of the great achievements of
+                                the past 60 years. The word “only” turns it into a shortfall. We paired
+                                that word with an affective color choice: the worst-off group is drawn in
+                                saturated red while every other line stays gray, which reads as a
+                                warning. Both numbers are exact, so the slant lives entirely in one
+                                adverb and one hue. In a neutral blue and without “only,” the same
+                                chart would read as uneven progress rather than failure.
+                            </p>
+                        </li>
+                    </ol>
+                </section>
 
-            <section>
-                <h2>Final Reflection</h2>
+                <h2>Same numbers, two stories</h2>
+                <p>
+                    The disagreement fits in a single table. Between the worst-off and best-off tenth
+                    of the same 112 countries, the difference in child mortality shrank by 72 percent,
+                    while the ratio more than doubled.
+                </p>
+            </div>
 
-                <p>[WRITE FINAL REFLECTION PARAGRAPHS HERE.]</p>
-            </section>
-        </main>
+            <figure class="graphic col">
+                <table class="truths">
+                    <caption>
+                        Converging or diverging?
+                        <span>Highest- vs. lowest-mortality tenth of 112 countries</span>
+                    </caption>
+                    <thead>
+                        <tr><th>Measure</th><th>1960</th><th>2019</th><th>Change</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Deaths before age 5, per 1,000</td><td>327 vs. 25</td><td>87 vs. 2.8</td><td>both fell</td></tr>
+                        <tr><td>Difference, deaths per 1,000</td><td>303</td><td>85</td><td class="down">−72%</td></tr>
+                        <tr><td>Survival to age 5, gap in points</td><td>30</td><td>8</td><td class="down">−72%</td></tr>
+                        <tr><td>Ratio of death rates</td><td>13×</td><td>32×</td><td class="up">+140%</td></tr>
+                    </tbody>
+                </table>
+                <figcaption>
+                    <b>Figure 3.</b> Differences say the world is converging; ratios say it is not.
+                    Figure 1 uses the first reading and Figure 2 the second.
+                </figcaption>
+            </figure>
+
+            <figure class="graphic col">
+                <p class="gfx-head">Where our 10 decisions fall</p>
+                <p class="gfx-dek">Scored from −2 (deceptive) to +2 (earnest)</p>
+                <svg id="ledger" viewBox="0 0 600 210" role="img"
+                    aria-label="Dot plot of all ten design decisions on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg>
+                <figcaption>
+                    <b>Figure 4.</b> Each chart includes one earnest decision that buys trust (the
+                    1970 start, the fixed 1960 group). The most deceptive decisions are a headline word and
+                    a highlighting choice, not anything geometric.
+                </figcaption>
+            </figure>
+
+            <div class="col">
+                <h2>What we learned</h2>
+                <p>
+                    The decisions that mattered most were made before any line was drawn. Our two
+                    charts share a dataset, a chart type, a gray-line look and almost every year of
+                    data. What separates them is the unit (children or countries), the measure
+                    (difference or ratio) and a few words: “similar odds,” “survival gap,” “only.” The
+                    case for convergence was easy to make, because nearly any honest default, such as
+                    a linear axis, a population lens or a recent end date, makes a world in which every
+                    country improved look like it is coming together. The case against was hard
+                    until we noticed that the countries with the lowest mortality kept cutting their
+                    rates by a larger share than those with the highest. Once we committed to
+                    ratios, a log scale followed, and it looks more rigorous than the linear one.
+                    That is the point Helen Kennedy and her co-authors make about the work that
+                    conventions do. A log scale, a source line and a fixed sample all signal
+                    objectivity, and that objectivity lends authority to a slanted headline.
+                </p>
+                <p>
+                    We now think of ethical visualization as making only the choices you would still
+                    defend to a reader who has seen the alternative. That suggests three tests. Is
+                    the choice justified on grounds independent of the conclusion it produces?
+                    Weighting by births passes, since the question is about children, but picking the
+                    “1 in 10” cutoff for its contrast fails. Is it disclosed where readers actually
+                    look? Our log scale is explained only in the source line, so it passes halfway.
+                    Does the chart leave readers believing something the data contradict? “Survival
+                    gap … more than doubled” fails outright, because survival converged. Research by
+                    Ha-Kyung Kong and colleagues found that slanted titles shape what readers
+                    remember even when the chart is neutral, and our own most deceptive decisions,
+                    a headline word and a highlight, were the ones a careful reader would be least
+                    likely to catch.
+                </p>
+                <p>
+                    So is child mortality converging? In absolute terms and in survival terms, yes,
+                    dramatically. In relative terms, it diverged from 1960 until about 2010 and has
+                    eased slightly since. Each of our charts misleads mainly through what it leaves
+                    out. None of our individual techniques is unusual; each appears in published,
+                    respected graphics. That is why we don’t think a list of banned techniques can
+                    separate persuasion from deception. The line is crossed when the combination of
+                    choices leaves a reader with a belief they would abandon if they saw the table
+                    above.
+                </p>
+
+                <section class="about">
+                    <h3>About the data</h3>
+                    <p>
+                        Data come from the course’s copy of the World Bank’s World Development
+                        Indicators (<a href="https://github.com/light-and-salt/World-Bank-Data-by-Indicators">light-and-salt/World-Bank-Data-by-Indicators</a>,
+                        <code>health/health-raw-2021.csv</code>): under-five mortality (<code>SH.DYN.MORT</code>),
+                        population (<code>SP.POP.TOTL</code>), crude birth rate (<code>SP.DYN.CBRT.IN</code>)
+                        and under-five deaths (<code>SH.DTH.MORT</code>), for the 217 entries assigned a World
+                        Bank region (countries, not regional aggregates). Mortality is available for 1960
+                        through 2019.
+                    </p>
+                    <p>
+                        Births are estimated as population × crude birth rate ÷ 1,000. Weighted percentiles
+                        interpolate along cumulative birth weights. The “tenths” in Figure 2 are the mean
+                        of the 11 highest and 11 lowest rates among the 112 countries with 1960 data,
+                        re-ranked each year. Charts were drawn with D3 and exported at twice screen
+                        resolution. Code is in this repository (<code>analysis/prep.py</code>,
+                        <code>analysis/export.py</code>, <code>charts/chart.html</code>). Live versions:
+                        <a href="charts/chart.html?v=for">Figure 1</a>,
+                        <a href="charts/chart.html?v=against">Figure 2</a>.
+                    </p>
+                    <p>
+                        References: Kennedy et al., “The Work That Visualization Conventions Do” (2016);
+                        Kong et al., “Frames and Slants in Titles of Visualizations on Controversial
+                        Topics” (CHI 2018); Burns et al., “From Invisible to Visible” (IEEE TVCG 2022);
+                        Lan et al., “Affective Visualization Design” (IEEE TVCG 2024).
+                    </p>
+                </section>
+            </div>
+        </article>
+        <footer></footer>
+
+        <script>
+            // −2..+2 score scales
+            document.querySelectorAll(".score").forEach((el) => {
+                const s = parseFloat(el.dataset.score);
+                const pct = ((s + 2) / 4) * 100;
+                const color = s < 0 ? "var(--deceptive)" : s > 0 ? "var(--earnest)" : "#777";
+                const ticks = [0, 25, 50, 75, 100].map((p) => `<i${p === 50 ? ' class="mid"' : ""} style="left:${p}%"></i>`).join("");
+                const sign = s > 0 ? "+" : s < 0 ? "−" : "";
+                el.innerHTML = `<span class="track" aria-hidden="true">${ticks}<b style="left:${pct}%;background:${color}"></b></span><span class="val" style="color:${color}">${sign}${Math.abs(s)}</span>`;
+                el.setAttribute("aria-label", `Score ${sign}${Math.abs(s)} on a scale from −2 (deceptive) to +2 (earnest)`);
+            });
+
+            // chart / decision-marker toggles
+            document.querySelectorAll(".toggle button").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    btn.parentElement.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
+                    document.getElementById(btn.dataset.target).src = btn.dataset.src;
+                });
+            });
+            ["images/for_reveal.png", "images/against_reveal.png"].forEach((src) => (new Image().src = src));
+
+            // ledger dot plot, built from the decision lists
+            (function () {
+                const svg = document.getElementById("ledger");
+                const NS = "http://www.w3.org/2000/svg";
+                const W = 600, L = 92, R = 20, x = (s) => L + ((s + 2) / 4) * (W - L - R);
+                const el = (tag, attrs, text) => {
+                    const n = document.createElementNS(NS, tag);
+                    for (const k in attrs) n.setAttribute(k, attrs[k]);
+                    if (text != null) n.textContent = text;
+                    svg.appendChild(n);
+                    return n;
+                };
+                [-2, -1, 0, 1, 2].forEach((s) => {
+                    el("line", { x1: x(s), x2: x(s), y1: 22, y2: 182, stroke: s === 0 ? "#888" : "#e2e2e2", "stroke-width": 1 });
+                    el("text", { x: x(s), y: 202, "text-anchor": "middle", "font-size": 12, fill: "#727272" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
+                });
+                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#b3261e", "font-weight": 700, "letter-spacing": "0.06em" }, "← MORE DECEPTIVE");
+                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#2f6690", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, "MORE EARNEST →");
+                [
+                    { label: "For", sel: ".for-list", color: "#a87b16", y: 66 },
+                    { label: "Against", sel: ".against-list", color: "#b3261e", y: 140 },
+                ].forEach((r) => {
+                    const scores = [...document.querySelectorAll(r.sel + " .score")].map((e) => parseFloat(e.dataset.score));
+                    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    el("text", { x: 0, y: r.y + 1, "font-size": 14, "font-weight": 700, fill: r.color }, r.label);
+                    el("text", { x: 0, y: r.y + 18, "font-size": 11.5, fill: "#727272" }, `average ${mean > 0 ? "+" : mean < 0 ? "−" : ""}${Math.abs(mean).toFixed(1)}`);
+                    el("line", { x1: x(-2), x2: x(2), y1: r.y, y2: r.y, stroke: "#cfcfcf", "stroke-width": 1 });
+                    const seen = {};
+                    scores.forEach((s, i) => {
+                        const k = (seen[s] = (seen[s] || 0) + 1) - 1;
+                        const cy = r.y + (k === 0 ? 0 : (k % 2 ? -22 : 22) * Math.ceil(k / 2));
+                        el("circle", { cx: x(s), cy, r: 10.5, fill: r.color, stroke: "#fff", "stroke-width": 2 });
+                        el("text", { x: x(s), y: cy + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#fff" }, i + 1);
+                    });
+                });
+            })();
+        </script>
     </body>
 </html>

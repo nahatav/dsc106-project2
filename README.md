@@ -1,13 +1,16 @@
 # DSC 106 Project 2: Persuasive or Deceptive Visualization?
 
-**Proposition:** Under-five mortality rates are converging across countries.
+**Proposition:** The gap in under-five mortality rates between countries is narrowing.
 
 Live report: https://nahatav.github.io/dsc106-project2/
 
-- `index.html`: the report
-- `images/`: exported figures (`for`, `against`, plus `_reveal` versions with numbered decision markers)
-- `charts/chart.html`: the D3 source for both figures (`?v=for`, `?v=against`, add `&reveal` for markers); `charts/data.json` is its data
-- `analysis/prep.py` → `analysis/export.py`: data pipeline; `analysis/render.sh` re-exports the PNGs (needs a local server on port 6001)
-- `analysis/explore.py`, `analysis/explore2.py`: exploratory convergence statistics
+Builds on the group checkpoint in [vsinha99/dsc106-project2](https://github.com/vsinha99/dsc106-project2): same data file, same 112-country matched cohort, nearest-rank P10/P90, unweighted.
 
-Data: World Bank WDI via [light-and-salt/World-Bank-Data-by-Indicators](https://github.com/light-and-salt/World-Bank-Data-by-Indicators). To rebuild, download `health/health-raw-2021.csv` into `analysis/data/health_raw.csv`, then run `python analysis/prep.py && python analysis/export.py`.
+- `index.html`: the report
+- `images/`: final figures (`for`, `against`, plus `_reveal` versions with numbered decision markers)
+- `charts/chart.html`: D3 source for both figures (`?v=for`, `?v=against`, add `&reveal` for markers); `charts/data.json` is its data
+- `analysis/export.py`: computes everything in `data.json` from `analysis/data/aid-effectiveness/`
+- `analysis/render.sh`: re-exports the PNGs with headless Chrome (needs a local server on port 6001)
+- `analysis/prep.py`, `explore*.py`: earlier exploration on the raw health indicators (not used by the final figures)
+
+Rebuild: `python analysis/export.py`, then serve the repo on port 6001 and run `bash analysis/render.sh`.

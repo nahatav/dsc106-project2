@@ -1,59 +1,84 @@
-"""Export the series both charts need to ../charts/data.json (run after prep.py)."""
-import json, os
-import numpy as np, pandas as pd
+"""Export everything the two final figures need to ../charts/data.json.
+
+Follows the group's checkpoint method (vsinha99/dsc106-project2) exactly:
+- data: World Bank pre-cleaned aid-effectiveness.csv + country metadata (countries = rows with a Region)
+- matched cohort: countries with an under-five mortality rate in both 1960 and 2019 (n = 112)
+- yearly P10 / median / P90 over that cohort, P10 and P90 by nearest rank, unweighted
+- 2019 regional cross-section over every country with a 2019 rate (n = 193)
+"""
+import csv, json, math, os
+from statistics import median
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-d = pd.read_csv(os.path.join(HERE, "data", "u5mr_long.csv"))
-U = d.pivot(index="Country Code", columns="year", values="u5mr")
-B = d.pivot(index="Country Code", columns="year", values="births")
-name = d.drop_duplicates("Country Code").set_index("Country Code")["Country Name"]
-YEARS = list(range(1960, 2020))
+FOLDER = os.path.join(HERE, "data", "aid-effectiveness")
+INDICATOR = "average_value_Mortality rate, under-5 (per 1,000 live births)"
 
 
-def wquant(x, w, q):
-    o = np.argsort(x); cw = np.cumsum(w[o]) / w.sum()
-    return float(np.interp(q, cw, x[o]))
+def read_csv(path):
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
 
 
-def series(codes, start):
-    out = []
-    for c in codes:
-        v = U.loc[c, start:2019]
-        pts = [[int(y), round(float(u), 2)] for y, u in v.items() if pd.notna(u)]
-        out.append({"code": c, "name": name[c], "v": pts})
-    return out
+def quantile_nearest(values, p):
+    vals = sorted(values)
+    return vals[max(0, math.ceil(p * len(vals)) - 1)]
 
 
-# FOR: every country with data, births-weighted middle-80% band from 1970 (93%+ of births covered)
-band = []
-for y in range(1970, 2020):
-    m = U[y].notna() & B[y].notna()
-    x, w = U.loc[m, y].values, B.loc[m, y].values
-    band.append({"y": y, "p10": round(wquant(x, w, .1), 2), "p50": round(wquant(x, w, .5), 2),
-                 "p90": round(wquant(x, w, .9), 2), "over100": round(float(w[x > 100].sum() / w.sum()), 4)})
+meta = next(f for f in os.listdir(FOLDER) if f.startswith("Metadata_Country_"))
+regions = {r["Country Code"]: r["Region"].strip() for r in read_csv(os.path.join(FOLDER, meta)) if r.get("Region", "").strip()}
+series, names = {}, {}
+for row in read_csv(os.path.join(FOLDER, "aid-effectiveness.csv")):
+    code = row.get("Country Code", "")
+    if code not in regions:
+        continue
+    try:
+        val, year = float(row[INDICATOR]), int(row["Year"])
+    except (ValueError, KeyError, TypeError):
+        continue
+    if math.isfinite(val):
+        series.setdefault(code, {})[year] = val
+        names[code] = row["Country Name"]
 
-# AGAINST: fixed cohort of countries with 1960 data, mean of top and bottom tenth each year
-cohort = U.index[U[1960].notna()]
-tenths = []
-for y in YEARS:
-    x = np.sort(U.loc[cohort, y].dropna().values); k = round(len(x) / 10)
-    tenths.append({"y": y, "top": round(float(x[-k:].mean()), 2), "bot": round(float(x[:k].mean()), 2)})
+cohort = {c: v for c, v in series.items() if 1960 in v and 2019 in v}
+stats = []
+for year in range(1960, 2020):
+    vals = [v[year] for v in cohort.values() if year in v]
+    p10, p90 = quantile_nearest(vals, 0.1), quantile_nearest(vals, 0.9)
+    stats.append({"y": year, "n": len(vals), "p10": p10, "med": median(vals), "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
+
+changes = {c: 100 * (v[1960] - v[2019]) / v[1960] for c, v in cohort.items()}
+bins = [[lo, sum(lo <= x < lo + 10 for x in changes.values()) if lo < 90 else sum(lo <= x <= 100 for x in changes.values())] for lo in range(50, 100, 10)]
+
+reg2019 = {}
+for c, v in series.items():
+    if 2019 in v:
+        reg2019.setdefault(regions[c], []).append({"code": c, "name": names[c], "v": v[2019]})
+regions_out = []
+for r, pts in reg2019.items():
+    vals = [p["v"] for p in pts]
+    regions_out.append({"region": r, "n": len(vals), "med": median(vals), "p10": quantile_nearest(vals, 0.1), "p90": quantile_nearest(vals, 0.9), "pts": sorted(pts, key=lambda p: p["v"])})
+regions_out.sort(key=lambda r: r["med"])
 
 out = {
-    "all": series(U.index[U.loc[:, 1960:2019].notna().any(axis=1)], 1960),
-    "cohort": series(cohort, 1960),
-    "band": band,
-    "tenths": tenths,
-    "n_cohort": int(len(cohort)),
+    "cohort": [{"code": c, "name": names[c], "v": sorted([[y, round(x, 2)] for y, x in v.items() if 1960 <= y <= 2019])} for c, v in cohort.items()],
+    "stats": [{k: (round(x, 3) if isinstance(x, float) else x) for k, x in s.items()} for s in stats],
+    "bins": bins,
+    "n_improved": sum(v[2019] < v[1960] for v in cohort.values()),
+    "median_change": round(median(changes.values()), 2),
+    "min_change": round(min(changes.values()), 2),
+    "regions": regions_out,
+    "n_2019": sum(r["n"] for r in regions_out),
 }
 os.makedirs(os.path.join(HERE, "..", "charts"), exist_ok=True)
 json.dump(out, open(os.path.join(HERE, "..", "charts", "data.json"), "w"), separators=(",", ":"))
 
-t0, t1 = tenths[0], tenths[-1]
-print("countries", len(out["all"]), "cohort", len(cohort))
-print("tenths 1960 top %.1f bot %.1f gap %.0f ratio %.1f" % (t0["top"], t0["bot"], t0["top"] - t0["bot"], t0["top"] / t0["bot"]))
-print("tenths 2019 top %.1f bot %.1f gap %.0f ratio %.1f" % (t1["top"], t1["bot"], t1["top"] - t1["bot"], t1["top"] / t1["bot"]))
-print("drop top %.0f%% bot %.0f%%" % (100 * (1 - t1["top"] / t0["top"]), 100 * (1 - t1["bot"] / t0["bot"])))
-print("band 1970", band[0], "\nband 2019", band[-1])
-for c in ["IND", "CHN", "NER", "NGA", "ISL", "JPN", "CAF", "SLE", "MLI"]:
-    print(c, name[c], U.loc[c, [1960, 1970, 1990, 2019]].round(1).tolist(), "cohort" if c in cohort else "")
+s0, s1 = stats[0], stats[-1]
+peak = max(stats, key=lambda s: s["ratio"])
+print(f"cohort {len(cohort)}; 1960 P10 {s0['p10']:.2f} med {s0['med']:.2f} P90 {s0['p90']:.2f} gap {s0['gap']:.2f} ratio {s0['ratio']:.2f}")
+print(f"2019 P10 {s1['p10']:.2f} med {s1['med']:.2f} P90 {s1['p90']:.2f} gap {s1['gap']:.2f} ratio {s1['ratio']:.2f}; gap change {100*(s1['gap']/s0['gap']-1):.1f}%")
+print(f"peak ratio {peak['ratio']:.2f} in {peak['y']}; improved {out['n_improved']}/{len(cohort)}; median change {out['median_change']}%, min {out['min_change']}%; bins {bins}")
+for r in regions_out:
+    print(f"  {r['region']}: n={r['n']} med={r['med']:.1f} p10={r['p10']:.1f} p90={r['p90']:.1f}")
+print("n 2019", out["n_2019"])
+lo = min(changes, key=changes.get)
+print("smallest reduction:", names[lo], round(changes[lo], 1), cohort[lo][1960], cohort[lo][2019])

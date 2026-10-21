@@ -1,3 +1,4 @@
 analysis/data/health_raw.csv
 analysis/data/health.csv
 __pycache__/
+.chrome-render/

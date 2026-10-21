@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Child Mortality Chart</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,11 +83,20 @@ function htmlMarker(id, n, color) {
   document.querySelector(id).prepend(el);
 }
 
-d3.json("data.json").then(D => ({ for1, for2, against1, against2, morph })[VIEW](D));
+d3.json("data.json").then(D => {
+  ({ for1, for2, against1, against2, morph, sens })[VIEW](D);
+  if (P.has("dump")) {   // marker centers, for the page's click targets
+    const pts = [...document.querySelectorAll(".mk, .mkh")].map(el => {
+      const r = el.getBoundingClientRect(), n = +el.textContent;
+      return { n, x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2 + scrollY) };
+    });
+    const pre = document.createElement("pre"); pre.id = "dump"; pre.textContent = JSON.stringify(pts); document.body.append(pre);
+  }
+});
 
 /* ---------- time series frame shared by for1 / against1 ---------- */
 function timeFrame(H, yMax, ticks, fmt, topLabel, right) {
-  const M = { t: 14, r: right, b: 28, l: 34 };
+  const M = { t: 14, r: right, b: 28, l: 70 };
   svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
   const x = d3.scaleLinear().domain([1960, 2019]).range([M.l, W - M.r]);
   const y = d3.scaleLinear().domain([0, yMax]).range([H - M.b, M.t]);
@@ -100,63 +110,136 @@ function timeFrame(H, yMax, ticks, fmt, topLabel, right) {
   return { x, y, M };
 }
 
-function for1(D) {
+function for1(D) {   // percentile fan chart
   const S = D.stats, s0 = S[0], s1 = S[S.length - 1];
   const drop = Math.round(100 * (1 - s1.gap / s0.gap));
   d3.select("#title").text(`Countries have moved ${drop}% closer together since 1960`);
-  d3.select("#dek").text("Deaths before age 5 per 1,000 live births, 1960 to 2019. Gray lines are individual countries.");
-  const { x, y } = timeFrame(370, 310, [100, 200, 300], String, "300 deaths per 1,000", 118);
-  const plot = g.append("g").attr("clip-path", "url(#plot)");
-  plot.append("path").datum(S).attr("fill", TFILL).attr("opacity", 0.8)
-    .attr("d", d3.area().x(d => x(d.y)).y0(d => y(d.p10)).y1(d => y(d.p90)).curve(d3.curveMonotoneX));
-  const line = d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveMonotoneX);
-  plot.append("g").selectAll("path").data(D.cohort).join("path").attr("class", "country").attr("d", c => line(c.v));
-  ["p90", "p10"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", TEAL).attr("stroke-width", 2.6)
-    .attr("d", d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX)));
-  [s0, s1].forEach(s => { dot(x(s.y), y(s.p90), TEAL); dot(x(s.y), y(s.p10), TEAL); });
+  d3.select("#dek").text("Distribution of deaths before age 5 per 1,000 live births across 112 countries, 1960 to 2019.");
+  const { x, y } = timeFrame(370, 300, [100, 200, 300], String, "300 deaths per 1,000", 110);
+  const area = (a, b) => d3.area().x(d => x(d.y)).y0(d => y(d[a])).y1(d => y(d[b])).curve(d3.curveMonotoneX);
+  const line = k => d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX);
+  g.append("path").datum(S).attr("fill", TEAL).attr("opacity", 0.16).attr("d", area("p10", "p90"));
+  g.append("path").datum(S).attr("fill", TEAL).attr("opacity", 0.3).attr("d", area("p25", "p75"));
+  ["p10", "p90"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", TEAL).attr("stroke-width", 1.2).attr("opacity", 0.8).attr("d", line(k)));
+  g.append("path").datum(S).attr("fill", "none").attr("stroke", "#0f4f4b").attr("stroke-width", 2.6).attr("d", line("med"));
 
-  // end labels, NYT style
-  const RX = x(2019) + 12;
-  text(gTop, RX, y(s1.p90) + 4, "90th percentile", "lab halo", TEAL);
-  text(gTop, RX, y(s1.p10) + 4, "10th percentile", "lab halo", TEAL);
-  // distance between the two lines, annotated in place at each end
-  const span = (s, xx, anchor, dx) => {
-    gTop.append("line").attr("x1", xx).attr("x2", xx).attr("y1", y(s.p90) + 8).attr("y2", y(s.p10) - 8)
-      .attr("stroke", "#121212").attr("stroke-width", 1).attr("stroke-dasharray", "2 3");
-    const yy = (y(s.p90) + y(s.p10)) / 2;
-    text(gTop, xx + dx, yy, f0(s.gap), "big halo", "#121212", anchor);
-    text(gTop, xx + dx, yy + 17, "deaths apart", "sub halo", null, anchor);
+  // inline band labels where the fan is widest
+  const at = S.find(s => s.y === 1972);
+  text(gTop, x(1972), y((at.p75 + at.p90) / 2) + 4, "Middle 80% of countries", "lab halo", TEAL, "middle");
+  text(gTop, x(1972), y((at.med + at.p75) / 2) + 4, "Middle 50%", "lab halo", "#0f4f4b", "middle");
+  text(gTop, x(1982), y(S.find(s => s.y === 1982).med) - 9, "Median", "lab halo", "#0f4f4b", "middle");
+
+  // distance from the 10th to the 90th percentile, at both ends
+  const bracket = (s, bx, dir) => {
+    gTop.append("path").attr("fill", "none").attr("stroke", "#121212").attr("stroke-width", 1.2)
+      .attr("d", `M${bx - 5 * dir},${y(s.p90)} H${bx} V${y(s.p10)} H${bx - 5 * dir}`);
   };
-  span(s0, x(1960) + 14, "start", 9);
-  span(s1, x(2019) - 14, "end", -9);
+  bracket(s0, x(1960) - 8, -1);
+  text(gTop, x(1960) - 16, y((s0.p10 + s0.p90) / 2) - 2, f0(s0.gap), "big halo", "#121212", "end");
+  text(gTop, x(1960) - 16, y((s0.p10 + s0.p90) / 2) + 15, "apart", "sub halo", null, "end");
+  bracket(s1, x(2019) + 10, 1);
+  text(gTop, x(2019) + 20, y((s1.p10 + s1.p90) / 2) + 6, f0(s1.gap), "big halo", "#121212");
+  text(gTop, x(2019) + 20, y((s1.p10 + s1.p90) / 2) + 23, "apart", "sub halo");
 
-  marker(1, x(1990), y(S[30].p90) - 24, TEAL);        // percentiles of a fixed sample
-  marker(2, 165, y(300) - 10, TEAL);                  // linear scale
-  htmlMarker("#title", 3, TEAL);                      // "closer" without naming the measure
+  marker(1, x(1972), y((at.p75 + at.p90) / 2) - 24, TEAL);   // percentiles of a fixed sample
+  marker(2, 165, y(300) - 10, TEAL);                          // linear scale
+  htmlMarker("#title", 3, TEAL);                              // "closer" without naming the measure
 }
 
-function against1(D) {
+function against1(D) {   // ratio with bootstrap ensemble
   const S = D.stats, s0 = S[0], s1 = S[S.length - 1];
   const peak = S.reduce((a, b) => (b.ratio > a.ratio ? b : a));
+  const CI = Object.fromEntries(D.boot_ci.map(c => [c.y, c]));
   d3.select("#title").text("Child mortality is twice as unequal as it was in 1960");
-  d3.select("#dek").text("Death rate before age 5 in the 90th percentile country as a multiple of the 10th percentile country, 1960 to 2019.");
-  const { x, y } = timeFrame(340, 25, [5, 10, 15, 20, 25], v => `${v}×`, "25 times as high", 64);
-  // rise above the 1960 level, shaded
-  g.append("path").datum(S).attr("fill", ORANGE).attr("opacity", 0.12)
-    .attr("d", d3.area().x(d => x(d.y)).y0(y(s0.ratio)).y1(d => y(Math.max(d.ratio, s0.ratio))).curve(d3.curveMonotoneX));
+  d3.select("#dek").text("Death rate before age 5 in the 90th percentile country as a multiple of the 10th. Faint lines are 200 bootstrap resamples of the 112 countries.");
+  const { x, y } = timeFrame(360, 30, [10, 20, 30], v => `${v}×`, "30 times as high", 96);
+  const yrs = d3.range(1960, 2020);
+  const bl = d3.line().x((d, i) => x(yrs[i])).y(d => y(Math.min(d, 30))).curve(d3.curveMonotoneX);
+  g.append("g").selectAll("path").data(D.boot_lines).join("path").attr("fill", "none")
+    .attr("stroke", ORANGE).attr("stroke-opacity", 0.07).attr("stroke-width", 1).attr("d", bl);
   g.append("line").attr("x1", x(1960)).attr("x2", x(2019)).attr("y1", y(s0.ratio)).attr("y2", y(s0.ratio))
-    .attr("stroke", "#121212").attr("stroke-width", 1).attr("stroke-dasharray", "3 3").attr("opacity", 0.5);
-  text(gTop, x(2019) + 10, y(s0.ratio) + 4, "1960 level", "sub halo");
-  g.append("path").datum(S).attr("fill", "none").attr("stroke", ORANGE).attr("stroke-width", 3)
+    .attr("stroke", "#121212").attr("stroke-width", 1).attr("stroke-dasharray", "3 3").attr("opacity", 0.45);
+  g.append("path").datum(S).attr("fill", "none").attr("stroke", ORANGE).attr("stroke-width", 3.2)
     .attr("d", d3.line().x(d => x(d.y)).y(d => y(d.ratio)).curve(d3.curveMonotoneX));
-  [s0, peak, s1].forEach(d => dot(x(d.y), y(d.ratio), ORANGE, 4.6));
-  text(gTop, x(s0.y) + 9, y(s0.ratio) - 11, `${f1(s0.ratio)}×`, "lab halo", ORANGE);
-  text(gTop, x(peak.y), y(peak.ratio) - 12, `Peak, ${f1(peak.ratio)}×`, "lab halo", ORANGE, "middle");
-  text(gTop, x(2019) + 10, y(s1.ratio) + 7, `${f1(s1.ratio)}×`, "big halo", ORANGE);
+  [s0, peak, s1].forEach(d => dot(x(d.y), y(d.ratio), ORANGE, 4.8));
+  text(gTop, x(s0.y) + 10, y(s0.ratio) - 12, `${f1(s0.ratio)}×`, "lab halo", ORANGE);
+  text(gTop, x(peak.y), y(peak.ratio) - 14, `${f1(peak.ratio)}× in ${peak.y}`, "lab halo", ORANGE, "middle");
 
-  htmlMarker("#title", 1, ORANGE);                    // ratio described as inequality
-  marker(2, x(2019) + 30, y(s0.ratio) - 18, ORANGE);  // 1960 baseline
-  marker(3, x(1975), y(13) + 22, ORANGE);             // same sample and percentiles as Figure 1
+  // 95% interval at the end, as an error bar
+  const ex = x(2019) + 14, c1 = CI[2019];
+  gTop.append("path").attr("fill", "none").attr("stroke", "#121212").attr("stroke-width", 1.2)
+    .attr("d", `M${ex - 4},${y(c1.hi)} H${ex + 4} M${ex},${y(c1.hi)} V${y(c1.lo)} M${ex - 4},${y(c1.lo)} H${ex + 4}`);
+  text(gTop, ex + 12, y(s1.ratio) + 7, `${f1(s1.ratio)}×`, "big halo", ORANGE);
+  text(gTop, ex + 12, y(s1.ratio) + 24, `95% interval`, "sub halo");
+  text(gTop, ex + 12, y(s1.ratio) + 39, `${f0(c1.lo)} to ${f0(c1.hi)}`, "sub halo");
+  text(gTop, x(1990), y(s0.ratio) + 17, "1960 level", "sub halo", null, "middle");
+
+  htmlMarker("#title", 1, ORANGE);                     // ratio described as inequality
+  marker(2, x(1990) - 46, y(s0.ratio) + 12, ORANGE);   // 1960 baseline
+  marker(3, x(1975), y(25), ORANGE);                   // bootstrap lines lend authority, same sample
+}
+
+/* ---------- sensitivity: each published chart beside one reversed choice ---------- */
+function sens(D) {
+  d3.select("#title").text("Reverse one choice and the verdict flips");
+  d3.select("#dek").text("Figures 1 and 3 as published (left) and with a single design choice reversed (right). Same countries, same percentiles.");
+  const S = D.stats, by = Object.fromEntries(S.map(s => [s.y, s]));
+  const PW = 312, GAP = 48, PH = 170, HEAD = 64, ROWGAP = 40;
+  const H = 2 * (HEAD + PH + 26) + ROWGAP;
+  svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+  const panels = [
+    { col: 0, row: 0, kind: "band", scale: "linear", start: 1960, label: "Figure 1 as published" },
+    { col: 1, row: 0, kind: "band", scale: "log", start: 1960, label: "Reversed: logarithmic scale" },
+    { col: 0, row: 1, kind: "ratio", start: 1960, label: "Figure 3 as published" },
+    { col: 1, row: 1, kind: "ratio", start: 1999, label: "Reversed: measured from 1999" },
+  ];
+  panels.forEach(p => {
+    const ox = p.col * (PW + GAP), oy = p.row * (HEAD + PH + 26 + ROWGAP);
+    const pg = svg.append("g").attr("transform", `translate(${ox},${oy})`);
+    const ser = S.filter(s => s.y >= p.start), a = ser[0], b = ser[ser.length - 1];
+    // verdict, computed from the data the panel shows
+    let head, closer;
+    if (p.kind === "band" && p.scale === "linear") { const c = 1 - b.gap / a.gap; closer = c > 0; head = `${Math.round(c * 100)}% closer since ${p.start}`; }
+    else { const m = b.ratio / a.ratio; closer = m < 1; head = closer ? `${Math.round((1 - m) * 100)}% closer since ${p.start}` : (Math.abs(m - 2) < 0.15 ? "Twice as far apart as in 1960" : `${f1(m)} times as far apart`); }
+    const col = closer ? TEAL : ORANGE;
+    text(pg, 0, 14, p.label.toUpperCase(), "tick").style("font-weight", 700).style("letter-spacing", ".05em").style("font-size", "11px");
+    text(pg, 0, 38, head, "lab", col).style("font-size", "17px").style("font-weight", 800);
+    text(pg, 0, 56, closer ? "Supports the proposition" : "Opposes the proposition", "sub", col).style("font-weight", 600);
+
+    const top = HEAD + 22, bot = HEAD + PH + 10;
+    const x = d3.scaleLinear().domain([p.start, 2019]).range([30, PW - 40]);
+    let y, ticks, fmt;
+    if (p.kind === "band" && p.scale === "linear") { y = d3.scaleLinear().domain([0, 300]).range([bot, top]); ticks = [100, 200, 300]; fmt = String; }
+    else if (p.kind === "band") { y = d3.scaleLog().domain([2, 400]).range([bot, top]); ticks = [3, 10, 30, 100, 300]; fmt = String; }
+    else { y = d3.scaleLinear().domain([0, 25]).range([bot, top]); ticks = [10, 20]; fmt = v => `${v}×`; }
+    ticks.forEach(t => {
+      pg.append("line").attr("class", "grid").attr("x1", 0).attr("x2", PW - 40).attr("y1", y(t)).attr("y2", y(t));
+      text(pg, 0, y(t) - 4, fmt(t), "tick halo").style("font-size", "11px");
+    });
+    pg.append("line").attr("class", "base").attr("x1", 0).attr("x2", PW - 40).attr("y1", bot).attr("y2", bot);
+    [p.start, 2019].forEach(v => text(pg, x(v), bot + 16, v, "tick", null, v === 2019 ? "end" : "middle").style("font-size", "11px"));
+    const dotp = (cx, cy) => pg.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 3.6).attr("fill", col).attr("stroke", "#fff").attr("stroke-width", 1.4);
+    if (p.kind === "band") {
+      pg.append("path").datum(ser).attr("fill", col).attr("opacity", 0.18)
+        .attr("d", d3.area().x(d => x(d.y)).y0(d => y(d.p10)).y1(d => y(d.p90)).curve(d3.curveMonotoneX));
+      ["p10", "p90"].forEach(k => pg.append("path").datum(ser).attr("fill", "none").attr("stroke", col).attr("stroke-width", 2)
+        .attr("d", d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX)));
+      [a, b].forEach(s => { dotp(x(s.y), y(s.p90)); dotp(x(s.y), y(s.p10)); });
+      const lab = s => (p.scale === "linear" ? f0(s.gap) : `${f1(s.ratio)}×`);
+      text(pg, x(b.y) + 8, (y(b.p90) + y(b.p10)) / 2 + 5, lab(b), "lab halo", col).style("font-size", "15px");
+      text(pg, x(a.y) + 6, (y(a.p90) + y(a.p10)) / 2 + 5, lab(a), "lab halo", "#121212").style("font-size", "13px");
+    } else {
+      pg.append("path").datum(ser).attr("fill", "none").attr("stroke", col).attr("stroke-width", 2.6)
+        .attr("d", d3.line().x(d => x(d.y)).y(d => y(d.ratio)).curve(d3.curveMonotoneX));
+      pg.append("line").attr("x1", x(a.y)).attr("x2", x(2019)).attr("y1", y(a.ratio)).attr("y2", y(a.ratio))
+        .attr("stroke", "#121212").attr("stroke-dasharray", "3 3").attr("opacity", 0.4);
+      dotp(x(a.y), y(a.ratio)); dotp(x(b.y), y(b.ratio));
+      text(pg, x(a.y) + (p.start === 1960 ? 6 : 0), y(a.ratio) - 9, `${f1(a.ratio)}×`, "lab halo", "#121212", p.start === 1960 ? "start" : "middle").style("font-size", "13px");
+      text(pg, x(b.y) + 8, y(b.ratio) + 5, `${f1(b.ratio)}×`, "lab halo", col).style("font-size", "15px");
+    }
+  });
+  // divider between the published and reversed columns
+  svg.append("line").attr("x1", PW + GAP / 2 - 6).attr("x2", PW + GAP / 2 - 6).attr("y1", 0).attr("y2", H - 10).attr("stroke", "#e4e4e4");
 }
 
 /* ---------- beeswarm: 1960 vs 2019, linear or log ---------- */

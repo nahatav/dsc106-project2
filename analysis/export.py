@@ -44,7 +44,8 @@ stats = []
 for year in range(1960, 2020):
     vals = [v[year] for v in cohort.values() if year in v]
     p10, p90 = quantile_nearest(vals, 0.1), quantile_nearest(vals, 0.9)
-    stats.append({"y": year, "n": len(vals), "p10": p10, "med": median(vals), "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
+    stats.append({"y": year, "n": len(vals), "p10": p10, "p25": quantile_nearest(vals, 0.25), "med": median(vals),
+                  "p75": quantile_nearest(vals, 0.75), "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
 
 # all countries reporting in each year (not a fixed sample), for the interactive builder
 stats_all = []
@@ -52,6 +53,24 @@ for year in range(1960, 2020):
     vals = [v[year] for v in series.values() if year in v]
     p10, p90 = quantile_nearest(vals, 0.1), quantile_nearest(vals, 0.9)
     stats_all.append({"y": year, "n": len(vals), "p10": p10, "p90": p90, "gap": p90 - p10, "ratio": p90 / p10})
+
+# bootstrap the P90/P10 ratio: resample the 112 countries with replacement (same draw for every year),
+# 200 replicate lines for display and a 95% percentile interval from 2,000 draws
+import random
+random.seed(106)
+codes = list(cohort)
+def ratio_series(sample):
+    out = []
+    for year in range(1960, 2020):
+        vals = [cohort[c][year] for c in sample if year in cohort[c]]
+        out.append(quantile_nearest(vals, 0.9) / quantile_nearest(vals, 0.1))
+    return out
+draws = [ratio_series([random.choice(codes) for _ in codes]) for _ in range(2000)]
+boot_lines = [[round(v, 2) for v in d] for d in draws[:200]]
+boot_ci = []
+for i, year in enumerate(range(1960, 2020)):
+    col = sorted(d[i] for d in draws)
+    boot_ci.append({"y": year, "lo": round(col[49], 3), "hi": round(col[1949], 3)})
 
 changes = {c: 100 * (v[1960] - v[2019]) / v[1960] for c, v in cohort.items()}
 bins = [[lo, sum(lo <= x < lo + 10 for x in changes.values()) if lo < 90 else sum(lo <= x <= 100 for x in changes.values())] for lo in range(50, 100, 10)]
@@ -69,6 +88,8 @@ regions_out.sort(key=lambda r: r["med"])
 out = {
     "cohort": [{"code": c, "name": names[c], "v": sorted([[y, round(x, 2)] for y, x in v.items() if 1960 <= y <= 2019])} for c, v in cohort.items()],
     "stats": [{k: (round(x, 3) if isinstance(x, float) else x) for k, x in s.items()} for s in stats],
+    "boot_lines": boot_lines,
+    "boot_ci": boot_ci,
     "stats_all": [{k: (round(x, 3) if isinstance(x, float) else x) for k, x in s.items()} for s in stats_all],
     "bins": bins,
     "n_improved": sum(v[2019] < v[1960] for v in cohort.values()),

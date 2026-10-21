@@ -3,7 +3,7 @@
 CHROME="/c/Program Files/Google/Chrome/Application/chrome.exe"
 OUT="$(cd "$(dirname "$0")/.." && pwd -W)/images"
 mkdir -p "$OUT"
-for v in for1 for2 against1 against2; do
+for v in for1 for2 against1 against2 sens; do
   for r in "" "&reveal"; do
     name="$v${r:+_reveal}"
     "$CHROME" --headless=new --disable-gpu --disk-cache-size=1 --user-data-dir="$(cd "$(dirname "$0")" && pwd -W)/.chrome-render" --hide-scrollbars --force-device-scale-factor=2 \

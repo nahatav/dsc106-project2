@@ -11,8 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
   :root { --ink: #121212; --mid: #666; --soft: #8c8c8c; --rule: #ececec;
-          --teal: #1b7c76; --teal-2: #7fc0b8; --teal-fill: #e1f1ee;
-          --orange: #d9622b; --orange-2: #f2b38f; }
+          --teal: #3f7cac; --teal-2: #9dbfdb; --teal-fill: #e4eef6;
+          --orange: #e07a5f; --orange-2: #f3bca9; }
   html, body { margin: 0; background: #fff; }
   body { font-family: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif; color: #333; }
   #wrap { width: 720px; padding: 26px 24px 20px; box-sizing: border-box; }
@@ -129,13 +129,13 @@ function for1(D) {   // percentile fan chart
   g.append("path").datum(S).attr("fill", TEAL).attr("opacity", 0.16).attr("d", area("p10", "p90"));
   g.append("path").datum(S).attr("fill", TEAL).attr("opacity", 0.3).attr("d", area("p25", "p75"));
   ["p10", "p90"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", TEAL).attr("stroke-width", 1.2).attr("opacity", 0.8).attr("d", line(k)));
-  g.append("path").datum(S).attr("fill", "none").attr("stroke", "#0f4f4b").attr("stroke-width", 2.6).attr("d", line("med"));
+  g.append("path").datum(S).attr("fill", "none").attr("stroke", "#1f4e72").attr("stroke-width", 2.6).attr("d", line("med"));
 
   // inline band labels where the fan is widest
   const at = S.find(s => s.y === 1972);
   text(gTop, x(1972), y((at.p75 + at.p90) / 2) + 4, "Middle 80% of countries", "lab halo", TEAL, "middle");
-  text(gTop, x(1972), y((at.med + at.p75) / 2) + 4, "Middle 50%", "lab halo", "#0f4f4b", "middle");
-  text(gTop, x(1982), y(S.find(s => s.y === 1982).med) - 9, "Median", "lab halo", "#0f4f4b", "middle");
+  text(gTop, x(1972), y((at.med + at.p75) / 2) + 4, "Middle 50%", "lab halo", "#1f4e72", "middle");
+  text(gTop, x(1982), y(S.find(s => s.y === 1982).med) - 9, "Median", "lab halo", "#1f4e72", "middle");
 
   // distance from the 10th to the 90th percentile, at both ends
   const bracket = (s, bx, dir) => {
@@ -344,7 +344,7 @@ function explore(D) {
     drawAxis();
     const data = [...L.values()];
     dotsG.selectAll("circle").data(data, d => d.name).join(
-      enter => enter.append("circle").attr("r", R).attr("cx", d => d.x).attr("cy", d => d.y).attr("fill", "#5c6670").attr("fill-opacity", 0.78)
+      enter => enter.append("circle").attr("r", R).attr("cx", d => d.x).attr("cy", d => d.y).attr("fill", "#7d8792").attr("fill-opacity", 0.78)
         .attr("stroke", "#fff").attr("stroke-width", 0.8)
         .on("mousemove", (e, d) => {
           const v = countries.find(c => c.name === d.name).v[state.year];

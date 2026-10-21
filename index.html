@@ -21,10 +21,10 @@
                 --head: #141416;
                 --dim: #71717e;
                 --accent: #c9a37e;
-                --gold: #1b7c76;
-                --red: #d9622b;
-                --deceptive: #c2452d;
-                --earnest: #3f6c8f;
+                --gold: #3f7cac;
+                --red: #e07a5f;
+                --deceptive: #3b3b44;
+                --earnest: #3b3b44;
                 --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
                 --col: 48rem;
             }
@@ -145,8 +145,8 @@
             table.truths th:first-child, table.truths td:first-child { text-align: left; }
             table.truths th { color: var(--head); font-weight: 600; white-space: nowrap; }
             table.truths tr:last-child td { border-bottom: none; }
-            .up { color: var(--deceptive); font-weight: 600; }
-            .down { color: var(--earnest); font-weight: 600; }
+            .up { color: var(--red); font-weight: 600; }
+            .down { color: var(--gold); font-weight: 600; }
 
             .ledger-card { border: 1px solid var(--line); border-radius: 6px; background: var(--raise); padding: 1rem 1.2rem 0.6rem; }
             #ledger { display: block; width: 100%; height: auto; }
@@ -390,7 +390,7 @@
                                 <span class="dec-title">Draw 2019 in a saturated color and 1960 in a pale one</span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
-                            <p>The warm orange draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
+                            <p>The saturated coral draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
                         </li>
                     </ol>
                 </section>
@@ -534,9 +534,9 @@
                     el("line", { x1: x(s), x2: x(s), y1: 26, y2: 238, stroke: s === 0 ? "#8a8a96" : "#e4e6eb", "stroke-width": 1 });
                     el("text", { x: x(s), y: 260, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
                 });
-                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#c2452d", "font-weight": 700, "letter-spacing": "0.06em" }, "← MORE DECEPTIVE");
-                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#3f6c8f", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, "MORE EARNEST →");
-                [["for1", "Figure 1", "#1b7c76"], ["for2", "Figure 2", "#1b7c76"], ["against1", "Figure 3", "#d9622b"], ["against2", "Figure 4", "#d9622b"]].forEach(([key, label, color], r) => {
+                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "letter-spacing": "0.06em" }, "← MORE DECEPTIVE");
+                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, "MORE EARNEST →");
+                [["for1", "Figure 1", "#3f7cac"], ["for2", "Figure 2", "#3f7cac"], ["against1", "Figure 3", "#e07a5f"], ["against2", "Figure 4", "#e07a5f"]].forEach(([key, label, color], r) => {
                     const y = 58 + r * 52;
                     el("text", { x: 0, y: y + 5, "font-size": 13.5, "font-weight": 700, fill: color }, label);
                     el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });

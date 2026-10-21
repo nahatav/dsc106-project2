@@ -4,27 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Child Mortality Chart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
   html, body { margin: 0; background: #fff; }
-  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #3b3b44; -webkit-font-smoothing: antialiased; }
+  body { font-family: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif; color: #333; }
   #wrap { width: 720px; padding: 22px 24px 16px; box-sizing: border-box; }
-  h1 { color: #141416; font-weight: 600; font-size: 20px; line-height: 1.28; margin: 0 0 4px; text-wrap: balance; }
-  .dek { font-size: 13.5px; line-height: 1.5; color: #71717e; margin: 0 0 22px; }
-  .src { font-size: 11px; color: #71717e; margin-top: 10px; line-height: 1.5; }
+  h1 { color: #121212; font-weight: 700; font-size: 20px; line-height: 1.28; margin: 0 0 4px; text-wrap: balance; }
+  .dek { font-size: 14px; line-height: 1.45; color: #555; font-weight: 500; margin: 0 0 22px; }
+  .src { font-size: 11.5px; color: #777; font-weight: 500; margin-top: 10px; line-height: 1.5; }
   svg { display: block; overflow: visible; }
   svg text { font-family: inherit; }
-  .tick { font-size: 11.5px; fill: #71717e; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+  .tick { font-size: 11.5px; font-weight: 500; fill: #6e6e6e; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
   .grid { stroke: #e9eaee; stroke-width: 1; shape-rendering: crispEdges; }
   .base { stroke: #9a9aa4; stroke-width: 1; shape-rendering: crispEdges; }
   .country { fill: none; stroke: #000; stroke-opacity: 0.075; stroke-width: 0.8; stroke-linejoin: round; }
-  .ann { font-size: 12.5px; fill: #3b3b44; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
-  .ann-b { font-weight: 600; fill: #141416; }
-  .lab { font-size: 12px; font-weight: 600; }
-  .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ann { font-size: 12.5px; font-weight: 500; fill: #222; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .ann-b { font-weight: 800; fill: #121212; }
+  .lab { font-size: 12px; font-weight: 700; }
+  .val { font-weight: 800; font-variant-numeric: tabular-nums; }
   .halo { paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
-  .ptitle { font-size: 13.5px; font-weight: 600; fill: #141416; }
-  .psub { font-size: 12px; fill: #71717e; }
+  .ptitle { font-size: 14px; font-weight: 700; fill: #121212; }
+  .psub { font-size: 12px; font-weight: 500; fill: #666; }
   .mk circle { stroke: #fff; stroke-width: 2; }
   .mk text { font-size: 11.5px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
 </style>
@@ -72,8 +75,8 @@ function drawFor(D) {
   const S = D.stats, s0 = S[0], s1 = S[S.length - 1];
   const drop = Math.round(100 * (1 - s1.gap / s0.gap));
   d3.select("#title").text(`The country gap in child survival narrowed by ${drop}%`);
-  d3.select("#dek").text("Deaths before age 5 per 1,000 live births in the 112 countries with records in both 1960 and 2019. Each gray line is a country; the shaded band runs from the 10th- to the 90th-percentile country.");
-  d3.select("#src").text("Source: World Bank Human Development Indicators, 1960–2020 (pre-cleaned aid-effectiveness file). P10 and P90 are nearest-rank country rates, unweighted, for the fixed 112-country cohort.");
+  d3.select("#dek").text("Deaths before age 5 per 1,000 live births in the 112 countries with data in both 1960 and 2019. Each gray line is a country, and the shaded band spans the 10th to the 90th percentile.");
+  d3.select("#src").text("Source: World Bank Human Development Indicators, 1960 to 2020. Percentiles use the nearest rank and count every country equally.");
 
   // ---- panel A: spread over time
   const A = { t: 8, h: 290, l: 30, r: 118 };
@@ -104,27 +107,27 @@ function drawFor(D) {
     return { bx, d };
   };
   const L = bracket(1960, 9);
-  block(gTop, L.bx + 8, y((L.d.p10 + L.d.p90) / 2) - 8, [[["Gap in 1960", "ann-b"]], [[`${f1(L.d.gap)} deaths`, ""]]]);
+  block(gTop, L.bx + 8, y((L.d.p10 + L.d.p90) / 2) - 8, [[["Apart in 1960", "ann-b"]], [[`${f1(L.d.gap)} deaths`, ""]]]);
   bracket(2019, 8);
   // right-side labels
   const RX = W - A.r + 22;
-  block(gTop, RX, y(s1.p90) - 40, [[["Gap in 2019", "ann-b"]], [[`${f1(s1.gap)} deaths`, ""]]]);
+  block(gTop, RX, y(s1.p90) - 40, [[["Apart in 2019", "ann-b"]], [[`${f1(s1.gap)} deaths`, ""]]]);
   block(gTop, RX, y(s1.p90) + 4, [[["90th pct. ", "lab"], [f1(s1.p90), "lab val"]]]).attr("fill", GOLD);
   block(gTop, RX, y(s1.med) - 3, [[["Median ", "lab"], [f1(s1.med), "lab val"]]]).attr("fill", INK);
   block(gTop, RX, y(s1.p10) + 13, [[["10th pct. ", "lab"], [f1(s1.p10), "lab val"]]]).attr("fill", GOLD);
 
   // the headline number
   block(gTop, x(1986), y(318), [
-    [["The distance between the 90th- and", ""]],
-    [["10th-percentile countries fell from ", ""], [f1(s0.gap), "ann-b"]],
-    [["to ", ""], [f1(s1.gap), "ann-b"], [" deaths per 1,000 births, ", ""], [`−${drop}%`, "ann-b"], [".", ""]],
+    [["The countries at the 90th and 10th percentiles", ""]],
+    [["went from ", ""], [f1(s0.gap), "ann-b"], [" deaths per 1,000 births apart", ""]],
+    [["to ", ""], [f1(s1.gap), "ann-b"], [", a drop of ", ""], [`${drop}%`, "ann-b"], [".", ""]],
   ]);
 
   // ---- panel B: every country improved
   const B = { t: A.t + A.h + 60, rowH: 22 };
   const total = D.cohort.length;
-  gTop.append("text").attr("class", "ptitle").attr("x", 0).attr("y", B.t).text(`All ${D.n_improved} of ${total} countries cut their child mortality rate`);
-  gTop.append("text").attr("class", "psub").attr("x", 0).attr("y", B.t + 18).text(`Countries by how much their rate fell, 1960 to 2019. The median country cut it by ${f1(D.median_change)}%.`);
+  gTop.append("text").attr("class", "ptitle").attr("x", 0).attr("y", B.t).text(`All ${total} countries lowered their child death rate`);
+  gTop.append("text").attr("class", "psub").attr("x", 0).attr("y", B.t + 18).text(`Number of countries by how much their rate fell from 1960 to 2019. The typical country cut it by ${f1(D.median_change)}%.`);
   const bins = D.bins.slice().reverse();
   const bx0 = 92, bxw = d3.scaleLinear().domain([0, 45]).range([0, W - bx0 - 70]);
   bins.forEach(([lo, n], i) => {
@@ -149,9 +152,9 @@ function drawAgainst(D) {
   const peak = S.reduce((a, b) => (b.ratio > a.ratio ? b : a));
   const ssa = D.regions.find(r => r.region === "Sub-Saharan Africa"), eca = D.regions.find(r => r.region.startsWith("Europe"));
   const mult = s1.ratio / s0.ratio;
-  d3.select("#title").text("The proportional child-survival divide has doubled");
-  d3.select("#dek").text("How many times higher under-five mortality is in the 90th-percentile country than in the 10th, among the same 112 countries, 1960–2019.");
-  d3.select("#src").text(`Source: World Bank Human Development Indicators, 1960–2020 (pre-cleaned aid-effectiveness file). Ratio uses nearest-rank P90 and P10 for the fixed 112-country cohort. Regional panel: all ${D.n_2019} countries with a 2019 rate; medians unweighted.`);
+  d3.select("#title").text("Child survival is twice as unequal as it was in 1960");
+  d3.select("#dek").text("How many times higher the death rate before age 5 is in the country at the 90th percentile than in the one at the 10th. Same 112 countries, 1960 to 2019.");
+  d3.select("#src").text(`Source: World Bank Human Development Indicators, 1960 to 2020. Percentiles use the nearest rank. The regional panel includes all ${D.n_2019} countries with 2019 data and counts every country equally.`);
 
   // ---- panel A: the ratio over time
   const A = { t: 8, h: 230, l: 30, r: 72 };
@@ -177,16 +180,17 @@ function drawAgainst(D) {
   });
   g.append("circle").attr("cx", x(2019)).attr("cy", y(s1.ratio)).attr("r", 3.2).attr("fill", RED);
   block(gTop, W - A.r + 10, y(s1.ratio) - 4, [[[`${f1(s1.ratio)}×`, "lab val"]], [["in 2019", "lab"]]], { lh: 15 }).attr("fill", RED);
-  block(gTop, x(1966), y(21.5), [
-    [["In 2019, a child in the 90th-percentile country", ""]],
-    [["faced ", ""], [`${f1(s1.ratio)} times`, "ann-b"], [" the risk of one in the 10th,", ""]],
-    [[`${mult.toFixed(1)} times`, "ann-b"], [" the 1960 ratio.", ""]],
+  block(gTop, x(1964), y(22), [
+    [["In 2019, a child in the country at", ""]],
+    [["the 90th percentile faced ", ""], [`${f1(s1.ratio)} times`, "ann-b"]],
+    [["the risk of a child at the 10th,", ""]],
+    [["about ", ""], ["twice", "ann-b"], [" the ratio in 1960.", ""]],
   ]);
 
   // ---- panel B: regional snapshot, 2019
   const B = { t: A.t + A.h + 62, rowH: 26, l: 172, r: 24 };
-  gTop.append("text").attr("class", "ptitle").attr("x", 0).attr("y", B.t).text(`In 2019, regional medians still differed ${Math.round(ssa.med / eca.med)}-fold`);
-  gTop.append("text").attr("class", "psub").attr("x", 0).attr("y", B.t + 18).text("Each dot is a country; the dark tick is the regional median. Deaths before age 5 per 1,000 births, 2019.");
+  gTop.append("text").attr("class", "ptitle").attr("x", 0).attr("y", B.t).text(`In 2019, regional medians still differed by a factor of ${Math.round(ssa.med / eca.med)}`);
+  gTop.append("text").attr("class", "psub").attr("x", 0).attr("y", B.t + 18).text("Each dot is a country and the black tick marks the regional median. Deaths before age 5 per 1,000 births, 2019.");
   const bx = d3.scaleLinear().domain([0, 120]).range([B.l, W - B.r]);
   const top = B.t + 36;
   [0, 20, 40, 60, 80, 100, 120].forEach(v => {
@@ -205,13 +209,13 @@ function drawAgainst(D) {
       .attr("fill", isSSA ? RED : "#141416").text(f1(r.med));
   });
   block(gTop, bx(62), top + 2 * B.rowH + 4, [
-    [["Sub-Saharan Africa’s median, ", ""], [f1(ssa.med), "ann-b"], [",", ""]],
-    [["is ", ""], [`${f1(ssa.med / eca.med)} times`, "ann-b"], [" Europe & Central Asia’s, ", ""], [f1(eca.med), "ann-b"], [".", ""]],
+    [["Sub-Saharan Africa’s median of ", ""], [f1(ssa.med), "ann-b"], [" is", ""]],
+    [[`${f1(ssa.med / eca.med)} times`, "ann-b"], [" Europe and Central Asia’s ", ""], [f1(eca.med), "ann-b"], [".", ""]],
   ]);
   const H = top + D.regions.length * B.rowH + 22;
   svg.attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
 
-  marker(1, 12, A.t + 4, RED);                                       // ratio as the measure
+  marker(1, x(1964) - 16, y(22) - 4, RED);                                       // ratio as the measure
   marker(2, x(2019) - 6, y(s1.ratio) + 26, RED);                     // same cohort
   marker(3, x(peak.y), y(peak.ratio) - 30, RED);                     // 1960 baseline vs peak
   marker(4, bx(62) - 14, top + 2 * B.rowH, RED);                     // red only for SSA + ratio callout

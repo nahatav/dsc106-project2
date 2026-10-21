@@ -66,17 +66,16 @@
 
             /* Header */
             .article-date { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.85rem; letter-spacing: -0.01em; }
-            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; margin: 0 0 0.85rem; text-wrap: balance; }
+            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; margin: 0 0 1.1rem; text-wrap: balance; }
             .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.65rem; color: var(--dim); font-size: 0.92rem; margin: 0 0 1.15rem; line-height: 1.4; }
             .byline .avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); display: grid; place-items: center; color: var(--dim); }
             .byline .author-name { color: #4b5563; }
             .byline .sep { opacity: 0.7; }
-            .abstract { color: var(--dim); margin: 0 0 1.15rem; }
+            .deck { color: var(--body); font-size: 1.2rem; line-height: 1.45; margin: 0 0 1.1rem; }
+            .deck span { display: block; color: var(--dim); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem; }
+            .abstract { color: var(--dim); margin: 1.6rem 0 1.4rem; }
             .abstract p { margin: 0 0 0.75rem; }
 
-            .prop { margin: 1.6rem 0 1.8rem; }
-            .prop .label { color: var(--dim); font-size: 0.9rem; }
-            .prop .text { color: var(--head); font-size: 1.5rem; line-height: 1.35; letter-spacing: -0.3px; margin: 0.2rem 0 0; }
 
             .toc { border: 1px solid var(--line); background: var(--raise); border-radius: 6px; padding: 1.4rem 1.6rem; margin: 0 0 0.85rem; font-size: 0.9rem; line-height: 2.1; }
             .toc-title { color: #3b404d; font-weight: 600; font-size: 0.9rem; margin: 0 0 0.5rem; }
@@ -178,6 +177,7 @@
             <header class="col">
                 <div class="article-date">October 21, 2026</div>
                 <h1>Convergence or divergence? Two readings of child mortality across countries, 1960 to 2019</h1>
+                <p class="deck"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
                 <div class="byline">
                     <span class="avatar" aria-hidden="true"><svg height="15" width="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
                     <span class="author-name">[Member 1], [Member 2], [Member 3] and [Member 4]</span>
@@ -188,20 +188,13 @@
             <div class="col">
                 <div class="abstract">
                     <p>
-                        We examine whether child mortality has converged across countries, using the World Bank’s
-                        under-five mortality series for the 112 countries with data in both 1960 and 2019. Over that
-                        period the median rate fell from 149.4 to 15.0 deaths per 1,000 live births, and every country
-                        in the sample recorded a decline. Whether countries also moved closer together depends on the
-                        measure. The absolute difference between the countries at the 90th and 10th percentiles fell by
-                        75%, while the ratio between them rose from 9.5 to 19.1. We present two visualizations supporting
-                        the proposition and two opposing it, document the design decisions behind each, and include an
-                        interactive figure that moves between the two readings.
+                        Using the World Bank’s under-five mortality series for the 112 countries with data in 1960 and
+                        2019, we test whether countries have moved closer together. Every country improved, and the median
+                        rate fell from 149.4 to 15.0 deaths per 1,000 live births. Measured as a difference, the distance
+                        between the 90th and 10th percentile countries fell by 75%. Measured as a ratio, it doubled, from
+                        9.5 to 19.1. We present two visualizations for the proposition, two against it, and an interactive
+                        figure that moves between the two readings.
                     </p>
-                </div>
-
-                <div class="prop">
-                    <div class="label">Proposition</div>
-                    <p class="text">Under-five mortality rates are converging across countries.</p>
                 </div>
 
                 <nav class="toc" aria-label="Contents">
@@ -226,11 +219,6 @@
                     <a href="https://dsc106.com/projects/project2/" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>DSC 106</span></a>
                 </div>
 
-                <p>
-                    The <strong>Show decision markers</strong> control above each figure numbers the elements that
-                    correspond to the design decisions listed below it.
-                </p>
-
                 <h2 id="for"><span class="num">1</span>Visualizations for the proposition</h2>
                 <p>
                     Both visualizations for the proposition measure distance between countries in deaths per 1,000 live
@@ -246,7 +234,7 @@
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
                             <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
                     <div class="frame"><img id="img-for1" src="images/for1.png" alt="Line chart of under-five mortality for 112 countries from 1960 to 2019 on a linear scale. A teal band between the 10th and 90th percentile countries narrows from 255 deaths per 1,000 births apart in 1960 to 63 apart in 2019." /></div>
@@ -286,7 +274,7 @@
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
                             <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
                     <div class="frame"><img id="img-for2" src="images/for2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
@@ -333,7 +321,7 @@
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
                             <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
                     <div class="frame"><img id="img-against1" src="images/against1.png" alt="Line chart of the ratio of the 90th to the 10th percentile country's under-five mortality rate, 1960 to 2019. The ratio rises from 9.5 in 1960 to a peak of 23.1 in 1999 and ends at 19.1 in 2019, above a dashed line marking the 1960 level." /></div>
@@ -373,7 +361,7 @@
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
                             <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png">Show decision markers</button>
+                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
                     <div class="frame"><img id="img-against2" src="images/against2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>

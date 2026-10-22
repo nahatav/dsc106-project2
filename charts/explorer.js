@@ -50,10 +50,20 @@
       <p class="ex-src">Source: World Bank Human Development Indicators. The 112 countries with data in both 1960 and 2019.</p>
     </div>
     <section class="frame ex-country-card" data-metric="country">
-      <p class="ex-eyebrow">Followed country</p>
-      <div class="ex-c-top">
-        <h4 class="ex-c-name"></h4>
-        <p class="ex-c-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+      <div class="ex-c-head">
+        <div class="ex-c-id"><p class="ex-eyebrow">Followed country</p><h4 class="ex-c-name"></h4></div>
+        <div class="ex-c-stats">
+          <div class="ex-statblock">
+            <p class="ex-stat-lab">Rate in <span class="ex-yr"></span></p>
+            <p class="ex-stat"><span class="ex-big ex-c-rate"></span><span class="ex-unit">per 1,000</span></p>
+            <p class="ex-chg ex-c-chg"></p>
+          </div>
+          <div class="ex-statblock">
+            <p class="ex-stat-lab">Rank</p>
+            <p class="ex-stat"><span class="ex-big ex-c-rank"></span><span class="ex-unit ex-c-of"></span></p>
+            <div class="ex-rankbar" aria-hidden="true"><i></i><span>Lowest</span><span>Highest</span></div>
+          </div>
+        </div>
       </div>
       <p class="ex-c-key"><span class="k-line"></span><span class="ex-c-keyname"></span><span class="k-band"></span>Middle 80% of countries</p>
       <svg role="img" aria-label="The selected country's under-five mortality over time, against the middle 80% of countries"></svg>
@@ -64,13 +74,17 @@
         <p class="ex-m-title">How far apart are countries?</p>
       </div>
       <section class="ex-measure" data-metric="gap">
-        <h4>Difference in rates</h4>
-        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+        <h4>Difference</h4>
+        <p class="ex-sub"></p>
+        <p class="ex-stat"><span class="ex-big"></span><span class="ex-unit">per 1,000</span></p>
+        <p class="ex-chg"></p>
         <svg role="img" aria-label="Difference in mortality rates over time"></svg>
       </section>
       <section class="ex-measure" data-metric="ratio">
-        <h4>Ratio of rates</h4>
-        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+        <h4>Ratio</h4>
+        <p class="ex-sub"></p>
+        <p class="ex-stat"><span class="ex-big"></span><span class="ex-unit">times as high</span></p>
+        <p class="ex-chg"></p>
         <svg role="img" aria-label="Ratio of mortality rates over time"></svg>
       </section>
     </div>`;
@@ -257,9 +271,11 @@
       move(historyClip).attr("width", x(state.year) - x(1960) + 2);
       move(cursor).attr("x1", x(state.year)).attr("x2", x(state.year));
       move(point).attr("cx", x(state.year)).attr("cy", y(s[key]));
-      el.querySelector(".ex-measure-value").textContent = `${f1(s[key])}${key === "ratio" ? "×" : " per 1,000"}`;
-      const change = (s[key] / baseline[key] - 1) * 100;
-      el.querySelector(".ex-verdict").textContent = state.year === 1960 ? "1960 value" : `${Math.abs(change) < 0.5 ? "<1" : Math.round(Math.abs(change))}% ${change < 0 ? "lower" : "higher"} since 1960`;
+      el.querySelector(".ex-sub").textContent = RANGE_SUB[key][state.range];
+      const big = el.querySelector(".ex-big");
+      big.textContent = key === "ratio" ? `${f1(s[key])}×` : f0(s[key]);
+      big.style.color = key === "gap" ? BLUE : CORAL;
+      chip(el.querySelector(".ex-chg"), s[key], baseline[key]);
     });
   }
 
@@ -313,8 +329,12 @@
     const r = rankOf(state.focus, state.year);
     pName.textContent = state.focus;
     el.querySelector(".ex-c-keyname").textContent = state.focus;
-    el.querySelector(".ex-measure-value").textContent = r.v == null ? "No data" : `${f1(r.v)} per 1,000`;
-    el.querySelector(".ex-verdict").textContent = r.v == null ? "" : `in ${state.year} · rank ${r.rank} of ${r.n}, lowest first`;
+    el.querySelector(".ex-yr").textContent = state.year;
+    el.querySelector(".ex-c-rate").textContent = r.v == null ? "–" : f1(r.v);
+    el.querySelector(".ex-c-rank").textContent = r.v == null ? "–" : r.rank;
+    el.querySelector(".ex-c-of").textContent = r.v == null ? "" : `of ${r.n}`;
+    if (r.v != null) chip(el.querySelector(".ex-c-chg"), r.v, c.v[1960]); else el.querySelector(".ex-c-chg").textContent = "";
+    el.querySelector(".ex-rankbar i").style.left = r.v == null ? "0%" : `${((r.rank - 1) / Math.max(1, r.n - 1)) * 100}%`;
     pc.clip.attr("width", pc.x(state.year) - pc.x(1960) + 2);
     pc.cursor.attr("x1", pc.x(state.year)).attr("x2", pc.x(state.year));
     if (r.v != null) pc.dot.attr("opacity", 1).attr("cx", pc.x(state.year)).attr("cy", pc.y(r.v)); else pc.dot.attr("opacity", 0);
@@ -370,6 +390,17 @@
   list.addEventListener("mousedown", (e) => e.preventDefault());
   list.addEventListener("click", (e) => { const li = e.target.closest("li[data-name]"); if (li) { setFocus(li.dataset.name); input.blur(); } });
   input.addEventListener("blur", () => { closeList(); input.value = ""; });
+
+  function chip(el, now, base) {
+    if (state.year === 1960) { el.className = el.className.replace(/ is-(up|down)/, ""); el.textContent = "1960 starting point"; return; }
+    const c = (now / base - 1) * 100, down = c < 0;
+    el.className = el.className.replace(/ is-(up|down)/, "") + (down ? " is-down" : " is-up");
+    el.innerHTML = `<b>${down ? "▼" : "▲"} ${Math.abs(c) < 0.5 ? "<1" : Math.round(Math.abs(c))}%</b> since 1960`;
+  }
+  const RANGE_SUB = {
+    gap: { "80": "90th minus 10th percentile country", "50": "75th minus 25th percentile country", "100": "Highest minus lowest country" },
+    ratio: { "80": "90th percentile country ÷ 10th", "50": "75th percentile country ÷ 25th", "100": "Highest country ÷ lowest" },
+  };
 
   function setSelection(mode, range) {
     state.mode = mode;

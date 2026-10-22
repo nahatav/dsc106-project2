@@ -39,16 +39,23 @@
       </div>
       </div>
       <div class="ex-chart"><svg></svg></div>
-      <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
+      <div class="ex-time">
+        <span class="ex-time-end">1960</span>
+        <div class="ex-track">
+          <output class="ex-now" aria-hidden="true">1960</output>
+          <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
+        </div>
+        <span class="ex-time-end">2019</span>
+      </div>
       <p class="ex-src">Source: World Bank Human Development Indicators. The 112 countries with data in both 1960 and 2019.</p>
     </div>
     <section class="frame ex-country-card" data-metric="country">
       <p class="ex-eyebrow">Followed country</p>
       <div class="ex-c-top">
-        <h4 class="ex-c-name">United States</h4>
+        <h4 class="ex-c-name"></h4>
         <p class="ex-c-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
       </div>
-      <p class="ex-c-key"><span class="k-line"></span><span class="ex-c-keyname">United States</span><span class="k-band"></span>Middle 80% of countries</p>
+      <p class="ex-c-key"><span class="k-line"></span><span class="ex-c-keyname"></span><span class="k-band"></span>Middle 80% of countries</p>
       <svg role="img" aria-label="The selected country's under-five mortality over time, against the middle 80% of countries"></svg>
     </section>
     <div class="frame ex-measures">
@@ -69,15 +76,17 @@
     </div>`;
 
   const $ = (s) => root.querySelector(s);
+  const THUMB = 14;
   const resume = $(".ex-resume"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = { hidden: true };
   const svg = d3.select($(".ex-chart svg"));
-  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: "United States" };
+  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: null };
   let D, S, countries, draw, styleDots, refocus, comparisons, measurePlots = [];
 
   d3.json("charts/data.json").then((data) => {
     D = data;
     S = Object.fromEntries(D.stats.map((s) => [s.y, s]));
     countries = D.cohort.map((c) => ({ name: c.name, v: Object.fromEntries(c.v) }));
+    state.focus = countries[Math.floor(Math.random() * countries.length)].name;   // open on a random country
     comparisons = Object.fromEntries(["80", "50", "100"].map(range => [range, YEARS.map(y => {
       const s = S[y], vals = countries.map(c => c.v[y]).filter(v => v != null).sort(d3.ascending);
       const lo = range === "80" ? s.p10 : range === "50" ? s.p25 : vals[0];
@@ -114,8 +123,6 @@
       return (cache[m][yr] = new Map(nodes.map((n) => [n.name, n])));
     };
 
-    const yearMark = svg.append("text").attr("class", "ex-yearmark").attr("text-anchor", "end")
-      .attr("x", W - pad).attr("y", MID - HB + (narrow ? 30 : 42)).text(state.year);
     const axisG = svg.append("g"), band = svg.append("rect").attr("y", MID - HB).attr("height", 2 * HB).attr("rx", 4).attr("fill", INK).attr("opacity", 0.045);
     const l10 = svg.append("line"), l90 = svg.append("line");
     [l10, l90].forEach((l) => l.attr("y1", MID - HB).attr("y2", MID + HB).attr("stroke", INK).attr("stroke-width", 1.1).attr("stroke-dasharray", "3 3"));
@@ -167,7 +174,9 @@
 
     draw = (dur, easing = d3.easeCubicInOut) => {
       const sc = state.mode === "log" ? log : lin, s = comparisons[state.range][state.year - 1960];
-      yearMark.text(state.year);
+      const nowEl = root.querySelector(".ex-now"), f = (state.year - 1960) / 59;
+      nowEl.textContent = state.year;
+      nowEl.style.left = `calc(${f * 100}% + ${(0.5 - f) * THUMB}px)`;
       slider.value = state.year;
       axis(dur);
       dotsG.selectAll("circle").data([...layout(state.mode, state.year).values()], (d) => d.name)

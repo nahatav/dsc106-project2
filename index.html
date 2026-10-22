@@ -71,14 +71,19 @@
             .ex-stage { padding: 24px 24px 16px; }
             .ex-head-text { min-width: 0; }
             .ex-dek { margin: 3px 0 0; font-size: 14px; line-height: 1.45; color: #666; font-weight: 500; }
+            .ex-time { display: flex; align-items: flex-end; gap: 10px; margin: 6px 0 0; }
+            .ex-time-end { font-size: 11px; color: #9a9aa4; font-variant-numeric: tabular-nums; padding-bottom: 2px; }
+            .ex-track { position: relative; flex: 1; padding-top: 24px; }
+            .ex-now { position: absolute; top: 0; transform: translateX(-50%); font-size: 12px; font-weight: 700; color: #fff; background: #26262c;
+                      padding: 2px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; line-height: 1.35; pointer-events: none; }
+            .ex-now::after { content: ""; position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); border: 4px solid transparent; border-bottom: 0; border-top-color: #26262c; }
+            .ex-slider { display: block; width: 100%; height: 18px; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
+            .ex-slider::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: #dfe3e8; }
+            .ex-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5.5px; border-radius: 50%; background: #26262c; border: 2px solid #fff; box-shadow: 0 0 0 1px #26262c; }
+            .ex-slider::-moz-range-track { height: 3px; border-radius: 2px; background: #dfe3e8; }
+            .ex-slider::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: #26262c; border: 2px solid #fff; box-shadow: 0 0 0 1px #26262c; }
             .ex-src { margin: 10px 0 0; font-size: 11px; color: #999; font-weight: 500; }
-            .ex-yearmark { font-size: 44px; font-weight: 700; fill: #dfe2e7; font-variant-numeric: tabular-nums; pointer-events: none; }
             .ex-title { color: #121212; font-size: 21px; font-weight: 700; margin: 0; line-height: 1.25; }
-            .ex-slider { display: block; width: 100%; height: 18px; margin: 4px 0 0; appearance: none; background: transparent; cursor: pointer; }
-            .ex-slider::-webkit-slider-runnable-track { height: 2px; background: #d5dde1; }
-            .ex-slider::-webkit-slider-thumb { appearance: none; width: 8px; height: 12px; margin-top: -5px; background: #788ba8; border-radius: 1px; }
-            .ex-slider::-moz-range-track { height: 2px; background: #d5dde1; }
-            .ex-slider::-moz-range-thumb { width: 8px; height: 12px; border: 0; border-radius: 1px; background: #788ba8; }
             .ex-chart { position: relative; width: 100%; }
             .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
             .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
@@ -131,8 +136,7 @@
             @media (max-width: 34em) {
                 .ex-stage { padding: 14px 12px 10px; }
                 .ex-title { font-size: 18px; }
-                .ex-yearmark { font-size: 30px; }
-                .ex-range { width: 100%; } .ex-range button { flex: 1; white-space: nowrap; } .ex-right { margin-left: 0; }
+                    .ex-range { width: 100%; } .ex-range button { flex: 1; white-space: nowrap; } .ex-right { margin-left: 0; }
                 .ex-measures { grid-template-columns: 1fr; gap: 0; padding: 16px 12px 10px; }
                 .ex-find { flex-basis: 100%; }
                 .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; }
@@ -491,7 +495,7 @@
                 <p>
                     Watch all 112 countries from 1960 to 2019. Each comparison runs through every year on a linear scale,
                     then repeats on a logarithmic scale: first the middle 80%, then the middle 50%, then the full range.
-                    Use the scale or comparison buttons to stop and explore. The chart starts by following the United States;
+                    Use the scale or comparison buttons to stop and explore. The chart starts by following a randomly chosen country;
                     hover over or tap any dot, or search for a country, to follow it instead. The card below the chart
                     tracks that country against the middle 80% of countries and gives its rank among the 112; the last two
                     charts show how far apart countries are under the selected comparison.

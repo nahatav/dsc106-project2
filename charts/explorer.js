@@ -25,20 +25,26 @@
       </span>
     </div>
     <div class="frame ex-stage">
+      <div class="ex-head">
       <p class="ex-title">Under-five mortality in 112 countries</p>
       <div class="ex-find">
-        <span class="ex-find-box">
-          <input type="search" list="ex-countries" placeholder="Find a country" aria-label="Find a country" autocomplete="off" />
-          <button type="button" class="ex-clear" aria-label="Clear country" hidden>&times;</button>
-        </span>
-        <span class="ex-picks">Try <button type="button">India</button><button type="button">Sierra Leone</button><button type="button">Sweden</button></span>
-        <datalist id="ex-countries"></datalist>
+        <div class="ex-combo">
+          <svg class="ex-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" role="combobox" aria-expanded="false" aria-controls="ex-list" aria-autocomplete="list"
+                 placeholder="Find a country" aria-label="Find a country" autocomplete="off" spellcheck="false" />
+          <ul class="ex-list" id="ex-list" role="listbox" hidden></ul>
+        </div>
       </div>
-      <p class="ex-focus" aria-live="polite"></p>
-      <div class="ex-chart"><svg></svg><div class="ex-tip" hidden></div></div>
+      </div>
+      <div class="ex-chart"><svg></svg></div>
       <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
     </div>
     <div class="frame ex-measures">
+      <section class="ex-measure ex-measure-country" data-metric="country">
+        <h4 class="ex-c-name">United States</h4>
+        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+        <svg role="img" aria-label="The selected country's under-five mortality over time, against the middle 80% of countries"></svg>
+      </section>
       <section class="ex-measure" data-metric="gap">
         <h4>Difference in rates</h4>
         <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
@@ -52,16 +58,15 @@
     </div>`;
 
   const $ = (s) => root.querySelector(s);
-  const resume = $(".ex-resume"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = $(".ex-tip");
+  const resume = $(".ex-resume"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = { hidden: true };
   const svg = d3.select($(".ex-chart svg"));
-  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: null };
-  let D, S, countries, draw, comparisons, measurePlots = [];
+  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: "United States" };
+  let D, S, countries, draw, styleDots, refocus, comparisons, measurePlots = [];
 
   d3.json("charts/data.json").then((data) => {
     D = data;
     S = Object.fromEntries(D.stats.map((s) => [s.y, s]));
     countries = D.cohort.map((c) => ({ name: c.name, v: Object.fromEntries(c.v) }));
-    $("#ex-countries").innerHTML = countries.map(c => c.name).sort().map(n => `<option value="${n}">`).join("");
     comparisons = Object.fromEntries(["80", "50", "100"].map(range => [range, YEARS.map(y => {
       const s = S[y], vals = countries.map(c => c.v[y]).filter(v => v != null).sort(d3.ascending);
       const lo = range === "80" ? s.p10 : range === "50" ? s.p25 : vals[0];
@@ -104,11 +109,8 @@
     const t10 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text("10th");
     const t90 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text(narrow ? "90th" : "90th percentile");
     const dotsG = svg.append("g");
-    // followed country: trail of past years, then its dot and label on top of everything
-    const trailG = svg.append("g").attr("class", "ex-trail").style("pointer-events", "none");
-    const focusDot = svg.append("circle").attr("fill", FOCUS).attr("stroke", "#fff").attr("stroke-width", 2).attr("opacity", 0).style("pointer-events", "none");
     const focusLab = svg.append("text").attr("class", "ex-focus-lab").attr("text-anchor", "middle").attr("opacity", 0);
-    const RF = R * 1.9;
+    const RF = R + 1;
 
     let axisMode;
     function axis(dur) {
@@ -132,45 +134,22 @@
         .text(`Deaths per 1,000 births${state.mode === "log" ? ", log scale" : ""}`);
     }
 
-    function showTip(d, el) {
-      const v = countries.find((c) => c.name === d.name).v[state.year];
-      tip.innerHTML = `<b>${d.name}</b>${state.year}: ${f1(v)} per 1,000`;
-      tip.hidden = false;
-      const x = Math.min(W - tip.offsetWidth, Math.max(0, d.x - tip.offsetWidth / 2));
-      tip.style.left = x + "px"; tip.style.top = Math.max(0, d.y - 52) + "px";
-      dotsG.selectAll("circle").attr("stroke", "#fff").attr("stroke-width", 0.8);
-      d3.select(el).attr("stroke", INK).attr("stroke-width", 1.6).raise();
-    }
-    svg.on("click", (e) => { if (e.target.tagName !== "circle") { tip.hidden = true; dotsG.selectAll("circle").attr("stroke", "#fff").attr("stroke-width", 0.8); } });
 
-    // The trail runs along the centre line: one segment per year from 1960 to the selected year,
-    // darkening toward the present, with hollow markers at each decade.
-    function drawTrail(sc, dur, easing) {
-      const c = state.focus && countries.find((o) => o.name === state.focus);
-      const yrs = c ? YEARS.filter((y) => y <= state.year && c.v[y] != null) : [];
-      const move = (sel) => (dur ? sel.transition("motion").duration(dur).ease(easing) : sel);
-      const segs = yrs.slice(1).map((y, i) => ({ y, a: c.v[yrs[i]], b: c.v[y], t: (i + 1) / Math.max(1, yrs.length - 1) }));
-      move(trailG.selectAll("line").data(segs, (d) => d.y).join((e) => e.append("line").attr("x1", (d) => sc(d.a)).attr("x2", (d) => sc(d.a)))
-        .attr("y1", MID).attr("y2", MID).attr("stroke", FOCUS).attr("stroke-width", 3).attr("stroke-linecap", "round")
-        .attr("stroke-opacity", (d) => 0.12 + 0.6 * d.t)).attr("x1", (d) => sc(d.a)).attr("x2", (d) => sc(d.b));
-      const decades = yrs.filter((y) => y % 10 === 0 && y !== state.year);
-      move(trailG.selectAll("circle").data(decades, (d) => d).join((e) => e.append("circle").attr("cx", (d) => sc(c.v[d])))
-        .attr("cy", MID).attr("r", R + 1).attr("fill", "#fff").attr("stroke", FOCUS).attr("stroke-width", 1.5)
-        .attr("stroke-opacity", (d) => 0.35 + 0.5 * ((d - 1960) / 59))).attr("cx", (d) => sc(c.v[d]));
-      let last = -Infinity;
-      const labelled = decades.filter((d) => { const x = sc(c.v[d]); if (Math.abs(x - last) < (narrow ? 30 : 34)) return false; last = x; return true; });
-      move(trailG.selectAll("text").data(labelled, (d) => d).join((e) => e.append("text").attr("x", (d) => sc(c.v[d])))
-        .attr("class", "ex-trail-year").attr("y", MID + RF + 13).attr("text-anchor", "middle").text((d) => (narrow ? "’" + String(d).slice(2) : d)))
-        .attr("x", (d) => sc(c.v[d]));
-      if (!c || c.v[state.year] == null) { focusDot.attr("opacity", 0); focusLab.attr("opacity", 0); return; }
-      const x = sc(c.v[state.year]);
-      const vals = countries.map((o) => o.v[state.year]).filter((v) => v != null).sort(d3.ascending);
-      const rank = vals.findIndex((v) => v >= c.v[state.year]) + 1;
-      focusDot.attr("r", RF).attr("opacity", 1).attr("cy", MID);
-      move(focusDot).attr("cx", x);
-      const anchor = x > W - 70 ? "end" : x < 70 ? "start" : "middle";
-      focusLab.text(`${state.focus} · ${rank} of ${vals.length}`).attr("opacity", 1).attr("y", MID - RF - 8).attr("text-anchor", anchor);
-      move(focusLab).attr("x", anchor === "end" ? x + RF : anchor === "start" ? x - RF : x);
+    styleDots = () => {
+      dotsG.selectAll("circle").attr("r", R).attr("fill", DOT).attr("fill-opacity", 0.8)
+        .attr("stroke", (d) => (d.name === state.focus ? INK : "#fff")).attr("stroke-width", (d) => (d.name === state.focus ? 1.6 : 0.8))
+        .filter((d) => d.name === state.focus).raise();
+    };
+    refocus = () => { styleDots(); drawFocus(0); countryPanel(); };
+
+    function drawFocus(dur, easing) {
+      const fd = state.focus && layout(state.mode, state.year).get(state.focus);
+      if (!fd) { focusLab.attr("opacity", 0).attr("data-name", null); return; }
+      const anchor = fd.x > W - 60 ? "end" : fd.x < 60 ? "start" : "middle";
+      const fresh = focusLab.attr("data-name") !== state.focus;
+      focusLab.text(state.focus).attr("data-name", state.focus).attr("opacity", 1).attr("text-anchor", anchor).raise();
+      const t = dur && !fresh ? focusLab.transition("motion").duration(dur).ease(easing) : focusLab.interrupt("motion");
+      t.attr("x", anchor === "end" ? fd.x + RF : anchor === "start" ? fd.x - RF : fd.x).attr("y", Math.max(11, fd.y - RF - 6));
     }
 
     draw = (dur, easing = d3.easeCubicInOut) => {
@@ -181,15 +160,13 @@
       dotsG.selectAll("circle").data([...layout(state.mode, state.year).values()], (d) => d.name)
         .join((enter) => enter.append("circle").attr("r", R).attr("cx", (d) => d.x).attr("cy", (d) => d.y)
           .attr("fill", DOT).attr("fill-opacity", 0.8).attr("stroke", "#fff").attr("stroke-width", 0.8)
-          .on("pointerenter", function (e, d) { if (e.pointerType === "mouse") showTip(d, this); })
-          .on("pointerleave", (e) => { if (e.pointerType === "mouse") tip.hidden = true; })
-          .on("click", function (e, d) { e.stopPropagation(); tip.hidden = true; setFocus(d.name); }))
+          .on("pointerenter", (e, d) => { if (e.pointerType === "mouse") setFocus(d.name); })
+          .on("click", (e, d) => setFocus(d.name)))
         .transition("motion").duration(dur).ease(easing).attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       const on = (d) => d.name === state.focus;
-      dotsG.selectAll("circle").attr("r", R).attr("fill", DOT)
-        .attr("fill-opacity", (d) => (on(d) ? 0 : state.focus ? 0.35 : 0.8)).attr("stroke-opacity", (d) => (on(d) ? 0 : 1));
-      drawTrail(sc, dur, easing);
-      focusText();
+      styleDots();
+      drawFocus(dur, easing);
+      countryPanel();
       const x10 = sc(s.lo), x90 = sc(s.hi);
       t10.text(state.range === "100" ? "Lowest" : state.range === "50" ? "25th" : "10th");
       t90.text(state.range === "100" ? "Highest" : state.range === "50" ? (narrow ? "75th" : "75th percentile") : narrow ? "90th" : "90th percentile");
@@ -264,29 +241,112 @@
     });
   }
 
-  // Follow one country through the animation
-  const input = $(".ex-find input"), clear = $(".ex-clear"), focusEl = $(".ex-focus");
-  function focusText() {
-    if (!state.focus) { focusEl.textContent = "Search for a country, or tap a dot, to follow it through every year."; focusEl.classList.remove("on"); return; }
-    const c = countries.find(c => c.name === state.focus), v = c.v[state.year];
-    const vals = countries.map(o => o.v[state.year]).filter(x => x != null).sort(d3.ascending);
-    const rank = vals.findIndex(x => x >= v) + 1, ch = (v / c.v[1960] - 1) * 100;
-    focusEl.innerHTML = `<b>${state.focus}</b> ${state.year}: <b>${f1(v)}</b> deaths per 1,000 births · ` +
-      `ranked ${rank} of ${vals.length} (1 = lowest)` + (state.year === 1960 ? "" : ` · ${Math.round(Math.abs(ch))}% ${ch < 0 ? "lower" : "higher"} than in 1960`);
-    focusEl.classList.add("on");
+  // Follow one country: highlighted dot, plus a panel with its own line against the middle 80%
+  const input = $(".ex-combo input"), list = $(".ex-list");
+  const panel = $('[data-metric="country"]'), pName = $(".ex-c-name"), pSvg = d3.select(panel.querySelector("svg"));
+  let panelKey = null, pc = null;
+
+  function rankOf(name, yr) {
+    const v = countries.find((c) => c.name === name).v[yr];
+    if (v == null) return { v: null };
+    const vals = countries.map((o) => o.v[yr]).filter((x) => x != null).sort(d3.ascending);
+    return { v, rank: vals.findIndex((x) => x >= v) + 1, n: vals.length };
   }
+
+  function countryPanel() {
+    const c = countries && countries.find((o) => o.name === state.focus);
+    if (!c) return;
+    const el = panel, node = pSvg.node();
+    const W = Math.floor(el.clientWidth) || 300, H = 210, m = { l: 48, r: 12, t: 12, b: 46 };
+    const key = [state.focus, state.mode, W].join("|");
+    if (key !== panelKey) {
+      panelKey = key;
+      const g = pSvg.attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+      g.selectAll("*").remove();
+      const x = d3.scaleLinear().domain([1960, 2019]).range([m.l, W - m.r]);
+      const hi = d3.max(YEARS, (t) => Math.max(S[t].p90, c.v[t] || 0));
+      const y = state.mode === "log" ? d3.scaleLog().domain([1.5, 450]).range([H - m.b, m.t])
+                                     : d3.scaleLinear().domain([0, hi * 1.05]).nice(4).range([H - m.b, m.t]);
+      g.append("g").attr("class", "ex-mini-axis").attr("transform", `translate(${m.l},0)`)
+        .call(state.mode === "log" ? d3.axisLeft(y).tickValues([2, 10, 50, 200]).tickFormat(d3.format("d")).tickSize(-(W - m.l - m.r))
+                                   : d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)))
+        .select(".domain").remove();
+      g.append("g").attr("class", "ex-mini-axis ex-mini-x").attr("transform", `translate(0,${H - m.b})`)
+        .call(d3.axisBottom(x).tickValues(W < 300 ? [1960, 1990, 2019] : [1960, 1980, 2000, 2019]).tickFormat(d3.format("d")).tickSize(4));
+      g.append("text").attr("class", "ex-tick").attr("text-anchor", "middle").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).text("Year");
+      g.append("text").attr("class", "ex-tick").attr("text-anchor", "middle")
+        .attr("transform", `translate(12,${(m.t + H - m.b) / 2}) rotate(-90)`).text("Deaths per 1,000 births");
+      g.append("path").datum(YEARS).attr("fill", "#eceef2")
+        .attr("d", d3.area().x((t) => x(t)).y0((t) => y(S[t].p10)).y1((t) => y(S[t].p90)).curve(d3.curveMonotoneX));
+      const ys = YEARS.filter((t) => c.v[t] != null);
+      const line = d3.line().x((t) => x(t)).y((t) => y(c.v[t])).curve(d3.curveMonotoneX);
+      g.append("path").datum(ys).attr("fill", "none").attr("stroke", "#dce1e6").attr("stroke-width", 2).attr("d", line);
+      const clip = g.append("defs").append("clipPath").attr("id", "ex-history-country").append("rect")
+        .attr("x", m.l - 2).attr("y", 0).attr("height", H).attr("width", 0);
+      g.append("path").datum(ys).attr("clip-path", "url(#ex-history-country)").attr("fill", "none").attr("stroke", FOCUS).attr("stroke-width", 2.4).attr("d", line);
+      const cursor = g.append("line").attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "#a8b1b8").attr("stroke-width", 1);
+      const dot = g.append("circle").attr("r", 3.8).attr("fill", FOCUS).attr("stroke", "#fff").attr("stroke-width", 1.5);
+      pc = { x, y, cursor, dot, clip };
+    }
+    const r = rankOf(state.focus, state.year);
+    pName.textContent = state.focus;
+    el.querySelector(".ex-measure-value").textContent = r.v == null ? "No data" : `${f1(r.v)} per 1,000`;
+    el.querySelector(".ex-verdict").textContent = r.v == null ? "" : `rank ${r.rank} of ${r.n}, lowest first`;
+    pc.clip.attr("width", pc.x(state.year) - pc.x(1960) + 2);
+    pc.cursor.attr("x1", pc.x(state.year)).attr("x2", pc.x(state.year));
+    if (r.v != null) pc.dot.attr("opacity", 1).attr("cx", pc.x(state.year)).attr("cy", pc.y(r.v)); else pc.dot.attr("opacity", 0);
+  }
+
   function setFocus(name) {
-    const hit = name && countries.find(c => c.name.toLowerCase() === name.trim().toLowerCase());
-    state.focus = hit ? hit.name : null;
-    input.value = state.focus || "";
-    clear.hidden = !state.focus;
-    if (draw) draw(250);
+    const hit = name && countries && countries.find((c) => c.name.toLowerCase() === String(name).trim().toLowerCase());
+    if (!hit || hit.name === state.focus) { closeList(); return; }
+    state.focus = hit.name;
+    input.value = "";
+    closeList();
+    if (refocus) refocus();
   }
-  input.addEventListener("input", () => { const hit = countries.find(c => c.name.toLowerCase() === input.value.trim().toLowerCase()); if (hit) setFocus(hit.name); });
-  input.addEventListener("change", () => setFocus(input.value));
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { const q = input.value.trim().toLowerCase(); const m = countries.find(c => c.name.toLowerCase().startsWith(q)); setFocus(m ? m.name : input.value); } });
-  clear.addEventListener("click", () => setFocus(null));
-  root.querySelectorAll(".ex-picks button").forEach(b => b.addEventListener("click", () => setFocus(b.textContent)));
+
+  // custom combobox
+  let matches = [], active = -1;
+  const esc = (t) => t.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  function openList() {
+    if (!countries) return;
+    const q = input.value.trim().toLowerCase();
+    const names = countries.map((c) => c.name).sort();
+    matches = q
+      ? names.filter((n) => n.toLowerCase().startsWith(q)).concat(names.filter((n) => !n.toLowerCase().startsWith(q) && n.toLowerCase().includes(q)))
+      : names;
+    active = matches.length ? 0 : -1;
+    list.innerHTML = matches.length
+      ? matches.map((n, i) => {
+          const at = q ? n.toLowerCase().indexOf(q) : -1;
+          const label = at < 0 ? esc(n) : esc(n.slice(0, at)) + "<mark>" + esc(n.slice(at, at + q.length)) + "</mark>" + esc(n.slice(at + q.length));
+          const v = countries.find((c) => c.name === n).v[state.year];
+          return `<li role="option" data-name="${esc(n)}"${i === active ? ' aria-selected="true"' : ""}><span>${label}</span><span class="ex-li-v">${v != null ? f1(v) : ""}</span></li>`;
+        }).join("")
+      : `<li class="ex-none">No country matches “${esc(input.value.trim())}”</li>`;
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  }
+  function closeList() { list.hidden = true; input.setAttribute("aria-expanded", "false"); }
+  function setActive(i) {
+    if (!matches.length) return;
+    active = (i + matches.length) % matches.length;
+    list.querySelectorAll("li").forEach((li, k) => li.toggleAttribute("aria-selected", k === active));
+    const li = list.children[active];
+    if (li) li.scrollIntoView({ block: "nearest" });
+  }
+  input.addEventListener("focus", openList);
+  input.addEventListener("input", openList);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); list.hidden ? openList() : setActive(active + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === "Enter") { e.preventDefault(); if (matches[active]) { setFocus(matches[active]); input.blur(); } }
+    else if (e.key === "Escape") { closeList(); input.blur(); }
+  });
+  list.addEventListener("mousedown", (e) => e.preventDefault());
+  list.addEventListener("click", (e) => { const li = e.target.closest("li[data-name]"); if (li) { setFocus(li.dataset.name); input.blur(); } });
+  input.addEventListener("blur", () => { closeList(); input.value = ""; });
 
   function setSelection(mode, range) {
     state.mode = mode;

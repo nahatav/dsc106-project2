@@ -141,6 +141,15 @@
                 .ex-find { flex-basis: 100%; }
                 .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; }
             }
+            .progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 1000; pointer-events: none; }
+            .progress span { display: block; height: 100%; background: var(--head); transform-origin: 0 50%; transform: scaleX(0); }
+            .to-next { position: fixed; right: 24px; bottom: 24px; z-index: 1000; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line);
+                       background: #fff; color: var(--head); font-size: 18px; line-height: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(20,20,22,.08);
+                       opacity: 0; pointer-events: none; transform: translateY(6px); transition: opacity .2s, transform .2s; }
+            .to-next.on { opacity: 1; pointer-events: auto; transform: none; }
+            .to-next:hover { border-color: #94949e; }
+            [id] { scroll-margin-top: 1.2rem; }
+            @media (max-width: 34em) { .to-next { right: 14px; bottom: 14px; width: 38px; height: 38px; } }
             footer { height: 8rem; }
 
             a { color: var(--accent); text-decoration: none; }
@@ -284,6 +293,8 @@
     </head>
 
     <body>
+        <div class="progress" aria-hidden="true"><span></span></div>
+        <button type="button" class="to-next" aria-label="Go to next section">&#8595;</button>
         <article>
             <header class="col masthead">
                 <h1>Convergence or divergence? Two readings of child mortality across countries, 1960 to 2019</h1>
@@ -685,6 +696,18 @@
                 el("line", { x1: x(0), x2: x(0), y1: TOP - 6, y2: H - 22, stroke: "#8a8a96", "stroke-width": 1 });
             }
             drawLedger();
+
+            // next-section button and reading progress
+            const SECTIONS = ["for", "against", "interactive", "reflection", "data"].map((id) => document.getElementById(id));
+            const toNext = document.querySelector(".to-next"), bar = document.querySelector(".progress span");
+            const nextSection = () => SECTIONS.find((el) => el.getBoundingClientRect().top > 40);
+            toNext.addEventListener("click", () => { const el = nextSection(); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); });
+            const onScroll = () => {
+                const h = document.documentElement.scrollHeight - innerHeight;
+                bar.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`;
+                toNext.classList.toggle("on", scrollY > 300 && !!nextSection());
+            };
+            addEventListener("scroll", onScroll, { passive: true }); onScroll();
             let ledgerW = window.innerWidth;
             window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
         </script>

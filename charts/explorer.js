@@ -42,12 +42,20 @@
       <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
       <p class="ex-src">Source: World Bank Human Development Indicators. The 112 countries with data in both 1960 and 2019.</p>
     </div>
-    <div class="frame ex-measures">
-      <section class="ex-measure ex-measure-country" data-metric="country">
+    <section class="frame ex-country-card" data-metric="country">
+      <p class="ex-eyebrow">Followed country</p>
+      <div class="ex-c-top">
         <h4 class="ex-c-name">United States</h4>
-        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
-        <svg role="img" aria-label="The selected country's under-five mortality over time, against the middle 80% of countries"></svg>
-      </section>
+        <p class="ex-c-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+      </div>
+      <p class="ex-c-key"><span class="k-line"></span><span class="ex-c-keyname">United States</span><span class="k-band"></span>Middle 80% of countries</p>
+      <svg role="img" aria-label="The selected country's under-five mortality over time, against the middle 80% of countries"></svg>
+    </section>
+    <div class="frame ex-measures">
+      <div class="ex-m-head">
+        <p class="ex-eyebrow">Selected comparison</p>
+        <p class="ex-m-title">How far apart are countries?</p>
+      </div>
       <section class="ex-measure" data-metric="gap">
         <h4>Difference in rates</h4>
         <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
@@ -262,7 +270,7 @@
     const c = countries && countries.find((o) => o.name === state.focus);
     if (!c) return;
     const el = panel, node = pSvg.node();
-    const W = Math.floor(el.clientWidth) || 300, H = 210, m = { l: 48, r: 12, t: 12, b: 46 };
+    const W = Math.floor(el.querySelector("svg").clientWidth || el.clientWidth) || 300, H = 190, m = { l: 48, r: 12, t: 12, b: 46 };
     const key = [state.focus, state.mode, W].join("|");
     if (key !== panelKey) {
       panelKey = key;
@@ -295,8 +303,9 @@
     }
     const r = rankOf(state.focus, state.year);
     pName.textContent = state.focus;
+    el.querySelector(".ex-c-keyname").textContent = state.focus;
     el.querySelector(".ex-measure-value").textContent = r.v == null ? "No data" : `${f1(r.v)} per 1,000`;
-    el.querySelector(".ex-verdict").textContent = r.v == null ? "" : `rank ${r.rank} of ${r.n}, lowest first`;
+    el.querySelector(".ex-verdict").textContent = r.v == null ? "" : `in ${state.year} · rank ${r.rank} of ${r.n}, lowest first`;
     pc.clip.attr("width", pc.x(state.year) - pc.x(1960) + 2);
     pc.cursor.attr("x1", pc.x(state.year)).attr("x2", pc.x(state.year));
     if (r.v != null) pc.dot.attr("opacity", 1).attr("cx", pc.x(state.year)).attr("cy", pc.y(r.v)); else pc.dot.attr("opacity", 0);

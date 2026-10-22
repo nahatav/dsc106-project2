@@ -21,8 +21,8 @@
                 --head: #141416;
                 --dim: #71717e;
                 --accent: #c9a37e;
-                --gold: #7f9fa8;
-                --red: #8b98b4;
+                --gold: #8b98b4;
+                --red: #7f9fa8;
                 --deceptive: #3b3b44;
                 --earnest: #3b3b44;
                 --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -72,9 +72,9 @@
             .ex-seg { grid-area: scale; justify-self: end; }
             .ex-slider { display: block; width: 100%; height: 18px; margin: 4px 0 0; appearance: none; background: transparent; cursor: pointer; }
             .ex-slider::-webkit-slider-runnable-track { height: 2px; background: #d5dde1; }
-            .ex-slider::-webkit-slider-thumb { appearance: none; width: 8px; height: 12px; margin-top: -5px; background: #6b8290; border-radius: 1px; }
+            .ex-slider::-webkit-slider-thumb { appearance: none; width: 8px; height: 12px; margin-top: -5px; background: #788ba8; border-radius: 1px; }
             .ex-slider::-moz-range-track { height: 2px; background: #d5dde1; }
-            .ex-slider::-moz-range-thumb { width: 8px; height: 12px; border: 0; border-radius: 1px; background: #6b8290; }
+            .ex-slider::-moz-range-thumb { width: 8px; height: 12px; border: 0; border-radius: 1px; background: #788ba8; }
             .ex-chart { position: relative; width: 100%; }
             .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
             .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
@@ -291,11 +291,11 @@
                     <div class="gfx-tools">
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png?v=7c24df91d415">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png?v=4cf2d3421baa" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png?v=34535fcb0818">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png?v=df87f263b7e9" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-for1" src="images/for1.png?v=7c24df91d415" alt="Fan chart of under-five mortality across 112 countries, 1960 to 2019, with shaded bands for the middle 80% and middle 50% of countries and a median line. The distance from the 10th to the 90th percentile falls from 255 deaths per 1,000 births to 63." /></div>
+                    <div class="frame"><img id="img-for1" src="images/for1.png?v=34535fcb0818" alt="Fan chart of under-five mortality across 112 countries, 1960 to 2019, with shaded bands for the middle 80% and middle 50% of countries and a median line. The distance from the 10th to the 90th percentile falls from 255 deaths per 1,000 births to 63." /></div>
                     <figcaption><b>Figure 1.</b> Percentiles of under-five mortality across the 112-country sample, 1960 to 2019. Bands show the 10th to 90th and 25th to 75th percentiles.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
@@ -331,11 +331,11 @@
                     <div class="gfx-tools">
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png?v=fe3abf08f308">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png?v=98d3b88fb9b9" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png?v=c52a6f44f315">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png?v=27453ea68aa4" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-for2" src="images/for2.png?v=fe3abf08f308" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
+                    <div class="frame"><img id="img-for2" src="images/for2.png?v=c52a6f44f315" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
                     <figcaption><b>Figure 2.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a linear scale.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
@@ -378,11 +378,11 @@
                     <div class="gfx-tools">
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png?v=f35dac759ef3">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png?v=6e7f71ac06ce" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png?v=dd1e0f59b5a5">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png?v=b7df41022a4f" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-against1" src="images/against1.png?v=f35dac759ef3" alt="Line chart of the ratio of the 90th to the 10th percentile under-five mortality rate, 1960 to 2019, over 200 faint bootstrap lines. The ratio rises from 9.5 to a peak of 23.1 in 1999 and ends at 19.1, with a 95% interval of 13 to 26 in 2019." /></div>
+                    <div class="frame"><img id="img-against1" src="images/against1.png?v=dd1e0f59b5a5" alt="Line chart of the ratio of the 90th to the 10th percentile under-five mortality rate, 1960 to 2019, over 200 faint bootstrap lines. The ratio rises from 9.5 to a peak of 23.1 in 1999 and ends at 19.1, with a 95% interval of 13 to 26 in 2019." /></div>
                     <figcaption><b>Figure 3.</b> Ratio of the 90th to the 10th percentile rate in the 112-country sample, 1960 to 2019. Faint lines are 200 bootstrap resamples of the countries; the bar shows the 95% interval for 2019.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
@@ -418,11 +418,11 @@
                     <div class="gfx-tools">
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png?v=199658c9f1c4">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png?v=acf0a84640f8" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png?v=24203b2d2792">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png?v=8ef94790a715" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-against2" src="images/against2.png?v=199658c9f1c4" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
+                    <div class="frame"><img id="img-against2" src="images/against2.png?v=24203b2d2792" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
                     <figcaption><b>Figure 4.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a logarithmic scale.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
@@ -446,7 +446,7 @@
                                 <span class="dec-title">Draw 2019 in a stronger color and 1960 in a pale <span class="dec-tail">one</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
-                            <p>The deeper slate-blue tone draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
+                            <p>The darker green draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
                         </li>
                     </ol>
                 </section>
@@ -598,7 +598,7 @@
                 el("text", { transform: "translate(12,132) rotate(-90)", "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Figure");
                 el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "letter-spacing": "0.06em" }, narrow ? "← DECEPTIVE" : "← MORE DECEPTIVE");
                 el("text", { x: x(2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, narrow ? "EARNEST →" : "MORE EARNEST →");
-                [["for1", "Figure 1", "#7f9fa8"], ["for2", "Figure 2", "#7f9fa8"], ["against1", "Figure 3", "#8b98b4"], ["against2", "Figure 4", "#8b98b4"]].forEach(([key, label, color], r) => {
+                [["for1", "Figure 1", "#8b98b4"], ["for2", "Figure 2", "#8b98b4"], ["against1", "Figure 3", "#7f9fa8"], ["against2", "Figure 4", "#7f9fa8"]].forEach(([key, label, color], r) => {
                     const y = 58 + r * 52;
                     el("text", { x: 28, y: y + 5, "font-size": narrow ? 12.5 : 13.5, "font-weight": 700, fill: color }, narrow ? label.replace("Figure ", "Fig. ") : label);
                     el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });
@@ -617,6 +617,6 @@
             window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-        <script src="charts/explorer.js?v=700a640eb76f"></script>
+        <script src="charts/explorer.js?v=0991c620fe98"></script>
     </body>
 </html>

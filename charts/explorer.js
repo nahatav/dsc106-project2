@@ -3,7 +3,7 @@
 (function () {
   const root = document.getElementById("explorer");
   if (!root) return;
-  const BLUE = "#7f9fa8", CORAL = "#8b98b4", DOT = "#8f9fa9", INK = "#121212";
+  const BLUE = "#8b98b4", CORAL = "#7f9fa8", DOT = "#8b98b4", INK = "#121212";
   const f0 = (v) => String(Math.round(v));
   const f1 = (v) => (Math.round(v * 10 + 1e-9) / 10).toFixed(1);
   const YEARS = d3.range(1960, 2020);

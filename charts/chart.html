@@ -11,8 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
   :root { --ink: #121212; --mid: #666; --soft: #8c8c8c; --rule: #ececec;
-          --teal: #7f9fa8; --teal-2: #c3d5db; --teal-fill: #e7eef0;
-          --orange: #8b98b4; --orange-2: #d7deeb; }
+          --teal: #8b98b4; --teal-2: #d7deeb; --teal-fill: #edf0f6;
+          --orange: #7f9fa8; --orange-2: #c3d5db; }
   html, body { margin: 0; background: #fff; }
   body { font-family: "Libre Franklin", "Franklin Gothic Book", Arial, sans-serif; color: #333; }
   #wrap { width: 720px; padding: 26px 24px 20px; box-sizing: border-box; }
@@ -136,16 +136,16 @@ function for1(D) {   // percentile fan chart
   const { x, y } = timeFrame(390, 300, [100, 200, 300], String, "Deaths before age 5 per 1,000 live births", 102, 144, 34);
   const area = (a, b) => d3.area().x(d => x(d.y)).y0(d => y(d[a])).y1(d => y(d[b])).curve(d3.curveMonotoneX);
   const line = k => d3.line().x(d => x(d.y)).y(d => y(d[k])).curve(d3.curveMonotoneX);
-  g.append("path").datum(S).attr("fill", "#e7eef0").attr("d", area("p10", "p90"));
-  g.append("path").datum(S).attr("fill", "#ccdce0").attr("d", area("p25", "p75"));
+  g.append("path").datum(S).attr("fill", "#edf0f6").attr("d", area("p10", "p90"));
+  g.append("path").datum(S).attr("fill", "#d4dbea").attr("d", area("p25", "p75"));
   ["p10", "p90"].forEach(k => g.append("path").datum(S).attr("fill", "none").attr("stroke", TEAL).attr("stroke-width", 1.2).attr("opacity", 0.8).attr("d", line(k)));
-  g.append("path").datum(S).attr("fill", "none").attr("stroke", "#617f89").attr("stroke-width", 2.6).attr("d", line("med"));
+  g.append("path").datum(S).attr("fill", "none").attr("stroke", "#657693").attr("stroke-width", 2.6).attr("d", line("med"));
 
   // inline band labels where the fan is widest
   const at = S.find(s => s.y === 1972);
   text(gTop, x(1972), y((at.p75 + at.p90) / 2) + 4, "Middle 80% of countries", "lab halo", TEAL, "middle");
-  text(gTop, x(1972), y((at.med + at.p75) / 2) + 4, "Middle 50%", "lab halo", "#617f89", "middle");
-  text(gTop, x(1982), y(S.find(s => s.y === 1982).med) - 9, "Median", "lab halo", "#617f89", "middle");
+  text(gTop, x(1972), y((at.med + at.p75) / 2) + 4, "Middle 50%", "lab halo", "#657693", "middle");
+  text(gTop, x(1982), y(S.find(s => s.y === 1982).med) - 9, "Median", "lab halo", "#657693", "middle");
 
   // Keep both endpoint brackets; the wider left margin separates the 1960 label from the axis and fan.
   const bracket = (s, bx, dir, year) => {

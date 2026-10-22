@@ -141,6 +141,36 @@
                 .ex-find { flex-basis: 100%; }
                 .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; }
             }
+
+            /* page guidance */
+            .lede { font-size: 1.12rem; line-height: 1.7; color: var(--body); margin: 0.4rem 0 1.4rem; }
+            .lede em { font-style: italic; color: var(--head); }
+            .howto { list-style: none; padding: 0; margin: 0 0 1.2rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+            .howto li { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; background: var(--raise); padding: 14px 14px 12px; font-size: 0.86rem; line-height: 1.5; color: var(--body); margin: 0; }
+            .howto b { display: block; color: var(--head); font-weight: 600; margin-bottom: 2px; }
+            .howto-n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--head); color: #fff; font-size: 0.75rem; font-weight: 600; display: grid; place-items: center; margin-top: 1px; }
+            .scale-legend { margin: 0 0 1.6rem; }
+            .sl-label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+            .sl-bar { position: relative; display: flex; justify-content: space-between; padding: 6px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; color: var(--head);
+                      border: 1px solid var(--line); background: linear-gradient(90deg, #e3e5ea, #fbfcfd 50%, #e3e5ea); font-variant-numeric: tabular-nums; }
+            .sl-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.75rem; color: var(--dim); }
+            .side-banner { margin: 3.4rem 0 1.2rem; padding: 18px 20px 6px; border-radius: 8px; border: 1px solid var(--line); border-top: 4px solid var(--sb, var(--head)); background: var(--raise); scroll-margin-top: 1rem; }
+            .side-banner.for { --sb: var(--gold); }
+            .side-banner.against { --sb: var(--red); }
+            .side-banner h2 { margin: 2px 0 8px !important; font-size: 1.45rem; }
+            .side-banner p { margin: 0 0 12px; }
+            .sb-kicker { font-size: 0.78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--sb, var(--dim)) !important; }
+            .sb-kicker .num { color: inherit; margin-right: 0.6em; }
+            .sb-claim { font-size: 1.05rem; color: var(--head); line-height: 1.55; }
+            .sb-claim b { color: var(--sb); }
+            .dec-heading { margin: 1.6rem 0 0.6rem !important; font-weight: 600; color: var(--head); font-size: 0.95rem; }
+            .dec-heading span { display: block; font-weight: 400; font-size: 0.82rem; color: var(--dim); }
+            .numbered-heading { justify-content: flex-start !important; }
+            .numbered-heading .num { order: -1; margin-right: 0.55em; }
+            @media (max-width: 44em) { .howto { grid-template-columns: 1fr; } }
+            @media (max-width: 34em) { .side-banner { padding: 14px 14px 4px; } .side-banner h2 { font-size: 1.2rem; } .sl-bar { font-size: 0.72rem; } }
+            .toc > ol { column-count: 2; column-gap: 2rem; } .toc > ol > li { break-inside: avoid; }
+            @media (max-width: 44em) { .toc > ol { column-count: 1; } }
             footer { height: 8rem; }
 
             a { color: var(--accent); text-decoration: none; }
@@ -299,27 +329,36 @@
             </header>
 
             <div class="col">
-                <div class="abstract">
-                    <p>
-                        Using the World Bank’s under-five mortality series for the 112 countries with data in 1960 and
-                        2019, we test whether countries have moved closer together. Every country improved, and the median
-                        rate fell from 149.4 to 15.0 deaths per 1,000 live births. Measured as a difference, the distance
-                        between the 90th and 10th percentile countries fell by 75%. Measured as a ratio, it doubled, from
-                        9.5 to 19.1. We present two visualizations for the proposition, two against it, and an interactive figure that
-                        animates both measures from 1960 to 2019.
-                    </p>
+                <p class="lede">
+                    Between 1960 and 2019, child mortality fell in every one of the 112 countries with records at both ends.
+                    Whether countries also moved <em>closer together</em> depends on how you measure the distance between them.
+                    Subtract the rates and the distance shrank by 75%. Divide them and it doubled.
+                </p>
+
+                <ol class="howto" aria-label="How this page works">
+                    <li><span class="howto-n">1</span><div><b>Two charts argue each side.</b> Figures 1 and 2 argue that countries are converging; Figures 3 and 4 argue that they are not. All four use the same 112 countries.</div></li>
+                    <li><span class="howto-n">2</span><div><b>We show our work.</b> Under each chart we list the three design decisions that make it persuasive and score each one from deceptive to earnest. <em>Show decision markers</em> points to them on the chart.</div></li>
+                    <li><span class="howto-n">3</span><div><b>Then you decide.</b> Figure 5 lets you move through every year on either scale, and Figure 6 lines up all twelve decisions.</div></li>
+                </ol>
+
+                <div class="scale-legend" aria-label="Scoring scale">
+                    <span class="sl-label">How we score each decision</span>
+                    <div class="sl-bar"><span>−2</span><span>−1</span><span>0</span><span>+1</span><span>+2</span></div>
+                    <div class="sl-ends"><span>Fully deceptive</span><span>Neutral</span><span>Fully earnest</span></div>
                 </div>
 
                 <nav class="toc" aria-label="Contents">
                     <p class="toc-title">Contents</p>
                     <ol>
-                        <li><a href="#for"><span>1</span>Visualizations for the proposition</a>
+                        <li><a href="#for"><span>1</span>The case for: countries are converging</a>
                             <ol><li><a href="#fig1"><span>1.1</span>Figure 1: Percentile fan</a></li>
                                 <li><a href="#fig2"><span>1.2</span>Figure 2: Every country, linear scale</a></li></ol></li>
-                        <li><a href="#against"><span>2</span>Visualizations against the proposition</a>
+                        <li><a href="#against"><span>2</span>The case against: countries are further apart</a>
                             <ol><li><a href="#fig3"><span>2.1</span>Figure 3: Percentile ratio with bootstrap</a></li>
                                 <li><a href="#fig4"><span>2.2</span>Figure 4: Every country, logarithmic scale</a></li></ol></li>
-                        <li><a href="#interactive"><span>3</span>Both measures, year by year</a></li>
+                        <li><a href="#interactive"><span>3</span>Both readings together</a>
+                            <ol><li><a href="#fig5"><span>3.1</span>Figure 5: Every year, either scale</a></li>
+                                <li><a href="#fig6"><span>3.2</span>Figure 6: Scorecard of our decisions</a></li></ol></li>
                         <li><a href="#reflection"><span>4</span>Reflection</a></li>
                         <li><a href="#data"><span>5</span>Data and methods</a></li>
                     </ol>
@@ -332,12 +371,12 @@
                     <a href="https://dsc106.com/projects/project2/" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>DSC 106</span></a>
                 </div>
 
-                <h2 id="for" class="numbered-heading"><span>Visualizations for the proposition</span><span class="num">1</span></h2>
-                <p>
-                    Both visualizations for the proposition measure distance between countries in deaths per 1,000 live
-                    births. Figure 1 shows how the whole distribution of country rates narrowed over time. Figure 2 shows every
-                    country in the first and last years.
-                </p>
+                <header class="side-banner for" id="for">
+                    <p class="sb-kicker"><span class="num">1</span>Side 1 · For the proposition</p>
+                    <h2>The case for: countries are converging</h2>
+                    <p class="sb-claim">Measured as a <b>difference</b>, the countries at the 90th and 10th percentiles went from 255 to 63 deaths per 1,000 births apart.</p>
+                    <p>Figure 1 shows the whole distribution narrowing over time. Figure 2 shows every country in the first and last years on a linear scale.</p>
+                </header>
 
                 <section class="method" id="fig1">
                     <h3 class="numbered-heading"><span>Figure 1: Percentile fan</span><span class="num">1.1</span></h3>
@@ -353,7 +392,7 @@
                     <div class="frame"><img id="img-for1" src="images/for1.png?v=34535fcb0818" alt="Fan chart of under-five mortality across 112 countries, 1960 to 2019, with shaded bands for the middle 80% and middle 50% of countries and a median line. The distance from the 10th to the 90th percentile falls from 255 deaths per 1,000 births to 63." /></div>
                     <figcaption><b>Figure 1.</b> Percentiles of under-five mortality across the 112-country sample, 1960 to 2019. Bands show the 10th to 90th and 25th to 75th percentiles.</figcaption>
                 </figure>
-                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <p class="dec-heading">How this chart persuades <span>Three decisions, each scored from −2 (deceptive) to +2 (earnest)</span></p>
                     <ol class="decisions for-list" data-fig="for1">
                         <li>
                             <div class="dec-head">
@@ -393,7 +432,7 @@
                     <div class="frame"><img id="img-for2" src="images/for2.png?v=c52a6f44f315" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
                     <figcaption><b>Figure 2.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a linear scale.</figcaption>
                 </figure>
-                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <p class="dec-heading">How this chart persuades <span>Three decisions, each scored from −2 (deceptive) to +2 (earnest)</span></p>
                     <ol class="decisions for-list" data-fig="for2">
                         <li>
                             <div class="dec-head">
@@ -419,12 +458,12 @@
                     </ol>
                 </section>
 
-                <h2 id="against" class="numbered-heading"><span>Visualizations against the proposition</span><span class="num">2</span></h2>
-                <p>
-                    Both visualizations against the proposition measure distance between countries in proportional terms.
-                    Figure 3 divides the 90th percentile by the 10th, using the same countries as Figure 1. Figure 4 shows the same dots as Figure 2
-                    on a logarithmic scale.
-                </p>
+                <header class="side-banner against" id="against">
+                    <p class="sb-kicker"><span class="num">2</span>Side 2 · Against the proposition</p>
+                    <h2>The case against: countries are further apart</h2>
+                    <p class="sb-claim">Measured as a <b>ratio</b>, the 90th percentile country went from 9.5 to 19.1 times the rate of the 10th.</p>
+                    <p>Figure 3 divides the same two percentiles used in Figure 1. Figure 4 plots the same dots as Figure 2 on a logarithmic scale.</p>
+                </header>
 
                 <section class="method" id="fig3">
                     <h3 class="numbered-heading"><span>Figure 3: Percentile ratio with bootstrap</span><span class="num">2.1</span></h3>
@@ -440,7 +479,7 @@
                     <div class="frame"><img id="img-against1" src="images/against1.png?v=dd1e0f59b5a5" alt="Line chart of the ratio of the 90th to the 10th percentile under-five mortality rate, 1960 to 2019, over 200 faint bootstrap lines. The ratio rises from 9.5 to a peak of 23.1 in 1999 and ends at 19.1, with a 95% interval of 13 to 26 in 2019." /></div>
                     <figcaption><b>Figure 3.</b> Ratio of the 90th to the 10th percentile rate in the 112-country sample, 1960 to 2019. Faint lines are 200 bootstrap resamples of the countries; the bar shows the 95% interval for 2019.</figcaption>
                 </figure>
-                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <p class="dec-heading">How this chart persuades <span>Three decisions, each scored from −2 (deceptive) to +2 (earnest)</span></p>
                     <ol class="decisions against-list" data-fig="against1">
                         <li>
                             <div class="dec-head">
@@ -480,7 +519,7 @@
                     <div class="frame"><img id="img-against2" src="images/against2.png?v=24203b2d2792" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
                     <figcaption><b>Figure 4.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a logarithmic scale.</figcaption>
                 </figure>
-                    <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
+                    <p class="dec-heading">How this chart persuades <span>Three decisions, each scored from −2 (deceptive) to +2 (earnest)</span></p>
                     <ol class="decisions against-list" data-fig="against2">
                         <li>
                             <div class="dec-head">
@@ -506,21 +545,29 @@
                     </ol>
                 </section>
 
-                <h2 id="interactive" class="numbered-heading"><span>Both measures, year by year</span><span class="num">3</span></h2>
-                <p>
-                    Watch all 112 countries from 1960 to 2019. Each comparison runs through every year on a linear scale,
-                    then repeats on a logarithmic scale: first the middle 80%, then the middle 50%, then the full range.
-                    Use the scale or comparison buttons to stop and explore. The chart starts by following a randomly chosen country;
-                    hover over or tap any dot, or search for a country, to follow it instead. The card below the chart
-                    tracks that country against the middle 80% of countries and gives its rank among the 112; the last two
-                    charts show how far apart countries are under the selected comparison.
-                </p>
+                <header class="side-banner both" id="interactive">
+                    <p class="sb-kicker"><span class="num">3</span>Both readings together</p>
+                    <h2>Same countries, both measures</h2>
+                    <p>The four charts above each show one reading. These two figures put them side by side.</p>
+                </header>
 
+                <section class="method" id="fig5">
+                    <h3 class="numbered-heading"><span>Figure 5: Every year, either scale</span><span class="num">3.1</span></h3>
+                    <p>
+                        The animation steps through every year on a linear scale, then again on a logarithmic one, for the middle 80%,
+                        the middle 50% and the full range of countries. Use the buttons to stop and choose. Hover over, tap or search
+                        for a country to follow it; the card below compares it with the middle 80% and gives its rank.
+                    </p>
                 <figure class="graphic">
                     <div class="explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
                     <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. Below, the followed country against the middle 80% of countries, and the difference and ratio for the selected comparison; dashed lines show 1960 values. Use the slider to select a year.</figcaption>
                 </figure>
 
+                </section>
+
+                <section class="method" id="fig6">
+                    <h3 class="numbered-heading"><span>Figure 6: Scorecard of our decisions</span><span class="num">3.2</span></h3>
+                    <p>All twelve decisions from Figures 1 to 4 on one scale. Click a row to jump to its explanation.</p>
                 <figure class="graphic">
                     <div class="ledger-card">
                         <p class="lg-title">Every decision, from deceptive to earnest</p>
@@ -529,6 +576,7 @@
                     </div>
                     <figcaption><b>Figure 6.</b> Design decision scores by figure. Diamonds mark each figure’s average. Figures 2 and 3 each contain one earnest decision; every decision in Figures 1 and 4 leans deceptive.</figcaption>
                 </figure>
+                </section>
 
                 <h2 id="reflection" class="numbered-heading"><span>Reflection</span><span class="num">4</span></h2>
                 <p>

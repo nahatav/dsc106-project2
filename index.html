@@ -21,8 +21,8 @@
                 --head: #141416;
                 --dim: #71717e;
                 --accent: #c9a37e;
-                --gold: #8b98b4;
-                --red: #7f9fa8;
+                --gold: #6c85b9;
+                --red: #5f9daf;
                 --deceptive: #3b3b44;
                 --earnest: #3b3b44;
                 --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -79,6 +79,19 @@
             .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
             .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
             .ex-pct { font-size: 11.5px; fill: #555; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+            .ex-find { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 8px 0 4px; }
+            .ex-find-box { position: relative; display: inline-flex; flex: 0 1 240px; min-width: 170px; }
+            .ex-find input { width: 100%; font: 400 0.88rem var(--sans); color: var(--head); padding: 6px 28px 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+            .ex-find input:focus { outline: none; border-color: #9aa3b2; box-shadow: 0 0 0 3px rgba(108,133,185,.15); }
+            .ex-find input::-webkit-search-cancel-button { display: none; }
+            .ex-clear { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--dim); font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+            .ex-picks { font-size: 0.8rem; color: var(--dim); display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+            .ex-picks button { font: 500 0.8rem var(--sans); color: var(--body); background: var(--raise); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+            .ex-picks button:hover { border-color: #94949e; }
+            .ex-focus { font-size: 0.82rem; color: var(--dim); margin: 2px 0 0; min-height: 1.4em; line-height: 1.4; }
+            .ex-focus.on { color: var(--body); }
+            .ex-focus b { color: var(--head); font-weight: 600; }
+            .ex-focus-lab { font-size: 12px; font-weight: 700; fill: #26262c; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
             .ex-tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 5px 8px; font-size: 12px; line-height: 1.35; white-space: nowrap; }
             .ex-tip b { display: block; color: #303b40; }
             .ex-measures { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 28px; margin-top: 16px; padding: 18px 20px 10px; }
@@ -446,7 +459,7 @@
                                 <span class="dec-title">Draw 2019 in a stronger color and 1960 in a pale <span class="dec-tail">one</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
-                            <p>The darker green draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
+                            <p>The stronger teal draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
                         </li>
                     </ol>
                 </section>
@@ -455,12 +468,13 @@
                 <p>
                     Watch all 112 countries from 1960 to 2019. Each comparison runs through every year on a linear scale,
                     then repeats on a logarithmic scale: first the middle 80%, then the middle 50%, then the full range.
-                    Use the scale or comparison buttons to stop and explore.
+                    Use the scale or comparison buttons to stop and explore, and search for a country, or tap its dot, to
+                    follow it through every year with its rank among the 112.
                 </p>
 
                 <figure class="graphic">
                     <div class="explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
-                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Use the slider to select a year.</figcaption>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Use the slider to select a year, and search to highlight a single country.</figcaption>
                 </figure>
 
                 <figure class="graphic">
@@ -598,7 +612,7 @@
                 el("text", { transform: "translate(12,132) rotate(-90)", "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Figure");
                 el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "letter-spacing": "0.06em" }, narrow ? "← DECEPTIVE" : "← MORE DECEPTIVE");
                 el("text", { x: x(2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, narrow ? "EARNEST →" : "MORE EARNEST →");
-                [["for1", "Figure 1", "#8b98b4"], ["for2", "Figure 2", "#8b98b4"], ["against1", "Figure 3", "#7f9fa8"], ["against2", "Figure 4", "#7f9fa8"]].forEach(([key, label, color], r) => {
+                [["for1", "Figure 1", "#6c85b9"], ["for2", "Figure 2", "#6c85b9"], ["against1", "Figure 3", "#5f9daf"], ["against2", "Figure 4", "#5f9daf"]].forEach(([key, label, color], r) => {
                     const y = 58 + r * 52;
                     el("text", { x: 28, y: y + 5, "font-size": narrow ? 12.5 : 13.5, "font-weight": 700, fill: color }, narrow ? label.replace("Figure ", "Fig. ") : label);
                     el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });

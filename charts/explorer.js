@@ -3,7 +3,7 @@
 (function () {
   const root = document.getElementById("explorer");
   if (!root) return;
-  const BLUE = "#8b98b4", CORAL = "#7f9fa8", DOT = "#8b98b4", INK = "#121212";
+  const BLUE = "#6c85b9", CORAL = "#5f9daf", DOT = "#8e98a4", INK = "#121212", FOCUS = "#26262c";
   const f0 = (v) => String(Math.round(v));
   const f1 = (v) => (Math.round(v * 10 + 1e-9) / 10).toFixed(1);
   const YEARS = d3.range(1960, 2020);
@@ -26,6 +26,15 @@
     </div>
     <div class="frame ex-stage">
       <p class="ex-title">Under-five mortality in 112 countries</p>
+      <div class="ex-find">
+        <span class="ex-find-box">
+          <input type="search" list="ex-countries" placeholder="Find a country" aria-label="Find a country" autocomplete="off" />
+          <button type="button" class="ex-clear" aria-label="Clear country" hidden>&times;</button>
+        </span>
+        <span class="ex-picks">Try <button type="button">India</button><button type="button">Sierra Leone</button><button type="button">Sweden</button></span>
+        <datalist id="ex-countries"></datalist>
+      </div>
+      <p class="ex-focus" aria-live="polite"></p>
       <div class="ex-chart"><svg></svg><div class="ex-tip" hidden></div></div>
       <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
     </div>
@@ -45,13 +54,14 @@
   const $ = (s) => root.querySelector(s);
   const resume = $(".ex-resume"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = $(".ex-tip");
   const svg = d3.select($(".ex-chart svg"));
-  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80" };
+  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: null };
   let D, S, countries, draw, comparisons, measurePlots = [];
 
   d3.json("charts/data.json").then((data) => {
     D = data;
     S = Object.fromEntries(D.stats.map((s) => [s.y, s]));
     countries = D.cohort.map((c) => ({ name: c.name, v: Object.fromEntries(c.v) }));
+    $("#ex-countries").innerHTML = countries.map(c => c.name).sort().map(n => `<option value="${n}">`).join("");
     comparisons = Object.fromEntries(["80", "50", "100"].map(range => [range, YEARS.map(y => {
       const s = S[y], vals = countries.map(c => c.v[y]).filter(v => v != null).sort(d3.ascending);
       const lo = range === "80" ? s.p10 : range === "50" ? s.p25 : vals[0];
@@ -94,6 +104,8 @@
     const t10 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text("10th");
     const t90 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text(narrow ? "90th" : "90th percentile");
     const dotsG = svg.append("g");
+    const focusLab = svg.append("text").attr("class", "ex-focus-lab").attr("text-anchor", "middle").attr("opacity", 0);
+    const RF = R * 1.9;
 
     let axisMode;
     function axis(dur) {
@@ -138,8 +150,20 @@
           .attr("fill", DOT).attr("fill-opacity", 0.8).attr("stroke", "#fff").attr("stroke-width", 0.8)
           .on("pointerenter", function (e, d) { if (e.pointerType === "mouse") showTip(d, this); })
           .on("pointerleave", (e) => { if (e.pointerType === "mouse") tip.hidden = true; })
-          .on("click", function (e, d) { e.stopPropagation(); showTip(d, this); }))
+          .on("click", function (e, d) { e.stopPropagation(); tip.hidden = true; setFocus(d.name); }))
         .transition("motion").duration(dur).ease(easing).attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      const on = (d) => d.name === state.focus;
+      dotsG.selectAll("circle").attr("r", (d) => (on(d) ? RF : R)).attr("fill", (d) => (on(d) ? FOCUS : DOT))
+        .attr("fill-opacity", (d) => (state.focus && !on(d) ? 0.45 : on(d) ? 1 : 0.8))
+        .attr("stroke", "#fff").attr("stroke-width", (d) => (on(d) ? 2 : 0.8)).filter(on).raise();
+      const fd = state.focus && layout(state.mode, state.year).get(state.focus);
+      if (fd) {
+        const lx = Math.max(40, Math.min(W - 40, fd.x));
+        focusLab.text(state.focus).attr("opacity", 1).transition("motion").duration(dur).ease(easing)
+          .attr("x", lx).attr("y", Math.max(12, fd.y - RF - 7));
+        focusLab.raise();
+      } else focusLab.attr("opacity", 0);
+      focusText();
       const x10 = sc(s.lo), x90 = sc(s.hi);
       t10.text(state.range === "100" ? "Lowest" : state.range === "50" ? "25th" : "10th");
       t90.text(state.range === "100" ? "Highest" : state.range === "50" ? (narrow ? "75th" : "75th percentile") : narrow ? "90th" : "90th percentile");
@@ -213,6 +237,30 @@
       el.querySelector(".ex-verdict").textContent = state.year === 1960 ? "1960 value" : `${Math.abs(change) < 0.5 ? "<1" : Math.round(Math.abs(change))}% ${change < 0 ? "lower" : "higher"} since 1960`;
     });
   }
+
+  // Follow one country through the animation
+  const input = $(".ex-find input"), clear = $(".ex-clear"), focusEl = $(".ex-focus");
+  function focusText() {
+    if (!state.focus) { focusEl.textContent = "Search for a country, or tap a dot, to follow it through every year."; focusEl.classList.remove("on"); return; }
+    const c = countries.find(c => c.name === state.focus), v = c.v[state.year];
+    const vals = countries.map(o => o.v[state.year]).filter(x => x != null).sort(d3.ascending);
+    const rank = vals.findIndex(x => x >= v) + 1, ch = (v / c.v[1960] - 1) * 100;
+    focusEl.innerHTML = `<b>${state.focus}</b> ${state.year}: <b>${f1(v)}</b> deaths per 1,000 births · ` +
+      `ranked ${rank} of ${vals.length} (1 = lowest)` + (state.year === 1960 ? "" : ` · ${Math.round(Math.abs(ch))}% ${ch < 0 ? "lower" : "higher"} than in 1960`);
+    focusEl.classList.add("on");
+  }
+  function setFocus(name) {
+    const hit = name && countries.find(c => c.name.toLowerCase() === name.trim().toLowerCase());
+    state.focus = hit ? hit.name : null;
+    input.value = state.focus || "";
+    clear.hidden = !state.focus;
+    if (draw) draw(250);
+  }
+  input.addEventListener("input", () => { const hit = countries.find(c => c.name.toLowerCase() === input.value.trim().toLowerCase()); if (hit) setFocus(hit.name); });
+  input.addEventListener("change", () => setFocus(input.value));
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { const q = input.value.trim().toLowerCase(); const m = countries.find(c => c.name.toLowerCase().startsWith(q)); setFocus(m ? m.name : input.value); } });
+  clear.addEventListener("click", () => setFocus(null));
+  root.querySelectorAll(".ex-picks button").forEach(b => b.addEventListener("click", () => setFocus(b.textContent)));
 
   function setSelection(mode, range) {
     state.mode = mode;

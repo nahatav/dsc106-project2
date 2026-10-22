@@ -91,6 +91,7 @@
             .ex-focus { font-size: 0.82rem; color: var(--dim); margin: 2px 0 0; min-height: 1.4em; line-height: 1.4; }
             .ex-focus.on { color: var(--body); }
             .ex-focus b { color: var(--head); font-weight: 600; }
+            .ex-trail-year { font-size: 10.5px; fill: #555; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
             .ex-focus-lab { font-size: 12px; font-weight: 700; fill: #26262c; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
             .ex-tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 5px 8px; font-size: 12px; line-height: 1.35; white-space: nowrap; }
             .ex-tip b { display: block; color: #303b40; }
@@ -469,12 +470,12 @@
                     Watch all 112 countries from 1960 to 2019. Each comparison runs through every year on a linear scale,
                     then repeats on a logarithmic scale: first the middle 80%, then the middle 50%, then the full range.
                     Use the scale or comparison buttons to stop and explore, and search for a country, or tap its dot, to
-                    follow it through every year with its rank among the 112.
+                    follow it: a trail marks where it stood in every earlier year, and its label shows its rank among the 112.
                 </p>
 
                 <figure class="graphic">
                     <div class="explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
-                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Use the slider to select a year, and search to highlight a single country.</figcaption>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Use the slider to select a year, and search to trace a single country’s path and rank.</figcaption>
                 </figure>
 
                 <figure class="graphic">

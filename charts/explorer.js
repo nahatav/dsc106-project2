@@ -104,6 +104,9 @@
     const t10 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text("10th");
     const t90 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text(narrow ? "90th" : "90th percentile");
     const dotsG = svg.append("g");
+    // followed country: trail of past years, then its dot and label on top of everything
+    const trailG = svg.append("g").attr("class", "ex-trail").style("pointer-events", "none");
+    const focusDot = svg.append("circle").attr("fill", FOCUS).attr("stroke", "#fff").attr("stroke-width", 2).attr("opacity", 0).style("pointer-events", "none");
     const focusLab = svg.append("text").attr("class", "ex-focus-lab").attr("text-anchor", "middle").attr("opacity", 0);
     const RF = R * 1.9;
 
@@ -140,6 +143,36 @@
     }
     svg.on("click", (e) => { if (e.target.tagName !== "circle") { tip.hidden = true; dotsG.selectAll("circle").attr("stroke", "#fff").attr("stroke-width", 0.8); } });
 
+    // The trail runs along the centre line: one segment per year from 1960 to the selected year,
+    // darkening toward the present, with hollow markers at each decade.
+    function drawTrail(sc, dur, easing) {
+      const c = state.focus && countries.find((o) => o.name === state.focus);
+      const yrs = c ? YEARS.filter((y) => y <= state.year && c.v[y] != null) : [];
+      const move = (sel) => (dur ? sel.transition("motion").duration(dur).ease(easing) : sel);
+      const segs = yrs.slice(1).map((y, i) => ({ y, a: c.v[yrs[i]], b: c.v[y], t: (i + 1) / Math.max(1, yrs.length - 1) }));
+      move(trailG.selectAll("line").data(segs, (d) => d.y).join((e) => e.append("line").attr("x1", (d) => sc(d.a)).attr("x2", (d) => sc(d.a)))
+        .attr("y1", MID).attr("y2", MID).attr("stroke", FOCUS).attr("stroke-width", 3).attr("stroke-linecap", "round")
+        .attr("stroke-opacity", (d) => 0.12 + 0.6 * d.t)).attr("x1", (d) => sc(d.a)).attr("x2", (d) => sc(d.b));
+      const decades = yrs.filter((y) => y % 10 === 0 && y !== state.year);
+      move(trailG.selectAll("circle").data(decades, (d) => d).join((e) => e.append("circle").attr("cx", (d) => sc(c.v[d])))
+        .attr("cy", MID).attr("r", R + 1).attr("fill", "#fff").attr("stroke", FOCUS).attr("stroke-width", 1.5)
+        .attr("stroke-opacity", (d) => 0.35 + 0.5 * ((d - 1960) / 59))).attr("cx", (d) => sc(c.v[d]));
+      let last = -Infinity;
+      const labelled = decades.filter((d) => { const x = sc(c.v[d]); if (Math.abs(x - last) < (narrow ? 30 : 34)) return false; last = x; return true; });
+      move(trailG.selectAll("text").data(labelled, (d) => d).join((e) => e.append("text").attr("x", (d) => sc(c.v[d])))
+        .attr("class", "ex-trail-year").attr("y", MID + RF + 13).attr("text-anchor", "middle").text((d) => (narrow ? "’" + String(d).slice(2) : d)))
+        .attr("x", (d) => sc(c.v[d]));
+      if (!c || c.v[state.year] == null) { focusDot.attr("opacity", 0); focusLab.attr("opacity", 0); return; }
+      const x = sc(c.v[state.year]);
+      const vals = countries.map((o) => o.v[state.year]).filter((v) => v != null).sort(d3.ascending);
+      const rank = vals.findIndex((v) => v >= c.v[state.year]) + 1;
+      focusDot.attr("r", RF).attr("opacity", 1).attr("cy", MID);
+      move(focusDot).attr("cx", x);
+      const anchor = x > W - 70 ? "end" : x < 70 ? "start" : "middle";
+      focusLab.text(`${state.focus} · ${rank} of ${vals.length}`).attr("opacity", 1).attr("y", MID - RF - 8).attr("text-anchor", anchor);
+      move(focusLab).attr("x", anchor === "end" ? x + RF : anchor === "start" ? x - RF : x);
+    }
+
     draw = (dur, easing = d3.easeCubicInOut) => {
       const sc = state.mode === "log" ? log : lin, s = comparisons[state.range][state.year - 1960];
       yearEl.textContent = state.year;
@@ -153,16 +186,9 @@
           .on("click", function (e, d) { e.stopPropagation(); tip.hidden = true; setFocus(d.name); }))
         .transition("motion").duration(dur).ease(easing).attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       const on = (d) => d.name === state.focus;
-      dotsG.selectAll("circle").attr("r", (d) => (on(d) ? RF : R)).attr("fill", (d) => (on(d) ? FOCUS : DOT))
-        .attr("fill-opacity", (d) => (state.focus && !on(d) ? 0.45 : on(d) ? 1 : 0.8))
-        .attr("stroke", "#fff").attr("stroke-width", (d) => (on(d) ? 2 : 0.8)).filter(on).raise();
-      const fd = state.focus && layout(state.mode, state.year).get(state.focus);
-      if (fd) {
-        const lx = Math.max(40, Math.min(W - 40, fd.x));
-        focusLab.text(state.focus).attr("opacity", 1).transition("motion").duration(dur).ease(easing)
-          .attr("x", lx).attr("y", Math.max(12, fd.y - RF - 7));
-        focusLab.raise();
-      } else focusLab.attr("opacity", 0);
+      dotsG.selectAll("circle").attr("r", R).attr("fill", DOT)
+        .attr("fill-opacity", (d) => (on(d) ? 0 : state.focus ? 0.35 : 0.8)).attr("stroke-opacity", (d) => (on(d) ? 0 : 1));
+      drawTrail(sc, dur, easing);
       focusText();
       const x10 = sc(s.lo), x90 = sc(s.hi);
       t10.text(state.range === "100" ? "Lowest" : state.range === "50" ? "25th" : "10th");

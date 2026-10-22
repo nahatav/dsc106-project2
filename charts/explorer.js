@@ -9,24 +9,26 @@
   const YEARS = d3.range(1960, 2020);
 
   root.innerHTML = `
-    <div class="ex-top">
-      <div class="ex-playback">
-        <span class="ex-year">1960</span>
-        <button type="button" class="ex-resume resource-btn" hidden>Resume</button>
-      </div>
+    <div class="gfx-tools ex-top">
       <span class="toggle ex-range" role="group" aria-label="Countries compared">
         <button type="button" data-range="80" aria-pressed="true">Middle 80%</button>
         <button type="button" data-range="50" aria-pressed="false">Middle 50%</button>
         <button type="button" data-range="100" aria-pressed="false">Full range</button>
       </span>
-      <span class="ex-seg toggle" role="group" aria-label="Scale">
-        <button type="button" data-mode="linear" aria-pressed="true">Linear</button>
-        <button type="button" data-mode="log" aria-pressed="false">Log</button>
+      <span class="ex-right">
+        <button type="button" class="ex-resume" hidden>&#9654; Resume</button>
+        <span class="ex-seg toggle" role="group" aria-label="Scale">
+          <button type="button" data-mode="linear" aria-pressed="true">Linear</button>
+          <button type="button" data-mode="log" aria-pressed="false">Log</button>
+        </span>
       </span>
     </div>
     <div class="frame ex-stage">
       <div class="ex-head">
-      <p class="ex-title">Under-five mortality in 112 countries</p>
+      <div class="ex-head-text">
+        <p class="ex-title">Child mortality in 112 countries, year by year</p>
+        <p class="ex-dek">Each dot is a country. Shading marks the selected comparison.</p>
+      </div>
       <div class="ex-find">
         <div class="ex-combo">
           <svg class="ex-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -38,6 +40,7 @@
       </div>
       <div class="ex-chart"><svg></svg></div>
       <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
+      <p class="ex-src">Source: World Bank Human Development Indicators. The 112 countries with data in both 1960 and 2019.</p>
     </div>
     <div class="frame ex-measures">
       <section class="ex-measure ex-measure-country" data-metric="country">
@@ -58,7 +61,7 @@
     </div>`;
 
   const $ = (s) => root.querySelector(s);
-  const resume = $(".ex-resume"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = { hidden: true };
+  const resume = $(".ex-resume"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = { hidden: true };
   const svg = d3.select($(".ex-chart svg"));
   const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80", focus: "United States" };
   let D, S, countries, draw, styleDots, refocus, comparisons, measurePlots = [];
@@ -103,6 +106,8 @@
       return (cache[m][yr] = new Map(nodes.map((n) => [n.name, n])));
     };
 
+    const yearMark = svg.append("text").attr("class", "ex-yearmark").attr("text-anchor", "end")
+      .attr("x", W - pad).attr("y", MID - HB + (narrow ? 30 : 42)).text(state.year);
     const axisG = svg.append("g"), band = svg.append("rect").attr("y", MID - HB).attr("height", 2 * HB).attr("rx", 4).attr("fill", INK).attr("opacity", 0.045);
     const l10 = svg.append("line"), l90 = svg.append("line");
     [l10, l90].forEach((l) => l.attr("y1", MID - HB).attr("y2", MID + HB).attr("stroke", INK).attr("stroke-width", 1.1).attr("stroke-dasharray", "3 3"));
@@ -154,7 +159,7 @@
 
     draw = (dur, easing = d3.easeCubicInOut) => {
       const sc = state.mode === "log" ? log : lin, s = comparisons[state.range][state.year - 1960];
-      yearEl.textContent = state.year;
+      yearMark.text(state.year);
       slider.value = state.year;
       axis(dur);
       dotsG.selectAll("circle").data([...layout(state.mode, state.year).values()], (d) => d.name)

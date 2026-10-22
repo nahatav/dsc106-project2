@@ -11,6 +11,7 @@
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <style>
             /* Design system: matches nahatav.github.io/sleep-mode */
             :root {
@@ -61,15 +62,18 @@
 
             /* Figure 5 follows the same controls, frames and captions as the static figures. */
             .explorer { position: relative; font-family: var(--sans); }
-            .ex-top { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "playback comparison scale"; align-items: center; gap: 12px; margin-bottom: 0.6rem; }
-            .ex-playback { grid-area: playback; display: flex; align-items: center; gap: 12px; }
-            .ex-range { grid-area: comparison; justify-self: end; }
-            .ex-stage { padding: 18px 20px 14px; }
-            .ex-title { color: var(--head); font-size: 1rem; font-weight: 600; margin: 0 0 4px; line-height: 1.5; }
-            .ex-resume { cursor: pointer; appearance: none; font-family: var(--sans); line-height: inherit; }
+            .explorer, .explorer button, .explorer input { font-family: "Libre Franklin", "Franklin Gothic Book", var(--sans); }
+            .ex-top { align-items: center; }
+            .ex-right { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+            .ex-resume { font: 500 0.82rem "Libre Franklin", var(--sans); color: var(--body); background: var(--raise); border: 1px solid var(--line); border-radius: 6px; padding: 0.38rem 0.8rem; cursor: pointer; }
+            .ex-resume:hover { border-color: #94949e; }
             .ex-resume[hidden] { display: none; }
-            .ex-year { font-size: 18px; font-weight: 600; color: var(--head); font-variant-numeric: tabular-nums; line-height: 1; }
-            .ex-seg { grid-area: scale; justify-self: end; }
+            .ex-stage { padding: 24px 24px 16px; }
+            .ex-head-text { min-width: 0; }
+            .ex-dek { margin: 3px 0 0; font-size: 14px; line-height: 1.45; color: #666; font-weight: 500; }
+            .ex-src { margin: 10px 0 0; font-size: 11px; color: #999; font-weight: 500; }
+            .ex-yearmark { font-size: 44px; font-weight: 700; fill: #dfe2e7; font-variant-numeric: tabular-nums; pointer-events: none; }
+            .ex-title { color: #121212; font-size: 21px; font-weight: 700; margin: 0; line-height: 1.25; }
             .ex-slider { display: block; width: 100%; height: 18px; margin: 4px 0 0; appearance: none; background: transparent; cursor: pointer; }
             .ex-slider::-webkit-slider-runnable-track { height: 2px; background: #d5dde1; }
             .ex-slider::-webkit-slider-thumb { appearance: none; width: 8px; height: 12px; margin-top: -5px; background: #788ba8; border-radius: 1px; }
@@ -79,7 +83,7 @@
             .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
             .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
             .ex-pct { font-size: 11.5px; fill: #555; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-            .ex-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 4px; }
+            .ex-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; margin: 0 0 6px; }
             .ex-head .ex-title { margin: 0; }
             @media (max-width: 44em) { .ex-measures { grid-template-columns: 1fr; gap: 0; } .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; } }
             .ex-find { position: relative; z-index: 5; flex: 0 1 250px; min-width: 190px; }
@@ -110,13 +114,12 @@
             .ex-mini-axis line { stroke: #ececec; }
             .ex-mini-x .domain, .ex-mini-x line { stroke: #bfc5ca; }
             @media (max-width: 40em) {
-                .ex-top { grid-template-columns: 1fr auto; grid-template-areas: "playback scale" "comparison comparison"; row-gap: 10px; }
-                .ex-range { justify-self: stretch; }
-                .ex-range button { flex: 1; white-space: nowrap; }
-            }
+                    }
             @media (max-width: 34em) {
                 .ex-stage { padding: 14px 12px 10px; }
-                .ex-title { font-size: 0.9rem; }
+                .ex-title { font-size: 18px; }
+                .ex-yearmark { font-size: 30px; }
+                .ex-range { width: 100%; } .ex-range button { flex: 1; white-space: nowrap; } .ex-right { margin-left: 0; }
                 .ex-measures { grid-template-columns: 1fr; gap: 0; padding: 16px 12px 10px; }
                 .ex-find { flex-basis: 100%; }
                 .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; }

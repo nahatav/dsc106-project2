@@ -238,8 +238,24 @@
             .up { color: var(--red); font-weight: 600; }
             .down { color: var(--gold); font-weight: 600; }
 
-            .ledger-card { border: 1px solid var(--line); border-radius: 6px; background: var(--raise); padding: 1rem 1.2rem 0.6rem; }
-            #ledger { display: block; width: 100%; height: auto; }
+            .ledger-card { border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: 24px 24px 14px; font-family: "Libre Franklin", var(--sans); }
+            .lg-title { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.25; color: #121212; }
+            .lg-dek { margin: 4px 0 14px; font-size: 14px; line-height: 1.45; font-weight: 500; color: #666; }
+            #ledger text { font-family: "Libre Franklin", var(--sans); }
+            #ledger .lg-tick { font-size: 11.5px; fill: #8c8c8c; }
+            #ledger .lg-dir { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; fill: #8a8f99; }
+            #ledger .lg-group { font-size: 13px; font-weight: 700; }
+            #ledger .lg-avg { font-size: 11px; fill: #8a8f99; }
+            #ledger .lg-label { font-size: 13px; fill: #3b3b44; }
+            #ledger .lg-val { font-size: 11.5px; font-weight: 600; fill: #3b3b44; font-variant-numeric: tabular-nums; }
+            #ledger .lg-row { cursor: pointer; outline: none; }
+            #ledger .lg-hit { fill: transparent; }
+            #ledger .lg-row.on .lg-hit { fill: #f2f4f7; }
+            #ledger .lg-row.on .lg-label { fill: #121212; }
+            ol.decisions > li.linked { background: #f4f6f9; }
+            ol.decisions > li.flash { animation: lgflash 1.6s ease-out; }
+            @keyframes lgflash { 0%, 30% { background: #e6ebf3; } 100% { background: transparent; } }
+            @media (max-width: 34em) { .ledger-card { padding: 16px 12px 10px; } .lg-title { font-size: 18px; } #ledger .lg-label { font-size: 12px; } }
             #ledger text { font-family: var(--sans); }
             .gfx-head { color: var(--head); font-weight: 600; margin: 0; }
             .gfx-dek { color: var(--dim); font-size: 0.85rem; margin: 0 0 0.4rem; }
@@ -507,11 +523,12 @@
                 </figure>
 
                 <figure class="graphic">
-                    <div class="ledger-card"><p class="gfx-head">Scores for the twelve design decisions</p>
-                    <p class="gfx-dek">From −2 (deceptive) to +2 (earnest)</p>
-                    <svg id="ledger" viewBox="0 0 600 270" role="img"
-                        aria-label="Dot plot of all twelve design decisions by figure on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg></div>
-                    <figcaption><b>Figure 6.</b> Each figure contains one decision that strengthens its credibility. The remaining decisions concern scale, measure and wording.</figcaption>
+                    <div class="ledger-card">
+                        <p class="lg-title">Every decision, from deceptive to earnest</p>
+                        <p class="lg-dek">Our scores for the 12 design decisions, from −2 (fully deceptive) to +2 (fully earnest). Hover over or click a row to see its explanation.</p>
+                        <svg id="ledger" role="img" aria-label="Diverging dot chart of the twelve design decisions, grouped by figure, on a scale from minus 2 (deceptive) to plus 2 (earnest)."></svg>
+                    </div>
+                    <figcaption><b>Figure 6.</b> Design decision scores by figure. Diamonds mark each figure’s average. Every figure contains exactly one earnest decision; the rest concern scale, measure and wording.</figcaption>
                 </figure>
 
                 <h2 id="reflection" class="numbered-heading"><span>Reflection</span><span class="num">4</span></h2>
@@ -600,44 +617,73 @@
             });
             ["for1", "for2", "against1", "against2"].map((k) => `images/${k}_reveal.png`).forEach((src) => (new Image().src = src));
 
-            // ledger dot plot, one row per figure
+            // Figure 6: diverging lollipop, one labelled row per decision, linked to the write-up
+            const LEDGER = [
+                ["for1", "Figure 1", "for", ["Fixed sample and percentiles", "Linear scale", "“Closer” in the title"]],
+                ["for2", "Figure 2", "for", ["Linear axis squeezes low rates", "Only 1960 and 2019", "Every country shown"]],
+                ["against1", "Figure 3", "against", ["Ratio called “inequality”", "Measured from 1960", "Bootstrap uncertainty"]],
+                ["against2", "Figure 4", "against", ["Logarithmic axis", "Single most extreme countries", "Stronger color for 2019"]],
+            ];
+            LEDGER.forEach(([key]) => document.querySelectorAll(`ol[data-fig="${key}"] > li`).forEach((li, i) => (li.id = li.id || `${key}-d${i + 1}`)));
             function drawLedger() {
                 const svg = document.getElementById("ledger");
                 svg.replaceChildren();
                 const NS = "http://www.w3.org/2000/svg";
-                // draw at the svg's real width so text keeps its size on phones
-                const W = Math.round(svg.clientWidth) || 600, narrow = W < 460;
-                const L = narrow ? 70 : 96, R = 16, x = (s) => L + ((s + 2) / 4) * (W - L - R);
-                svg.setAttribute("viewBox", `0 0 ${W} 300`);
-                svg.style.width = W + "px"; svg.style.maxWidth = "100%";
-                const el = (tag, attrs, text) => {
+                const css = getComputedStyle(document.documentElement);
+                const COL = { for: css.getPropertyValue("--gold").trim(), against: css.getPropertyValue("--red").trim() };
+                svg.style.width = "100%"; svg.style.display = "block";
+                const W = Math.round(svg.getBoundingClientRect().width) || 660, narrow = W < 520;
+                const L = narrow ? 30 : 236, R = narrow ? 34 : 44, ROW = narrow ? 42 : 27, HEAD = 34, GAP = 8, TOP = 34;
+                const x = (s) => L + ((s + 2) / 4) * (W - L - R);
+                const H = TOP + LEDGER.length * (HEAD + 3 * ROW + GAP) + 26;
+                svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+                svg.setAttribute("height", H);
+                svg.style.width = "100%";
+                const el = (tag, attrs, text, parent = svg) => {
                     const n = document.createElementNS(NS, tag);
                     for (const k in attrs) n.setAttribute(k, attrs[k]);
                     if (text != null) n.textContent = text;
-                    svg.appendChild(n);
+                    parent.appendChild(n);
                     return n;
                 };
-                [-2, -1, 0, 1, 2].forEach((s) => {
-                    el("line", { x1: x(s), x2: x(s), y1: 26, y2: 238, stroke: s === 0 ? "#8a8a96" : "#e4e6eb", "stroke-width": 1 });
-                    el("text", { x: x(s), y: 260, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
-                });
-                el("text", { x: (L + W - R) / 2, y: 286, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Decision score");
-                el("text", { transform: "translate(12,132) rotate(-90)", "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Figure");
-                el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "letter-spacing": "0.06em" }, narrow ? "← DECEPTIVE" : "← MORE DECEPTIVE");
-                el("text", { x: x(2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, narrow ? "EARNEST →" : "MORE EARNEST →");
-                [["for1", "Figure 1", "#6c85b9"], ["for2", "Figure 2", "#6c85b9"], ["against1", "Figure 3", "#5f9daf"], ["against2", "Figure 4", "#5f9daf"]].forEach(([key, label, color], r) => {
-                    const y = 58 + r * 52;
-                    el("text", { x: 28, y: y + 5, "font-size": narrow ? 12.5 : 13.5, "font-weight": 700, fill: color }, narrow ? label.replace("Figure ", "Fig. ") : label);
-                    el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });
-                    const seen = {};
-                    document.querySelectorAll(`ol[data-fig="${key}"] .score`).forEach((sc, i) => {
-                        const s = parseFloat(sc.dataset.score);
-                        const k = (seen[s] = (seen[s] || 0) + 1) - 1;
-                        const cx = x(s) + (k === 0 ? 0 : (k % 2 ? 1 : -1) * (narrow ? 21 : 23) * Math.ceil(k / 2));
-                        el("circle", { cx, cy: y, r: narrow ? 9.5 : 10.5, fill: color, stroke: "#fff", "stroke-width": 2 });
-                        el("text", { x: cx, y: y + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#fff" }, i + 1);
+                const fmt = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
+                // grid and direction labels
+                [-2, -1, 1, 2].forEach((s) => el("line", { x1: x(s), x2: x(s), y1: TOP - 6, y2: H - 22, stroke: "#eceef1" }));
+                [-2, -1, 0, 1, 2].forEach((s) => el("text", { x: x(s), y: H - 6, "text-anchor": "middle", class: "lg-tick" }, fmt(s)));
+                el("text", { x: x(0) - 8, y: 14, "text-anchor": "end", class: "lg-dir" }, narrow ? "← Deceptive" : "← More deceptive");
+                el("text", { x: x(0) + 8, y: 14, class: "lg-dir" }, narrow ? "Earnest →" : "More earnest →");
+                let y = TOP;
+                LEDGER.forEach(([key, label, side, names]) => {
+                    const color = COL[side], items = [...document.querySelectorAll(`ol[data-fig="${key}"] > li`)];
+                    const scores = items.map((li) => parseFloat(li.querySelector(".score").dataset.score));
+                    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    el("text", { x: 0, y: y + 21, class: "lg-group", fill: color }, narrow ? `${label} · average ${fmt(Math.round(mean * 10) / 10)}` : `${label}, ${side === "for" ? "for" : "against"} the proposition`);
+                    if (!narrow) el("path", { d: `M${x(mean)},${y + 11} l5,5 l-5,5 l-5,-5 z`, fill: "#fff", stroke: color, "stroke-width": 1.5 });
+                    if (!narrow) el("text", { x: x(mean) + (mean < 0 ? -10 : 10), y: y + 20, "text-anchor": mean < 0 ? "end" : "start", class: "lg-avg" }, `average ${fmt(Math.round(mean * 10) / 10)}`);
+                    y += HEAD;
+                    items.forEach((li, i) => {
+                        const s = scores[i], cy = narrow ? y + 29 : y + ROW / 2;
+                        const g = el("g", { class: "lg-row", tabindex: 0, role: "link", "aria-label": `${label}, decision ${i + 1}: ${names[i]}, score ${fmt(s)}` });
+                        el("rect", { x: 0, y, width: W, height: ROW, class: "lg-hit", rx: 4 }, null, g);
+                        el("text", { x: narrow ? 0 : 0, y: narrow ? y + 13 : cy + 4, class: "lg-label" }, `${i + 1}  ${names[i]}`, g);
+                        el("line", { x1: x(0), x2: x(s) + (s < 0 ? 5 : -5), y1: cy, y2: cy, stroke: color, "stroke-width": 2.5, "stroke-linecap": "round" }, null, g);
+                        el("circle", { cx: x(s), cy, r: 5.5, fill: color, stroke: "#fff", "stroke-width": 1.5 }, null, g);
+                        el("text", { x: x(s) + (s < 0 ? -10 : 10), y: cy + 4, "text-anchor": s < 0 ? "end" : "start", class: "lg-val" }, fmt(s), g);
+                        const on = (v) => { g.classList.toggle("on", v); li.classList.toggle("linked", v); };
+                        g.addEventListener("mouseenter", () => on(true));
+                        g.addEventListener("mouseleave", () => on(false));
+                        g.addEventListener("focus", () => on(true));
+                        g.addEventListener("blur", () => on(false));
+                        const go = () => { li.scrollIntoView({ behavior: "smooth", block: "center" }); li.classList.remove("flash"); void li.offsetWidth; li.classList.add("flash"); };
+                        g.addEventListener("click", go);
+                        g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+                        li.onmouseenter = () => g.classList.add("on");
+                        li.onmouseleave = () => g.classList.remove("on");
+                        y += ROW;
                     });
+                    y += GAP;
                 });
+                el("line", { x1: x(0), x2: x(0), y1: TOP - 6, y2: H - 22, stroke: "#8a8a96", "stroke-width": 1 });
             }
             drawLedger();
             let ledgerW = window.innerWidth;

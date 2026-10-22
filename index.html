@@ -453,14 +453,14 @@
 
                 <h2 id="interactive" class="numbered-heading"><span>Both measures, year by year</span><span class="num">3</span></h2>
                 <p>
-                    Watch all 112 countries from 1960 to 2019. The animation repeats on linear and logarithmic scales,
-                    comparing the middle 80%, middle 50%, and full range in equal thirds of each pass.
-                    Click a dot, chart, or control to stop and explore.
+                    Watch all 112 countries from 1960 to 2019. Each comparison runs through every year on a linear scale,
+                    then repeats on a logarithmic scale: first the middle 80%, then the middle 50%, then the full range.
+                    Use the scale or comparison buttons to stop and explore.
                 </p>
 
                 <figure class="graphic">
                     <div class="explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
-                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Click either chart to select a year.</figcaption>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Use the slider to select a year.</figcaption>
                 </figure>
 
                 <figure class="graphic">
@@ -617,6 +617,6 @@
             window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-        <script src="charts/explorer.js?v=a4b7f3147637"></script>
+        <script src="charts/explorer.js?v=700a640eb76f"></script>
     </body>
 </html>

@@ -187,10 +187,6 @@
       const past = g.append("path").attr("clip-path", `url(#${clipId})`).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.4);
       const cursor = g.append("line").attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "#a8b1b8").attr("stroke-width", 1);
       const point = g.append("circle").attr("r", 3.8).attr("fill", color).attr("stroke", "#fff").attr("stroke-width", 1.5);
-      g.style("cursor", "crosshair").on("click", event => {
-        state.year = Math.max(1960, Math.min(2019, Math.round(x.invert(d3.pointer(event, node)[0]))));
-        tip.hidden = true; stop(); draw(250);
-      });
       return { key, el, x, y, line, future, past, cursor, point, baselineLine, historyClip, yAxis, range: null, plotWidth: W - m.l - m.r };
     });
   }
@@ -225,11 +221,12 @@
     root.querySelectorAll(".ex-range button").forEach(b => b.setAttribute("aria-pressed", b.dataset.range === range));
   }
 
-  // Each 60-year pass has three equal sections, followed by the other scale.
-  function playbackFrame(year, mode) {
-    const nextYear = year === 2019 ? 1960 : year + 1;
-    const nextMode = year === 2019 ? (mode === "linear" ? "log" : "linear") : mode;
-    return { year: nextYear, mode: nextMode, range: nextYear < 1980 ? "80" : nextYear < 2000 ? "50" : "100" };
+  // Complete both scales for one comparison before moving to the next.
+  function playbackFrame(year, mode, range) {
+    if (year < 2019) return { year: year + 1, mode, range };
+    if (mode === "linear") return { year: 1960, mode: "log", range };
+    const ranges = ["80", "50", "100"];
+    return { year: 1960, mode: "linear", range: ranges[(ranges.indexOf(range) + 1) % ranges.length] };
   }
 
   function stop() {
@@ -243,27 +240,25 @@
     tip.hidden = true;
     state.playing = true;
     resume.hidden = true;
-    setSelection(state.mode, state.year < 1980 ? "80" : state.year < 2000 ? "50" : "100");
+    setSelection(state.mode, state.range);
     draw(200);
     const advance = () => {
       if (!state.playing) return;
       const reset = state.year === 2019;
-      const next = playbackFrame(state.year, state.mode);
-      const comparisonChange = next.range !== state.range;
+      const next = playbackFrame(state.year, state.mode, state.range);
       state.year = next.year;
       setSelection(next.mode, next.range);
-      const duration = reset ? 850 : comparisonChange ? 600 : 280;
-      draw(duration, reset || comparisonChange ? d3.easeCubicInOut : d3.easeLinear);
-      state.timer = setTimeout(advance, reset ? 950 : state.year === 2019 ? 800 : duration);
+      const duration = reset ? 650 : 200;
+      draw(duration, reset ? d3.easeCubicInOut : d3.easeLinear);
+      state.timer = setTimeout(advance, reset ? 750 : state.year === 2019 ? 450 : duration);
     };
-    state.timer = setTimeout(advance, 280);
+    state.timer = setTimeout(advance, 200);
   }
 
-  root.addEventListener("pointerdown", () => { if (draw) stop(); }, { capture: true });
   resume.addEventListener("click", start);
   slider.addEventListener("input", () => {
     if (!draw) return;
-    stop(); state.year = +slider.value; tip.hidden = true; draw(150);
+    state.year = +slider.value; tip.hidden = true; draw(150);
   });
   root.querySelectorAll(".ex-range button").forEach(b => b.addEventListener("click", () => {
     if (!draw) return;

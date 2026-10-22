@@ -3,38 +3,63 @@
 (function () {
   const root = document.getElementById("explorer");
   if (!root) return;
-  const BLUE = "#3f7cac", CORAL = "#e07a5f", DOT = "#7d8792", INK = "#121212";
+  const BLUE = "#7f9fa8", CORAL = "#8b98b4", DOT = "#8f9fa9", INK = "#121212";
   const f0 = (v) => String(Math.round(v));
   const f1 = (v) => (Math.round(v * 10 + 1e-9) / 10).toFixed(1);
   const YEARS = d3.range(1960, 2020);
 
   root.innerHTML = `
     <div class="ex-top">
-      <button type="button" class="ex-play" aria-label="Play">&#9654;</button>
-      <span class="ex-year">1960</span>
-      <span class="ex-seg" role="group" aria-label="Scale">
+      <div class="ex-playback">
+        <span class="ex-year">1960</span>
+        <button type="button" class="ex-resume resource-btn" hidden>Resume</button>
+      </div>
+      <span class="toggle ex-range" role="group" aria-label="Countries compared">
+        <button type="button" data-range="80" aria-pressed="true">Middle 80%</button>
+        <button type="button" data-range="50" aria-pressed="false">Middle 50%</button>
+        <button type="button" data-range="100" aria-pressed="false">Full range</button>
+      </span>
+      <span class="ex-seg toggle" role="group" aria-label="Scale">
         <button type="button" data-mode="linear" aria-pressed="true">Linear</button>
         <button type="button" data-mode="log" aria-pressed="false">Log</button>
       </span>
     </div>
-    <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
-    <div class="ex-chart"><svg></svg><div class="ex-tip" hidden></div></div>
-    <div class="ex-cards">
-      <div class="ex-card" data-key="gap"><div class="ex-label">Difference<span class="ex-x">, 90th − 10th</span></div><div class="ex-val" style="color:${BLUE}"></div><div class="ex-ch"></div><svg class="ex-spark"></svg></div>
-      <div class="ex-card" data-key="ratio"><div class="ex-label">Ratio<span class="ex-x">, 90th ÷ 10th</span></div><div class="ex-val" style="color:${CORAL}"></div><div class="ex-ch"></div><svg class="ex-spark"></svg></div>
+    <div class="frame ex-stage">
+      <p class="ex-title">Under-five mortality in 112 countries</p>
+      <div class="ex-chart"><svg></svg><div class="ex-tip" hidden></div></div>
+      <input class="ex-slider" type="range" min="1960" max="2019" step="1" value="1960" aria-label="Year" />
+    </div>
+    <div class="frame ex-measures">
+      <section class="ex-measure" data-metric="gap">
+        <h4>Difference in rates</h4>
+        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+        <svg role="img" aria-label="Difference in mortality rates over time"></svg>
+      </section>
+      <section class="ex-measure" data-metric="ratio">
+        <h4>Ratio of rates</h4>
+        <p class="ex-readout"><span class="ex-measure-value"></span><span class="ex-verdict"></span></p>
+        <svg role="img" aria-label="Ratio of mortality rates over time"></svg>
+      </section>
     </div>`;
 
   const $ = (s) => root.querySelector(s);
-  const play = $(".ex-play"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = $(".ex-tip");
+  const resume = $(".ex-resume"), yearEl = $(".ex-year"), slider = $(".ex-slider"), chart = $(".ex-chart"), tip = $(".ex-tip");
   const svg = d3.select($(".ex-chart svg"));
-  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0 };
-  let D, S, countries, draw;
+  const state = { year: 1960, mode: "linear", playing: false, timer: null, width: 0, range: "80" };
+  let D, S, countries, draw, comparisons, measurePlots = [];
 
   d3.json("charts/data.json").then((data) => {
     D = data;
     S = Object.fromEntries(D.stats.map((s) => [s.y, s]));
     countries = D.cohort.map((c) => ({ name: c.name, v: Object.fromEntries(c.v) }));
+    comparisons = Object.fromEntries(["80", "50", "100"].map(range => [range, YEARS.map(y => {
+      const s = S[y], vals = countries.map(c => c.v[y]).filter(v => v != null).sort(d3.ascending);
+      const lo = range === "80" ? s.p10 : range === "50" ? s.p25 : vals[0];
+      const hi = range === "80" ? s.p90 : range === "50" ? s.p75 : vals[vals.length - 1];
+      return { y, lo, hi, gap: hi - lo, ratio: hi / lo };
+    })]));
     build();
+    start();
     new ResizeObserver(() => {
       const w = Math.floor(chart.clientWidth);
       if (Math.abs(w - state.width) > 8) build();
@@ -70,16 +95,25 @@
     const t90 = svg.append("text").attr("class", "ex-pct").attr("y", MID - HB - 6).attr("text-anchor", "middle").text(narrow ? "90th" : "90th percentile");
     const dotsG = svg.append("g");
 
-    function axis() {
-      axisG.selectAll("*").remove();
+    let axisMode;
+    function axis(dur) {
+      if (axisMode === state.mode) return;
+      axisMode = state.mode;
       const sc = state.mode === "log" ? log : lin;
       const ticks = state.mode === "log" ? (narrow ? [2, 10, 50, 200] : [2, 5, 10, 20, 50, 100, 200, 400]) : (narrow ? [0, 100, 200, 300, 400] : [0, 50, 100, 150, 200, 250, 300, 350, 400]);
-      ticks.forEach((t) => {
-        axisG.append("line").attr("x1", sc(t)).attr("x2", sc(t)).attr("y1", MID - HB - 18).attr("y2", MID + HB + 4).attr("stroke", "#ececec");
-        axisG.append("text").attr("class", "ex-tick").attr("x", sc(t)).attr("y", MID + HB + 20).attr("text-anchor", t === ticks[0] ? "start" : t === ticks[ticks.length - 1] ? "end" : "middle")
-          .attr("dx", t === ticks[0] ? -3 : t === ticks[ticks.length - 1] ? 3 : 0).text(t);
-      });
-      axisG.append("text").attr("class", "ex-tick").attr("x", W - pad + 3).attr("y", MID + HB + 38).attr("text-anchor", "end")
+      axisG.selectAll("line").data(ticks, d => d).join(
+        enter => enter.append("line").attr("x1", sc).attr("x2", sc).attr("y1", MID - HB - 18).attr("y2", MID + HB + 4).attr("stroke", "#ececec").attr("opacity", 0),
+        update => update,
+        exit => exit.transition("motion").duration(dur).attr("opacity", 0).remove()
+      ).transition("motion").duration(dur).ease(d3.easeCubicInOut).attr("x1", sc).attr("x2", sc).attr("opacity", 1);
+      axisG.selectAll("text.ex-axis-number").data(ticks, d => d).join(
+        enter => enter.append("text").attr("class", "ex-tick ex-axis-number").attr("x", sc).attr("y", MID + HB + 20).attr("opacity", 0),
+        update => update,
+        exit => exit.transition("motion").duration(dur).attr("opacity", 0).remove()
+      ).text(d => d).attr("text-anchor", d => d === ticks[0] ? "start" : d === ticks[ticks.length - 1] ? "end" : "middle")
+        .transition("motion").duration(dur).ease(d3.easeCubicInOut).attr("x", sc).attr("opacity", 1);
+      axisG.selectAll("text.ex-axis-title").data([state.mode]).join("text").attr("class", "ex-tick ex-axis-title")
+        .attr("x", W / 2).attr("y", MID + HB + 38).attr("text-anchor", "middle")
         .text(`Deaths per 1,000 births${state.mode === "log" ? ", log scale" : ""}`);
     }
 
@@ -94,78 +128,149 @@
     }
     svg.on("click", (e) => { if (e.target.tagName !== "circle") { tip.hidden = true; dotsG.selectAll("circle").attr("stroke", "#fff").attr("stroke-width", 0.8); } });
 
-    draw = (dur) => {
-      const sc = state.mode === "log" ? log : lin, s = S[state.year];
+    draw = (dur, easing = d3.easeCubicInOut) => {
+      const sc = state.mode === "log" ? log : lin, s = comparisons[state.range][state.year - 1960];
       yearEl.textContent = state.year;
       slider.value = state.year;
-      axis();
+      axis(dur);
       dotsG.selectAll("circle").data([...layout(state.mode, state.year).values()], (d) => d.name)
         .join((enter) => enter.append("circle").attr("r", R).attr("cx", (d) => d.x).attr("cy", (d) => d.y)
           .attr("fill", DOT).attr("fill-opacity", 0.8).attr("stroke", "#fff").attr("stroke-width", 0.8)
           .on("pointerenter", function (e, d) { if (e.pointerType === "mouse") showTip(d, this); })
           .on("pointerleave", (e) => { if (e.pointerType === "mouse") tip.hidden = true; })
           .on("click", function (e, d) { e.stopPropagation(); showTip(d, this); }))
-        .transition().duration(dur).ease(d3.easeCubicInOut).attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      const x10 = sc(s.p10), x90 = sc(s.p90);
-      band.transition().duration(dur).attr("x", x10).attr("width", x90 - x10);
-      l10.transition().duration(dur).attr("x1", x10).attr("x2", x10);
-      l90.transition().duration(dur).attr("x1", x90).attr("x2", x90);
-      t10.transition().duration(dur).attr("x", Math.max(14, x10));
-      t90.transition().duration(dur).attr("x", Math.min(W - 24, x90));
-      cards();
+        .transition("motion").duration(dur).ease(easing).attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      const x10 = sc(s.lo), x90 = sc(s.hi);
+      t10.text(state.range === "100" ? "Lowest" : state.range === "50" ? "25th" : "10th");
+      t90.text(state.range === "100" ? "Highest" : state.range === "50" ? (narrow ? "75th" : "75th percentile") : narrow ? "90th" : "90th percentile");
+      band.transition("motion").duration(dur).ease(easing).attr("x", x10).attr("width", x90 - x10);
+      l10.transition("motion").duration(dur).ease(easing).attr("x1", x10).attr("x2", x10);
+      l90.transition("motion").duration(dur).ease(easing).attr("x1", x90).attr("x2", x90);
+      const spacing = narrow ? 48 : 80;
+      let label10 = Math.max(14, x10), label90 = Math.min(W - 24, x90);
+      if (label90 - label10 < spacing) {
+        label10 = Math.max(14, Math.min((label10 + label90 - spacing) / 2, W - 24 - spacing));
+        label90 = label10 + spacing;
+      }
+      t10.transition("motion").duration(dur).ease(easing).attr("x", label10);
+      t90.transition("motion").duration(dur).ease(easing).attr("x", label90);
+      updateMeasures(dur, easing);
     };
-    sparks();
+    buildMeasures();
     draw(0);
   }
 
-  // readout cards with sparklines, sized to each card
-  const sparkState = {};
-  function sparks() {
-    root.querySelectorAll(".ex-card").forEach((card) => {
-      const key = card.dataset.key, color = key === "gap" ? BLUE : CORAL;
-      const sv = d3.select(card.querySelector(".ex-spark")), w = Math.floor(card.querySelector(".ex-spark").clientWidth) || 140, h = 44;
-      sv.attr("viewBox", `0 0 ${w} ${h}`).attr("height", h).selectAll("*").remove();
-      const x = d3.scaleLinear().domain([1960, 2019]).range([4, w - 4]);
-      const y = d3.scaleLinear().domain([0, d3.max(YEARS, (yr) => S[yr][key])]).range([h - 4, 4]);
-      const line = d3.line().x((yr) => x(yr)).y((yr) => y(S[yr][key])).curve(d3.curveMonotoneX);
-      sv.append("path").attr("d", line(YEARS)).attr("fill", "none").attr("stroke", color).attr("stroke-opacity", 0.25).attr("stroke-width", 2);
-      const done = sv.append("path").attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.4);
-      const dot = sv.append("circle").attr("r", 4).attr("fill", color).attr("stroke", "#fff").attr("stroke-width", 1.4);
-      sparkState[key] = { done, dot, line, x, y };
-    });
-  }
-  function cards() {
-    root.querySelectorAll(".ex-card").forEach((card) => {
-      const key = card.dataset.key, v = S[state.year][key], c = v / S[1960][key] - 1;
-      card.querySelector(".ex-val").textContent = key === "gap" ? `${f0(v)} deaths` : `${f1(v)}×`;
-      card.querySelector(".ex-ch").textContent = state.year === 1960 ? "1960 baseline" : `${c > 0 ? "+" : "−"}${Math.round(Math.abs(c) * 100)}% since 1960`;
-      const sp = sparkState[key];
-      sp.done.attr("d", sp.line(YEARS.filter((yr) => yr <= state.year)));
-      sp.dot.attr("cx", sp.x(state.year)).attr("cy", sp.y(v));
+  // Keep the chart elements in place as the selected comparison changes.
+  function buildMeasures() {
+    measurePlots = ["gap", "ratio"].map(key => {
+      const el = root.querySelector(`[data-metric="${key}"]`), node = el.querySelector("svg");
+      const W = Math.floor(el.clientWidth), H = 210, m = { l: 48, r: 12, t: 12, b: 46 };
+      const g = d3.select(node).attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
+      g.selectAll("*").remove();
+      const x = d3.scaleLinear().domain([1960, 2019]).range([m.l, W - m.r]);
+      const y = d3.scaleLinear().range([H - m.b, m.t]);
+      const color = key === "gap" ? BLUE : CORAL;
+      const yAxis = g.append("g").attr("class", "ex-mini-axis").attr("transform", `translate(${m.l},0)`);
+      g.append("g").attr("class", "ex-mini-axis ex-mini-x").attr("transform", `translate(0,${H - m.b})`)
+        .call(d3.axisBottom(x).tickValues(W < 300 ? [1960, 1990, 2019] : [1960, 1980, 2000, 2019]).tickFormat(d3.format("d")).tickSize(4));
+      g.append("text").attr("class", "ex-tick").attr("text-anchor", "middle").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).text("Year");
+      g.append("text").attr("class", "ex-tick").attr("text-anchor", "middle")
+        .attr("transform", `translate(12,${(m.t + H - m.b) / 2}) rotate(-90)`)
+        .text(key === "gap" ? "Deaths per 1,000 births" : "Mortality rate ratio");
+      const baselineLine = g.append("line").attr("x1", m.l).attr("x2", W - m.r)
+        .attr("stroke", "#b1b8be").attr("stroke-dasharray", "3 3");
+      const line = d3.line().x(d => x(d.y)).y(d => y(d[key])).curve(d3.curveMonotoneX);
+      const future = g.append("path").attr("fill", "none").attr("stroke", "#dce1e6").attr("stroke-width", 2);
+      const clipId = `ex-history-${key}`;
+      const historyClip = g.append("defs").append("clipPath").attr("id", clipId).append("rect")
+        .attr("x", m.l - 2).attr("y", 0).attr("width", 0).attr("height", H);
+      const past = g.append("path").attr("clip-path", `url(#${clipId})`).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.4);
+      const cursor = g.append("line").attr("y1", m.t).attr("y2", H - m.b).attr("stroke", "#a8b1b8").attr("stroke-width", 1);
+      const point = g.append("circle").attr("r", 3.8).attr("fill", color).attr("stroke", "#fff").attr("stroke-width", 1.5);
+      g.style("cursor", "crosshair").on("click", event => {
+        state.year = Math.max(1960, Math.min(2019, Math.round(x.invert(d3.pointer(event, node)[0]))));
+        tip.hidden = true; stop(); draw(250);
+      });
+      return { key, el, x, y, line, future, past, cursor, point, baselineLine, historyClip, yAxis, range: null, plotWidth: W - m.l - m.r };
     });
   }
 
-  // controls
-  const ICON = { play: "&#9654;", pause: "&#10074;&#10074;", replay: "&#8635;" };
-  const setIcon = (k) => { play.innerHTML = ICON[k]; play.setAttribute("aria-label", k[0].toUpperCase() + k.slice(1)); play.classList.toggle("replay", k === "replay"); };
-  const stop = () => { state.playing = false; clearInterval(state.timer); setIcon(state.year === 2019 ? "replay" : "play"); };
-  play.addEventListener("click", () => {
-    if (!draw) return;
-    if (state.playing) return stop();
+  function updateMeasures(dur, easing) {
+    const series = comparisons[state.range], s = series[state.year - 1960], baseline = series[0];
+    measurePlots.forEach(plot => {
+      const { key, el, x, y, line, future, past, cursor, point, baselineLine, historyClip, yAxis, plotWidth } = plot;
+      const move = selection => dur ? selection.transition("motion").duration(dur).ease(easing) : selection;
+      if (plot.range !== state.range) {
+        y.domain([0, d3.max(series, d => d[key]) * 1.08]).nice(4);
+        move(yAxis).call(d3.axisLeft(y).ticks(4).tickSize(-plotWidth).tickFormat(v => key === "ratio" ? `${v}×` : v));
+        yAxis.select(".domain").remove();
+        move(future).attr("d", line(series));
+        move(past).attr("d", line(series));
+        move(baselineLine).attr("y1", y(baseline[key])).attr("y2", y(baseline[key]));
+        plot.range = state.range;
+      }
+      move(historyClip).attr("width", x(state.year) - x(1960) + 2);
+      move(cursor).attr("x1", x(state.year)).attr("x2", x(state.year));
+      move(point).attr("cx", x(state.year)).attr("cy", y(s[key]));
+      el.querySelector(".ex-measure-value").textContent = `${f1(s[key])}${key === "ratio" ? "×" : " per 1,000"}`;
+      const change = (s[key] / baseline[key] - 1) * 100;
+      el.querySelector(".ex-verdict").textContent = state.year === 1960 ? "1960 value" : `${Math.abs(change) < 0.5 ? "<1" : Math.round(Math.abs(change))}% ${change < 0 ? "lower" : "higher"} since 1960`;
+    });
+  }
+
+  function setSelection(mode, range) {
+    state.mode = mode;
+    state.range = range;
+    root.querySelectorAll(".ex-seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === mode));
+    root.querySelectorAll(".ex-range button").forEach(b => b.setAttribute("aria-pressed", b.dataset.range === range));
+  }
+
+  // Each 60-year pass has three equal sections, followed by the other scale.
+  function playbackFrame(year, mode) {
+    const nextYear = year === 2019 ? 1960 : year + 1;
+    const nextMode = year === 2019 ? (mode === "linear" ? "log" : "linear") : mode;
+    return { year: nextYear, mode: nextMode, range: nextYear < 1980 ? "80" : nextYear < 2000 ? "50" : "100" };
+  }
+
+  function stop() {
+    state.playing = false;
+    clearTimeout(state.timer);
+    resume.hidden = false;
+  }
+
+  function start() {
+    if (!draw || state.playing) return;
     tip.hidden = true;
-    if (state.year === 2019) { state.year = 1960; draw(400); }
-    state.playing = true; setIcon("pause");
-    state.timer = setInterval(() => {
-      if (state.year >= 2019) return stop();
-      state.year += 1; draw(200);
-      if (state.year === 2019) stop();
-    }, 230);
-  });
-  slider.addEventListener("input", () => { if (!draw) return; state.year = +slider.value; tip.hidden = true; stop(); draw(150); });
-  root.querySelectorAll(".ex-seg button").forEach((b) => b.addEventListener("click", () => {
+    state.playing = true;
+    resume.hidden = true;
+    setSelection(state.mode, state.year < 1980 ? "80" : state.year < 2000 ? "50" : "100");
+    draw(200);
+    const advance = () => {
+      if (!state.playing) return;
+      const reset = state.year === 2019;
+      const next = playbackFrame(state.year, state.mode);
+      const comparisonChange = next.range !== state.range;
+      state.year = next.year;
+      setSelection(next.mode, next.range);
+      const duration = reset ? 850 : comparisonChange ? 600 : 280;
+      draw(duration, reset || comparisonChange ? d3.easeCubicInOut : d3.easeLinear);
+      state.timer = setTimeout(advance, reset ? 950 : state.year === 2019 ? 800 : duration);
+    };
+    state.timer = setTimeout(advance, 280);
+  }
+
+  root.addEventListener("pointerdown", () => { if (draw) stop(); }, { capture: true });
+  resume.addEventListener("click", start);
+  slider.addEventListener("input", () => {
     if (!draw) return;
-    state.mode = b.dataset.mode;
-    root.querySelectorAll(".ex-seg button").forEach((o) => o.setAttribute("aria-pressed", o === b));
-    tip.hidden = true; draw(700);
+    stop(); state.year = +slider.value; tip.hidden = true; draw(150);
+  });
+  root.querySelectorAll(".ex-range button").forEach(b => b.addEventListener("click", () => {
+    if (!draw) return;
+    stop(); tip.hidden = true; setSelection(state.mode, b.dataset.range); draw(300);
+  }));
+  root.querySelectorAll(".ex-seg button").forEach(b => b.addEventListener("click", () => {
+    if (!draw) return;
+    stop(); tip.hidden = true; setSelection(b.dataset.mode, state.range); draw(700);
   }));
 })();

@@ -21,8 +21,8 @@
                 --head: #141416;
                 --dim: #71717e;
                 --accent: #c9a37e;
-                --gold: #3f7cac;
-                --red: #e07a5f;
+                --gold: #7f9fa8;
+                --red: #8b98b4;
                 --deceptive: #3b3b44;
                 --earnest: #3b3b44;
                 --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -45,7 +45,7 @@
                 content: "";
                 position: fixed;
                 inset: 0;
-                opacity: 0.18;
+                opacity: 0.06;
                 pointer-events: none;
                 z-index: 999;
                 background-repeat: repeat;
@@ -56,38 +56,50 @@
 
             .col { max-width: var(--col); margin: 0 auto; padding: 0 1.5rem; }
             
-            header.col { padding-top: 5rem; }
+            .masthead { width: 100%; padding-top: 5rem; }
 
 
-            /* Figure 5, inline interactive */
-            .explorer { padding: 16px 18px 18px; position: relative; font-family: var(--sans); }
-            .ex-top { display: flex; align-items: center; gap: 12px; }
-            .ex-play { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #121212; color: #fff; font-size: 14px; cursor: pointer; }
-            .ex-play.replay { font-size: 20px; }
-            .ex-year { font-size: 30px; font-weight: 800; color: #121212; font-variant-numeric: tabular-nums; line-height: 1; }
-            .ex-seg { margin-left: auto; display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-            .ex-seg button { font: 600 13px var(--sans); border: 0; background: #fff; color: var(--body); padding: 7px 12px; cursor: pointer; }
-            .ex-seg button + button { border-left: 1px solid var(--line); }
-            .ex-seg button[aria-pressed="true"] { background: #121212; color: #fff; }
-            .ex-slider { display: block; width: 100%; margin: 14px 0 6px; accent-color: #121212; }
+            /* Figure 5 follows the same controls, frames and captions as the static figures. */
+            .explorer { position: relative; font-family: var(--sans); }
+            .ex-top { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "playback comparison scale"; align-items: center; gap: 12px; margin-bottom: 0.6rem; }
+            .ex-playback { grid-area: playback; display: flex; align-items: center; gap: 12px; }
+            .ex-range { grid-area: comparison; justify-self: end; }
+            .ex-stage { padding: 18px 20px 14px; }
+            .ex-title { color: var(--head); font-size: 1rem; font-weight: 600; margin: 0 0 4px; line-height: 1.5; }
+            .ex-resume { cursor: pointer; appearance: none; font-family: var(--sans); line-height: inherit; }
+            .ex-resume[hidden] { display: none; }
+            .ex-year { font-size: 18px; font-weight: 600; color: var(--head); font-variant-numeric: tabular-nums; line-height: 1; }
+            .ex-seg { grid-area: scale; justify-self: end; }
+            .ex-slider { display: block; width: 100%; height: 18px; margin: 4px 0 0; appearance: none; background: transparent; cursor: pointer; }
+            .ex-slider::-webkit-slider-runnable-track { height: 2px; background: #d5dde1; }
+            .ex-slider::-webkit-slider-thumb { appearance: none; width: 8px; height: 12px; margin-top: -5px; background: #6b8290; border-radius: 1px; }
+            .ex-slider::-moz-range-track { height: 2px; background: #d5dde1; }
+            .ex-slider::-moz-range-thumb { width: 8px; height: 12px; border: 0; border-radius: 1px; background: #6b8290; }
             .ex-chart { position: relative; width: 100%; }
             .ex-chart svg { display: block; max-width: 100%; overflow: visible; touch-action: manipulation; }
             .ex-tick { font-size: 11.5px; fill: #8c8c8c; font-variant-numeric: tabular-nums; }
             .ex-pct { font-size: 11.5px; fill: #555; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
-            .ex-tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 5px 8px; font-size: 12px; line-height: 1.35; box-shadow: 0 2px 6px rgba(0,0,0,.08); white-space: nowrap; }
-            .ex-tip b { display: block; color: #121212; }
-            .ex-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
-            .ex-card { min-width: 0; border-top: 1px solid var(--line); padding-top: 10px; }
-            .ex-label { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #8c8c8c; }
-            .ex-val { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 2px; font-variant-numeric: tabular-nums; }
-            .ex-ch { font-size: 12px; color: #666; }
-            .ex-spark { display: block; width: 100%; margin-top: 6px; }
+            .ex-tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 5px 8px; font-size: 12px; line-height: 1.35; white-space: nowrap; }
+            .ex-tip b { display: block; color: #303b40; }
+            .ex-measures { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 28px; margin-top: 16px; padding: 18px 20px 10px; }
+            .ex-measure h4 { font-size: 0.9rem; font-weight: 600; color: var(--head); margin: 0; }
+            .ex-readout { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 10px; row-gap: 2px; margin: 4px 0 12px; font-variant-numeric: tabular-nums; line-height: 1.6; }
+            .ex-measure-value { font-size: 0.85rem; color: var(--body); }
+            .ex-verdict { font-size: 0.75rem; color: var(--dim); }
+            .ex-measure svg { display: block; width: 100%; overflow: visible; }
+            .ex-mini-axis text { font: 11px var(--sans); fill: #8c8c8c; }
+            .ex-mini-axis line { stroke: #ececec; }
+            .ex-mini-x .domain, .ex-mini-x line { stroke: #bfc5ca; }
+            @media (max-width: 40em) {
+                .ex-top { grid-template-columns: 1fr auto; grid-template-areas: "playback scale" "comparison comparison"; row-gap: 10px; }
+                .ex-range { justify-self: stretch; }
+                .ex-range button { flex: 1; white-space: nowrap; }
+            }
             @media (max-width: 34em) {
-                .explorer { padding: 12px 12px 14px; }
-                .ex-year { font-size: 24px; }
-                .ex-val { font-size: 19px; }
-                .ex-cards { gap: 10px; }
-                .ex-x { display: none; }
+                .ex-stage { padding: 14px 12px 10px; }
+                .ex-title { font-size: 0.9rem; }
+                .ex-measures { grid-template-columns: 1fr; gap: 0; padding: 16px 12px 10px; }
+                .ex-measure + .ex-measure { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 18px; }
             }
             footer { height: 8rem; }
 
@@ -99,15 +111,17 @@
 
             /* Header */
             .article-date { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.85rem; letter-spacing: -0.01em; }
-            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; margin: 0 0 1.1rem; text-wrap: balance; }
-            .byline { list-style: none; padding: 0; margin: 0 0 1.4rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1.5rem; }
-            .byline li { display: flex; align-items: center; gap: 0.65rem; min-width: 0; line-height: 1.3; }
-            .byline .avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); object-fit: cover; background: var(--raise); }
+            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; width: 100%; margin: 0 0 1.5rem; text-wrap: pretty; }
+            .byline { list-style: none; padding: 0; margin: 0 0 1.4rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem 1rem; }
+            .byline li { display: flex; align-items: center; gap: 0.5rem; min-width: 0; line-height: 1.3; }
+            .byline .avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); object-fit: cover; background: var(--raise); }
             .byline .initials { display: grid; place-items: center; font-size: 0.72rem; font-weight: 600; color: var(--dim); letter-spacing: 0.02em; }
             .byline li > span { display: flex; flex-direction: column; min-width: 0; }
-            .byline .author-name { color: var(--head); font-size: 0.92rem; }
-            .byline .author-email { color: var(--dim); font-size: 0.82rem; overflow-wrap: anywhere; }
-            @media (max-width: 34em) { .byline { grid-template-columns: 1fr; gap: 0.7rem; } }
+            .byline .author-name { color: var(--head); font-size: 0.85rem; }
+            .byline .author-email { color: var(--dim); font-size: 0.75rem; overflow-wrap: anywhere; }
+            .masthead .header-details { width: 100%; }
+            @media (max-width: 48em) { .byline { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }
+            @media (max-width: 34em) { .byline { gap: 1rem 0.65rem; } .byline li { align-items: flex-start; gap: 0.4rem; } .byline .author-name { font-size: 0.84rem; } .byline .author-email { font-size: 0.73rem; } }
             .deck { color: var(--body); font-size: 1.2rem; line-height: 1.45; margin: 0 0 1.1rem; }
             .deck span { display: block; color: var(--dim); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem; }
             .abstract { color: var(--dim); margin: 1.6rem 0 1.4rem; }
@@ -130,7 +144,8 @@
             /* Headings */
             article h2 { color: var(--head); font-size: 1.375rem; font-weight: 400; line-height: 1.35; margin: 3.5rem 0 1rem; }
             h3 { color: var(--head); font-size: 1.125rem; font-weight: 400; line-height: 1.4; margin: 0 0 0.25rem; }
-            .num { color: var(--dim); font-weight: 400; margin-right: 0.45em; }
+            .numbered-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+            .numbered-heading .num { color: var(--dim); font-weight: 400; flex: none; }
 
             /* Figures */
             figure.graphic { margin: 1.75rem auto; }
@@ -154,15 +169,16 @@
             .method { margin: 2.5rem 0 1rem; }
             .method .scale-note { color: var(--dim); font-size: 0.9rem; margin: 0 0 0.75rem; }
             ol.decisions { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); counter-reset: d; }
-            ol.decisions > li { counter-increment: d; position: relative; padding: 1.1rem 0 1.1rem 2.2rem; border-bottom: 1px solid var(--line); margin: 0; }
-            ol.decisions > li::before { content: counter(d); position: absolute; left: 0; top: 1.3rem; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-c); color: #fff; font-size: 0.75rem; font-weight: 600; line-height: 1.4rem; text-align: center; }
+            ol.decisions > li { counter-increment: d; position: relative; padding: 1.1rem 0; border-bottom: 1px solid var(--line); margin: 0; }
+            .dec-tail::after { content: counter(d); display: inline-block; vertical-align: 0.05em; margin-left: 0.5rem; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-c); color: #fff; font-size: 0.75rem; font-weight: 600; line-height: 1.4rem; text-align: center; }
             .for-list { --accent-c: var(--gold); }
             .against-list { --accent-c: var(--red); }
-            .dec-head { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 0.3rem 1.2rem; }
+            .dec-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0.3rem 1.2rem; }
+            .dec-tail { white-space: nowrap; }
             .dec-title { color: var(--head); font-weight: 600; line-height: 1.5; }
             ol.decisions p { margin: 0.35rem 0 0; }
 
-            .score { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--dim); white-space: nowrap; margin-top: 0.3rem; }
+            .score { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--dim); white-space: nowrap; margin-top: 0; line-height: 1.5; }
             .score .track { position: relative; width: 6.5rem; height: 12px; }
             .score .track::before { content: ""; position: absolute; left: 0; right: 0; top: 5.5px; height: 1px; background: #c9cbd2; }
             .score .track i { position: absolute; top: 2px; width: 1px; height: 8px; background: #c9cbd2; }
@@ -193,14 +209,17 @@
             .about p { color: var(--dim); font-size: 0.9rem; }
 
             @media screen and (max-width: 48em) {
-                header.col { padding-top: 3rem; }
+                .masthead { padding-top: 3rem; }
                 h1 { font-size: 1.85rem; line-height: 1.22; letter-spacing: -0.02em; }
                 .toc { padding: 1.1rem 1.25rem; line-height: 1.9; }
-                .dec-head { grid-template-columns: 1fr; }
             }
             @media screen and (max-width: 34em) {
                 body { font-size: 15px; }
+                .dec-head { column-gap: 0.75rem; }
+                .score .track { width: 4rem; }
                 h1 { font-size: 1.6rem; }
+                .masthead h1, .masthead .deck { width: 100%; text-align: justify; text-align-last: left; text-wrap: wrap; }
+                .deck > span { text-align: left; }
                 article h2 { font-size: 1.2rem; margin-top: 2.5rem; }
                 .resource-links { flex-direction: column; align-items: stretch; gap: 0.5rem; }
                 .resource-btn { justify-content: center; }
@@ -210,16 +229,18 @@
 
     <body>
         <article>
-            <header class="col">
+            <header class="col masthead">
                 <div class="article-date">October 21, 2026</div>
                 <h1>Convergence or divergence? Two readings of child mortality across countries, 1960 to 2019</h1>
-                <p class="deck"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
-                <ul class="byline" aria-label="Authors">
+                <div class="header-details">
+                    <ul class="byline" aria-label="Authors">
                     <li><img class="avatar" src="images/avatar-valmik.jpg" alt="" width="32" height="32" /><span><span class="author-name">Valmik Nahata</span><a class="author-email" href="mailto:vnahata@ucsd.edu">vnahata@ucsd.edu</a></span></li>
                     <li><img class="avatar" src="images/avatar-varun.png" alt="" width="32" height="32" /><span><span class="author-name">Varun Sinha</span><a class="author-email" href="mailto:v1sinha@ucsd.edu">v1sinha@ucsd.edu</a></span></li>
                     <li><span class="avatar initials" aria-hidden="true">RK</span><span><span class="author-name">Rishab Kolan</span><a class="author-email" href="mailto:rkolan@ucsd.edu">rkolan@ucsd.edu</a></span></li>
                     <li><span class="avatar initials" aria-hidden="true">RC</span><span><span class="author-name">Rishil Chintalapati</span><a class="author-email" href="mailto:rchintalapati@ucsd.edu">rchintalapati@ucsd.edu</a></span></li>
                 </ul>
+                    <p class="deck"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
+                </div>
             </header>
 
             <div class="col">
@@ -256,7 +277,7 @@
                     <a href="https://dsc106.com/projects/project2/" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>DSC 106</span></a>
                 </div>
 
-                <h2 id="for"><span class="num">1</span>Visualizations for the proposition</h2>
+                <h2 id="for" class="numbered-heading"><span>Visualizations for the proposition</span><span class="num">1</span></h2>
                 <p>
                     Both visualizations for the proposition measure distance between countries in deaths per 1,000 live
                     births. Figure 1 shows how the whole distribution of country rates narrowed over time. Figure 2 shows every
@@ -264,38 +285,38 @@
                 </p>
 
                 <section class="method" id="fig1">
-                    <h3><span class="num">1.1</span>Figure 1: Percentile fan</h3>
+                    <h3 class="numbered-heading"><span>Figure 1: Percentile fan</span><span class="num">1.1</span></h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-for1" data-src="images/for1.png?v=7c24df91d415">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for1" data-src="images/for1_reveal.png?v=4cf2d3421baa" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-for1" src="images/for1.png" alt="Fan chart of under-five mortality across 112 countries, 1960 to 2019, with shaded bands for the middle 80% and middle 50% of countries and a median line. The distance from the 10th to the 90th percentile falls from 255 deaths per 1,000 births to 63." /></div>
+                    <div class="frame"><img id="img-for1" src="images/for1.png?v=7c24df91d415" alt="Fan chart of under-five mortality across 112 countries, 1960 to 2019, with shaded bands for the middle 80% and middle 50% of countries and a median line. The distance from the 10th to the 90th percentile falls from 255 deaths per 1,000 births to 63." /></div>
                     <figcaption><b>Figure 1.</b> Percentiles of under-five mortality across the 112-country sample, 1960 to 2019. Bands show the 10th to 90th and 25th to 75th percentiles.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions for-list" data-fig="for1">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Summarize the distribution with percentiles of a fixed sample</span>
+                                <span class="dec-title">Summarize the distribution with percentiles of a fixed <span class="dec-tail">sample</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
                             <p>The fan shows the 10th, 25th, 50th, 75th and 90th percentiles of the 112 countries observed in both 1960 and 2019. A fixed sample keeps changes in coverage from producing a trend, and percentiles limit the influence of outliers. Together they also remove the countries with the slowest progress. The 81 excluded countries include Nigeria, Niger, Chad and Somalia, and within the sample the Central African Republic (110.1) and Sierra Leone (109.2) lie well above the 2019 upper edge of 66.9.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Plot rates on a linear scale</span>
+                                <span class="dec-title">Plot rates on a linear <span class="dec-tail">scale</span></span>
                                 <span class="score" data-score="-1"></span>
                             </div>
                             <p>When every country improves at a similar percentage rate, absolute differences shrink, so on a linear scale the fan narrows almost automatically. The scale is the default and is unlikely to be read as a choice. On a logarithmic scale the bands would keep roughly the same width.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Report “closer” without naming the measure</span>
+                                <span class="dec-title">Report “closer” without naming the <span class="dec-tail">measure</span></span>
                                 <span class="score" data-score="-1.5"></span>
                             </div>
                             <p>The title states that countries moved 75% closer, which is the reduction in the absolute difference between the 90th and 10th percentiles, from 255 to 63 deaths per 1,000 births. Measured as a ratio, the same two percentiles moved further apart. Readers are likely to take the title as a general statement about inequality in child survival.</p>
@@ -304,38 +325,38 @@
                 </section>
 
                 <section class="method" id="fig2">
-                    <h3><span class="num">1.2</span>Figure 2: Every country, linear scale</h3>
+                    <h3 class="numbered-heading"><span>Figure 2: Every country, linear scale</span><span class="num">1.2</span></h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side for">For the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-for2" data-src="images/for2.png?v=fe3abf08f308">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-for2" data-src="images/for2_reveal.png?v=98d3b88fb9b9" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-for2" src="images/for2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
+                    <div class="frame"><img id="img-for2" src="images/for2.png?v=fe3abf08f308" alt="Two rows of dots, one per country, for 1960 and 2019 on a linear axis from 0 to 400 deaths per 1,000 births. The 1960 dots spread across 372 deaths from lowest to highest. The 2019 dots form a dense cluster spanning 108." /></div>
                     <figcaption><b>Figure 2.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a linear scale.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions for-list" data-fig="for2">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Use a linear axis that compresses low rates</span>
+                                <span class="dec-title">Use a linear axis that compresses low <span class="dec-tail">rates</span></span>
                                 <span class="score" data-score="-1"></span>
                             </div>
                             <p>In 2019, 73 of the 112 countries had rates below 25 and 41 had rates below 10. On a linear axis running to 400, those countries collapse into one dense cluster, so a country at 2 and a country at 20, a tenfold difference, look almost identical. The compression is what makes 2019 appear uniform.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Compare only the first and last years</span>
+                                <span class="dec-title">Compare only the first and last <span class="dec-tail">years</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
                             <p>Two rows are easy to read and invite a before and after comparison. Showing only 1960 and 2019 omits the intervening decades, including the period around 2010 when the relative distance between the lowest and highest countries was largest. The years are standard endpoints, but the choice removes any sign that the trend was uneven.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Show every country without trimming</span>
+                                <span class="dec-title">Show every country without <span class="dec-tail">trimming</span></span>
                                 <span class="score" data-score="1.5"></span>
                             </div>
                             <p>Each of the 112 countries appears as a dot in both years, with no percentile trimming and no omitted outliers. The countries with the highest 2019 rates are visible at the right of the cluster, and the bracket reports the full range. The chart persuades through scale rather than selection.</p>
@@ -343,7 +364,7 @@
                     </ol>
                 </section>
 
-                <h2 id="against"><span class="num">2</span>Visualizations against the proposition</h2>
+                <h2 id="against" class="numbered-heading"><span>Visualizations against the proposition</span><span class="num">2</span></h2>
                 <p>
                     Both visualizations against the proposition measure distance between countries in proportional terms.
                     Figure 3 divides the 90th percentile by the 10th, using the same countries as Figure 1. Figure 4 shows the same dots as Figure 2
@@ -351,38 +372,38 @@
                 </p>
 
                 <section class="method" id="fig3">
-                    <h3><span class="num">2.1</span>Figure 3: Percentile ratio with bootstrap</h3>
+                    <h3 class="numbered-heading"><span>Figure 3: Percentile ratio with bootstrap</span><span class="num">2.1</span></h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-against1" data-src="images/against1.png?v=f35dac759ef3">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against1" data-src="images/against1_reveal.png?v=6e7f71ac06ce" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-against1" src="images/against1.png" alt="Line chart of the ratio of the 90th to the 10th percentile under-five mortality rate, 1960 to 2019, over 200 faint bootstrap lines. The ratio rises from 9.5 to a peak of 23.1 in 1999 and ends at 19.1, with a 95% interval of 13 to 26 in 2019." /></div>
+                    <div class="frame"><img id="img-against1" src="images/against1.png?v=f35dac759ef3" alt="Line chart of the ratio of the 90th to the 10th percentile under-five mortality rate, 1960 to 2019, over 200 faint bootstrap lines. The ratio rises from 9.5 to a peak of 23.1 in 1999 and ends at 19.1, with a 95% interval of 13 to 26 in 2019." /></div>
                     <figcaption><b>Figure 3.</b> Ratio of the 90th to the 10th percentile rate in the 112-country sample, 1960 to 2019. Faint lines are 200 bootstrap resamples of the countries; the bar shows the 95% interval for 2019.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions against-list" data-fig="against1">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Measure dispersion as a ratio and call it inequality</span>
+                                <span class="dec-title">Measure dispersion as a ratio and call it <span class="dec-tail">inequality</span></span>
                                 <span class="score" data-score="-1"></span>
                             </div>
                             <p>The ratio of the 90th to the 10th percentile is a standard measure of relative inequality, but it is sensitive to its denominator. The 10th percentile fell from 30.1 to 3.5, so small absolute changes at the low end move the ratio substantially. The title presents this one measure as the state of inequality in child mortality.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Compare 2019 with 1960</span>
+                                <span class="dec-title">Compare 2019 with <span class="dec-tail">1960</span></span>
                                 <span class="score" data-score="-1"></span>
                             </div>
                             <p>The ratio rose from 9.5 in 1960 to a peak of 23.1 in 1999 and fell to 19.1 by 2019. The peak is labeled, but the title and the dashed reference line compare 2019 with 1960, the lowest value in the series. Measured from 1999, the ratio declined by 17%.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Show sampling uncertainty with a bootstrap</span>
+                                <span class="dec-title">Show sampling uncertainty with a <span class="dec-tail">bootstrap</span></span>
                                 <span class="score" data-score="1"></span>
                             </div>
                             <p>We resampled the 112 countries 2,000 times and drew 200 of the resampled ratio series behind the main line. The 95% interval is 6.7 to 11.6 in 1960 and 13.4 to 25.6 in 2019, so the increase is not an artifact of which countries happen to be in the sample. Disclosing uncertainty is earnest. It also gives the chart an appearance of statistical rigor that most readers cannot evaluate, and the interval says nothing about the choice of measure, which is where the chart is most open to question.</p>
@@ -391,56 +412,55 @@
                 </section>
 
                 <section class="method" id="fig4">
-                    <h3><span class="num">2.2</span>Figure 4: Every country, logarithmic scale</h3>
+                    <h3 class="numbered-heading"><span>Figure 4: Every country, logarithmic scale</span><span class="num">2.2</span></h3>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
                         <span class="side against">Against the proposition</span>
                         <span class="toggle" role="group" aria-label="Chart view">
-                            <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png">Chart</button>
-                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
+                            <button type="button" aria-pressed="true" data-target="img-against2" data-src="images/against2.png?v=199658c9f1c4">Chart</button>
+                            <button type="button" aria-pressed="false" data-target="img-against2" data-src="images/against2_reveal.png?v=acf0a84640f8" title="Number the parts of the chart discussed in the design decisions below">Show decision markers</button>
                         </span>
                     </div>
-                    <div class="frame"><img id="img-against2" src="images/against2.png" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
+                    <div class="frame"><img id="img-against2" src="images/against2.png?v=199658c9f1c4" alt="Two rows of dots, one per country, for 1960 and 2019 on a logarithmic axis from 2 to 400. The 1960 dots span a factor of 20 from lowest to highest. The 2019 dots span a factor of 55." /></div>
                     <figcaption><b>Figure 4.</b> Under-five mortality in each of the 112 countries in 1960 and 2019, on a logarithmic scale.</figcaption>
                 </figure>
                     <p class="scale-note">Each decision is scored from −2 (fully deceptive) to +2 (fully earnest).</p>
                     <ol class="decisions against-list" data-fig="against2">
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Use a logarithmic axis</span>
+                                <span class="dec-title">Use a logarithmic <span class="dec-tail">axis</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
                             <p>Logarithmic scales are standard for mortality rates because equal distances represent equal proportional differences, and the scale is stated in the subtitle and on the axis. Most readers nevertheless read horizontal distance as an absolute difference, so the 2019 row appears wider than the 1960 row even though every country in it has a lower rate.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Measure the range from the single lowest to the single highest country</span>
+                                <span class="dec-title">Measure the range from the single lowest to the single highest <span class="dec-tail">country</span></span>
                                 <span class="score" data-score="-1.5"></span>
                             </div>
                             <p>The brackets compare the most extreme country at each end: Sweden (19.6) and Sierra Leone (391.7) in 1960, and Iceland (2.0) and the Central African Republic (110.1) in 2019. The 2019 multiple of 55 depends heavily on one country with a rate of 2.0. Using the 10th and 90th percentiles of the same countries gives 19.1.</p>
                         </li>
                         <li>
                             <div class="dec-head">
-                                <span class="dec-title">Draw 2019 in a saturated color and 1960 in a pale one</span>
+                                <span class="dec-title">Draw 2019 in a stronger color and 1960 in a pale <span class="dec-tail">one</span></span>
                                 <span class="score" data-score="-0.5"></span>
                             </div>
-                            <p>The saturated coral draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
+                            <p>The deeper slate-blue tone draws attention to the 2019 row and its wider range, while the pale 1960 row recedes. The color difference implies that 2019 is the more troubling year, which the data do not support for any individual country.</p>
                         </li>
                     </ol>
                 </section>
 
-                <h2 id="interactive"><span class="num">3</span>Both measures, year by year</h2>
+                <h2 id="interactive" class="numbered-heading"><span>Both measures, year by year</span><span class="num">3</span></h2>
                 <p>
-                    Figure 5 animates the full distribution of the 112 countries from 1960 to 2019. The two readouts track the
-                    measures behind our two sides as the years advance: the difference between the 90th and 10th percentile
-                    countries falls almost every year, while the ratio between them rises until 1999. Press play, drag the slider to
-                    any year, switch between linear and logarithmic scales, or hover over or tap a dot to see the country.
+                    Watch all 112 countries from 1960 to 2019. The animation repeats on linear and logarithmic scales,
+                    comparing the middle 80%, middle 50%, and full range in equal thirds of each pass.
+                    Click a dot, chart, or control to stop and explore.
                 </p>
 
                 <figure class="graphic">
-                    <div class="frame explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
-                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. The shaded region spans the 10th to the 90th percentile; the readouts show the difference and the ratio between them for the selected year.</figcaption>
+                    <div class="explorer" id="explorer" aria-label="Interactive animation of under-five mortality in 112 countries from 1960 to 2019"></div>
+                    <figcaption><b>Figure 5.</b> Under-five mortality in each of the 112 countries, 1960 to 2019. Shading marks the selected comparison. The two charts below show its difference and ratio; dashed lines show 1960 values. Click either chart to select a year.</figcaption>
                 </figure>
 
                 <figure class="graphic">
@@ -467,7 +487,7 @@
                     <figcaption><b>Figure 7.</b> Each figure contains one decision that strengthens its credibility. The remaining decisions concern scale, measure and wording.</figcaption>
                 </figure>
 
-                <h2 id="reflection"><span class="num">4</span>Reflection</h2>
+                <h2 id="reflection" class="numbered-heading"><span>Reflection</span><span class="num">4</span></h2>
                 <p>
                     At the checkpoint, our group favored the visualizations supporting the proposition, on the grounds
                     that convergence is usually understood in absolute terms and that the ratio is unstable when the
@@ -503,7 +523,7 @@
                 </p>
 
                 <section class="about" id="data">
-                    <h3><span class="num">5</span>Data and methods</h3>
+                    <h3 class="numbered-heading"><span>Data and methods</span><span class="num">5</span></h3>
                     <p>
                         Data are from the World Bank’s Human Development Indicators, 1960 to 2020, in the cleaned copy linked
                         from the assignment (<a href="https://github.com/light-and-salt/World-Bank-Data-by-Indicators">light-and-salt/World-Bank-Data-by-Indicators</a>,
@@ -545,7 +565,7 @@
 
 
             // chart / decision-marker toggles
-            document.querySelectorAll(".toggle button").forEach((btn) => {
+            document.querySelectorAll(".toggle button[data-target]").forEach((btn) => {
                 btn.addEventListener("click", () => {
                     btn.parentElement.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === btn));
                     document.getElementById(btn.dataset.target).src = btn.dataset.src;
@@ -559,9 +579,9 @@
                 svg.replaceChildren();
                 const NS = "http://www.w3.org/2000/svg";
                 // draw at the svg's real width so text keeps its size on phones
-                const W = Math.round(svg.parentElement.clientWidth - 2) || 600, narrow = W < 460;
+                const W = Math.round(svg.clientWidth) || 600, narrow = W < 460;
                 const L = narrow ? 70 : 96, R = 16, x = (s) => L + ((s + 2) / 4) * (W - L - R);
-                svg.setAttribute("viewBox", `0 0 ${W} 270`);
+                svg.setAttribute("viewBox", `0 0 ${W} 300`);
                 svg.style.width = W + "px"; svg.style.maxWidth = "100%";
                 const el = (tag, attrs, text) => {
                     const n = document.createElementNS(NS, tag);
@@ -574,11 +594,13 @@
                     el("line", { x1: x(s), x2: x(s), y1: 26, y2: 238, stroke: s === 0 ? "#8a8a96" : "#e4e6eb", "stroke-width": 1 });
                     el("text", { x: x(s), y: 260, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, (s > 0 ? "+" : s < 0 ? "−" : "") + Math.abs(s));
                 });
+                el("text", { x: (L + W - R) / 2, y: 286, "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Decision score");
+                el("text", { transform: "translate(12,132) rotate(-90)", "text-anchor": "middle", "font-size": 12, fill: "#71717e" }, "Figure");
                 el("text", { x: x(-2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "letter-spacing": "0.06em" }, narrow ? "← DECEPTIVE" : "← MORE DECEPTIVE");
                 el("text", { x: x(2), y: 12, "font-size": 11, fill: "#71717e", "font-weight": 700, "text-anchor": "end", "letter-spacing": "0.06em" }, narrow ? "EARNEST →" : "MORE EARNEST →");
-                [["for1", "Figure 1", "#3f7cac"], ["for2", "Figure 2", "#3f7cac"], ["against1", "Figure 3", "#e07a5f"], ["against2", "Figure 4", "#e07a5f"]].forEach(([key, label, color], r) => {
+                [["for1", "Figure 1", "#7f9fa8"], ["for2", "Figure 2", "#7f9fa8"], ["against1", "Figure 3", "#8b98b4"], ["against2", "Figure 4", "#8b98b4"]].forEach(([key, label, color], r) => {
                     const y = 58 + r * 52;
-                    el("text", { x: 0, y: y + 5, "font-size": narrow ? 12.5 : 13.5, "font-weight": 700, fill: color }, narrow ? label.replace("Figure ", "Fig. ") : label);
+                    el("text", { x: 28, y: y + 5, "font-size": narrow ? 12.5 : 13.5, "font-weight": 700, fill: color }, narrow ? label.replace("Figure ", "Fig. ") : label);
                     el("line", { x1: x(-2), x2: x(2), y1: y, y2: y, stroke: "#d4d6dc", "stroke-width": 1 });
                     const seen = {};
                     document.querySelectorAll(`ol[data-fig="${key}"] .score`).forEach((sc, i) => {
@@ -593,9 +615,8 @@
             drawLedger();
             let ledgerW = window.innerWidth;
             window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
-            });
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-        <script src="charts/explorer.js"></script>
+        <script src="charts/explorer.js?v=a4b7f3147637"></script>
     </body>
 </html>

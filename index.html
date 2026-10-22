@@ -678,7 +678,7 @@
                 const COL = { for: css.getPropertyValue("--gold").trim(), against: css.getPropertyValue("--red").trim() };
                 svg.style.width = "100%"; svg.style.display = "block";
                 const W = Math.round(svg.getBoundingClientRect().width) || 660, narrow = W < 520;
-                const L = narrow ? 30 : 236, R = narrow ? 34 : 44, ROW = narrow ? 42 : 27, HEAD = 34, GAP = 8, TOP = 34;
+                const L = narrow ? 30 : 236, R = narrow ? 34 : 44, ROW = narrow ? 50 : 27, HEAD = 34, GAP = 8, TOP = narrow ? 52 : 34;
                 const x = (s) => L + ((s + 2) / 4) * (W - L - R);
                 const H = TOP + LEDGER.length * (HEAD + 3 * ROW + GAP) + 26;
                 svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -693,10 +693,11 @@
                 };
                 const fmt = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
                 // grid and direction labels
-                [-2, -1, 1, 2].forEach((s) => el("line", { x1: x(s), x2: x(s), y1: TOP - 6, y2: H - 22, stroke: "#eceef1" }));
+                if (!narrow) [-2, -1, 1, 2].forEach((s) => el("line", { x1: x(s), x2: x(s), y1: TOP - 6, y2: H - 22, stroke: "#eceef1" }));
                 [-2, -1, 0, 1, 2].forEach((s) => el("text", { x: x(s), y: H - 6, "text-anchor": "middle", class: "lg-tick" }, fmt(s)));
                 el("text", { x: x(0) - 8, y: 14, "text-anchor": "end", class: "lg-dir" }, narrow ? "← Deceptive" : "← More deceptive");
                 el("text", { x: x(0) + 8, y: 14, class: "lg-dir" }, narrow ? "Earnest →" : "More earnest →");
+                if (narrow) [-2, -1, 0, 1, 2].forEach((s) => el("text", { x: x(s), y: 36, "text-anchor": "middle", class: "lg-tick" }, fmt(s)));
                 let y = TOP;
                 LEDGER.forEach(([key, label, side, names]) => {
                     const color = COL[side], items = [...document.querySelectorAll(`ol[data-fig="${key}"] > li`)];
@@ -707,10 +708,14 @@
                     if (!narrow) el("text", { x: x(mean) + (mean < 0 ? -10 : 10), y: y + 20, "text-anchor": mean < 0 ? "end" : "start", class: "lg-avg" }, `average ${fmt(Math.round(mean * 10) / 10)}`);
                     y += HEAD;
                     items.forEach((li, i) => {
-                        const s = scores[i], cy = narrow ? y + 29 : y + ROW / 2;
+                        const s = scores[i], cy = narrow ? y + 33 : y + ROW / 2;
                         const g = el("g", { class: "lg-row", tabindex: 0, role: "link", "aria-label": `${label}, decision ${i + 1}: ${names[i]}, score ${fmt(s)}` });
                         el("rect", { x: 0, y, width: W, height: ROW, class: "lg-hit", rx: 4 }, null, g);
                         el("text", { x: narrow ? 0 : 0, y: narrow ? y + 13 : cy + 4, class: "lg-label" }, `${i + 1}  ${names[i]}`, g);
+                        if (narrow) {
+                            el("line", { x1: x(-2), x2: x(2), y1: cy, y2: cy, stroke: "#e4e6eb", "pointer-events": "none" }, null, g);
+                            el("line", { x1: x(0), x2: x(0), y1: cy - 6, y2: cy + 6, stroke: "#a1a5ad", "pointer-events": "none" }, null, g);
+                        }
                         el("line", { x1: x(0), x2: x(s) + (s < 0 ? 5 : -5), y1: cy, y2: cy, stroke: color, "stroke-width": 2.5, "stroke-linecap": "round" }, null, g);
                         el("circle", { cx: x(s), cy, r: 5.5, fill: color, stroke: "#fff", "stroke-width": 1.5 }, null, g);
                         el("text", { x: x(s) + (s < 0 ? -10 : 10), y: cy + 4, "text-anchor": s < 0 ? "end" : "start", class: "lg-val" }, fmt(s), g);
@@ -728,7 +733,7 @@
                     });
                     y += GAP;
                 });
-                el("line", { x1: x(0), x2: x(0), y1: TOP - 6, y2: H - 22, stroke: "#8a8a96", "stroke-width": 1 });
+                if (!narrow) el("line", { x1: x(0), x2: x(0), y1: TOP - 6, y2: H - 22, stroke: "#8a8a96", "stroke-width": 1 });
             }
             drawLedger();
 
@@ -739,8 +744,12 @@
                 bar.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`;
             };
             addEventListener("scroll", onScroll, { passive: true }); onScroll();
-            let ledgerW = window.innerWidth;
-            window.addEventListener("resize", () => { if (Math.abs(window.innerWidth - ledgerW) > 20) { ledgerW = window.innerWidth; drawLedger(); } });
+            let ledgerW = document.getElementById("ledger").getBoundingClientRect().width;
+            const ledgerResize = new ResizeObserver(([entry]) => {
+                const width = entry.contentRect.width;
+                if (width > 0 && Math.abs(width - ledgerW) > 1) { ledgerW = width; drawLedger(); }
+            });
+            ledgerResize.observe(document.getElementById("ledger"));
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
         <script src="charts/explorer.js?v=0991c620fe98"></script>

@@ -166,16 +166,28 @@
             /* Header */
             .article-date { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.85rem; letter-spacing: -0.01em; }
             h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; width: 100%; margin: 0 0 1.5rem; text-wrap: pretty; }
-            .byline { list-style: none; padding: 0; margin: 0 0 1.4rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem 1rem; }
-            .byline li { display: flex; align-items: center; gap: 0.5rem; min-width: 0; line-height: 1.3; }
-            .byline .avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); object-fit: cover; background: var(--raise); }
-            .byline .initials { display: grid; place-items: center; font-size: 0.72rem; font-weight: 600; color: var(--dim); letter-spacing: 0.02em; }
-            .byline li > span { display: flex; flex-direction: column; min-width: 0; }
-            .byline .author-name { color: var(--head); font-size: 0.85rem; }
-            .byline .author-email { color: var(--dim); font-size: 0.75rem; overflow-wrap: anywhere; }
+            .byline { display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem; margin: 0 0 1.4rem; }
+            .author-avatars { display: flex; flex: none; align-items: center; isolation: isolate; }
+            .author-avatars .avatar { display: block; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--bg); object-fit: cover; background: var(--raise); }
+            .author-avatars .avatar + .avatar { margin-left: -10px; }
+            .author-avatars .avatar { position: relative; }
+            .author-avatars .avatar:nth-child(1) { z-index: 4; }
+            .author-avatars .avatar:nth-child(2) { z-index: 3; }
+            .author-avatars .avatar:nth-child(3) { z-index: 2; }
+            .author-avatars .avatar:nth-child(4) { z-index: 1; }
+            .author-avatars .initials { display: grid; place-items: center; font-size: 0.72rem; font-weight: 600; color: var(--dim); }
+            .author-names { list-style: none; padding: 0; margin: 0; min-width: 0; color: var(--head); font-size: 1rem; line-height: 1.65; }
+            .author-names li { display: inline; white-space: nowrap; }
+            .author-names li:not(:nth-last-child(-n + 2))::after { content: ","; }
+            .author-names li:last-child::before { content: "and "; }
             .masthead .header-details { width: 100%; }
-            @media (max-width: 48em) { .byline { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }
-            @media (max-width: 34em) { .byline { gap: 1rem 0.65rem; } .byline li { align-items: flex-start; gap: 0.4rem; } .byline .author-name { font-size: 0.84rem; } .byline .author-email { font-size: 0.73rem; } }
+            @media (max-width: 34em) {
+                .byline { align-items: flex-start; gap: 0.65rem; }
+                .author-avatars { padding-top: 2px; }
+                .author-avatars .avatar { width: 32px; height: 32px; }
+                .author-avatars .avatar + .avatar { margin-left: -9px; }
+                .author-names { font-size: 0.9rem; }
+            }
             .deck { color: var(--body); font-size: 1.2rem; line-height: 1.45; margin: 0 0 1.1rem; }
             .deck span { display: block; color: var(--dim); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem; }
             .abstract { color: var(--dim); margin: 1.6rem 0 1.4rem; }
@@ -303,12 +315,20 @@
             <header class="col masthead">
                 <h1>Convergence or divergence? Two readings of child mortality across countries, 1960 to 2019</h1>
                 <div class="header-details">
-                    <ul class="byline" aria-label="Authors">
-                    <li><img class="avatar" src="images/avatar-valmik.jpg" alt="" width="32" height="32" /><span><span class="author-name">Valmik Nahata</span><a class="author-email" href="mailto:vnahata@ucsd.edu">vnahata@ucsd.edu</a></span></li>
-                    <li><img class="avatar" src="images/avatar-varun.png" alt="" width="32" height="32" /><span><span class="author-name">Varun Sinha</span><a class="author-email" href="mailto:v1sinha@ucsd.edu">v1sinha@ucsd.edu</a></span></li>
-                    <li><span class="avatar initials" aria-hidden="true">RK</span><span><span class="author-name">Rishab Kolan</span><a class="author-email" href="mailto:rkolan@ucsd.edu">rkolan@ucsd.edu</a></span></li>
-                    <li><span class="avatar initials" aria-hidden="true">RC</span><span><span class="author-name">Rishil Chintalapati</span><a class="author-email" href="mailto:rchintalapati@ucsd.edu">rchintalapati@ucsd.edu</a></span></li>
-                </ul>
+                    <div class="byline">
+                        <div class="author-avatars" aria-hidden="true">
+                            <img class="avatar" src="images/avatar-valmik.jpg" alt="" width="32" height="32" />
+                            <img class="avatar" src="images/avatar-varun.png" alt="" width="32" height="32" />
+                            <span class="avatar initials">RK</span>
+                            <span class="avatar initials">RC</span>
+                        </div>
+                        <ul class="author-names" aria-label="Authors">
+                            <li>Valmik Nahata</li>
+                            <li>Varun Sinha</li>
+                            <li>Rishab Kolan</li>
+                            <li>Rishil Chintalapati</li>
+                        </ul>
+                    </div>
                     <p class="deck"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
                 </div>
             </header>

@@ -432,7 +432,6 @@ function swarm(D, mode, opts = {}) {
       text(axisG, sc(t), H - 46, t, "tick", null, "middle");
     });
     text(axisG, (M.l + W - M.r) / 2, H - 20, m === "log" ? "Deaths per 1,000 births, logarithmic scale" : "Deaths per 1,000 births", "axis-title", null, "middle");
-    text(axisG, 0, 0, "Year", "axis-title", null, "middle").attr("transform", `translate(12,${(rows[1960] + rows[2019]) / 2}) rotate(-90)`);
     [1960, 2019].forEach(yr => {
       const vals = pts.filter(p => p.yr === yr).map(p => p.val);
       const lo = d3.min(vals), hi = d3.max(vals), yy = d3.min(pos[m].filter(n => n.yr === yr), n => n.y) - 16;

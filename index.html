@@ -169,7 +169,7 @@
             .byline { display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem; margin: 0 0 1.4rem; }
             .author-avatars { display: flex; flex: none; align-items: center; isolation: isolate; }
             .author-avatars .avatar { display: block; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--bg); object-fit: cover; background: var(--raise); }
-            .author-avatars .avatar + .avatar { margin-left: -10px; }
+            .author-avatars .avatar + .avatar { margin-left: -15px; }
             .author-avatars .avatar { position: relative; }
             .author-avatars .avatar:nth-child(1) { z-index: 4; }
             .author-avatars .avatar:nth-child(2) { z-index: 3; }
@@ -185,10 +185,11 @@
                 .byline { align-items: flex-start; gap: 0.65rem; }
                 .author-avatars { padding-top: 2px; }
                 .author-avatars .avatar { width: 32px; height: 32px; }
-                .author-avatars .avatar + .avatar { margin-left: -9px; }
+                .author-avatars .avatar + .avatar { margin-left: -13px; }
                 .author-names { font-size: 0.9rem; }
             }
             .deck { color: var(--body); font-size: 1.2rem; line-height: 1.45; margin: 0 0 1.1rem; }
+            .chart-proposition { margin: 1rem 0 1.25rem; }
             .deck span { display: block; color: var(--dim); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem; }
             .abstract { color: var(--dim); margin: 1.6rem 0 1.4rem; }
             .abstract p { margin: 0 0 0.75rem; }
@@ -329,7 +330,6 @@
                             <li>Rishil Chintalapati</li>
                         </ul>
                     </div>
-                    <p class="deck"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
                 </div>
             </header>
 
@@ -376,6 +376,7 @@
 
                 <section class="method" id="fig1">
                     <h3 class="numbered-heading"><span>Figure 1: Percentile fan</span><span class="num">1.1</span></h3>
+                    <p class="deck chart-proposition"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
 
                 <figure class="graphic">
                     <div class="gfx-tools">

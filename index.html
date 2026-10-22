@@ -4,7 +4,7 @@
         <meta charset="utf-8" />
         <link rel="icon" href="data:," />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Project 2 Report</title>
+        <title>Child Mortality Fell. Did Countries Move Closer Together?</title>
         <meta
             name="description"
             content="DSC 106 Project 2: one World Bank dataset, two opposing charts on whether child mortality is converging across countries."
@@ -165,7 +165,7 @@
 
             /* Header */
             .article-date { color: var(--dim); font-size: 0.95rem; margin-bottom: 0.85rem; letter-spacing: -0.01em; }
-            h1 { color: var(--head); font-size: 2.5rem; font-weight: 400; letter-spacing: -0.8px; line-height: 1.18; width: 100%; margin: 0 0 1.5rem; text-wrap: pretty; }
+            h1 { color: var(--head); font-family: Georgia, Cambria, serif; font-size: 2.75rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; width: 100%; margin: 0 0 1.5rem; text-wrap: pretty; }
             .byline { display: flex; align-items: center; justify-content: flex-start; gap: 0.9rem; margin: 0 0 1.4rem; }
             .author-avatars { display: flex; flex: none; align-items: center; isolation: isolate; }
             .author-avatars .avatar { display: block; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--bg); object-fit: cover; background: var(--raise); }
@@ -189,7 +189,8 @@
                 .author-names { font-size: 0.9rem; }
             }
             .deck { color: var(--body); font-size: 1.2rem; line-height: 1.45; margin: 0 0 1.1rem; }
-            .chart-proposition { margin: 1rem 0 1.25rem; }
+            .chart-proposition { margin: 2.5rem 0 1.25rem; }
+            .chart-proposition + h2 { margin-top: 0; }
             .deck span { display: block; color: var(--dim); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.15rem; }
             .abstract { color: var(--dim); margin: 1.6rem 0 1.4rem; }
             .abstract p { margin: 0 0 0.75rem; }
@@ -293,14 +294,14 @@
 
             @media screen and (max-width: 48em) {
                 .masthead { padding-top: 3rem; }
-                h1 { font-size: 1.85rem; line-height: 1.22; letter-spacing: -0.02em; }
+                h1 { font-size: 2.25rem; line-height: 1.12; letter-spacing: -0.025em; }
                 .toc { padding: 1.1rem 1.25rem; line-height: 1.9; }
             }
             @media screen and (max-width: 34em) {
                 body { font-size: 15px; }
                 .dec-head { column-gap: 0.75rem; }
                 .score .track { width: 4rem; }
-                h1 { font-size: 1.6rem; }
+                h1 { font-size: 1.95rem; }
                 .masthead h1, .masthead .deck { width: 100%; max-width: 100%; text-align: left; text-wrap: wrap; }
                 .deck > span { text-align: left; }
                 article h2 { font-size: 1.2rem; margin-top: 2.5rem; }
@@ -314,7 +315,7 @@
         <div class="progress" aria-hidden="true"><span></span></div>
         <article>
             <header class="col masthead">
-                <h1>Convergence or divergence? Two readings of child mortality across countries, 1960 to 2019</h1>
+                <h1>Child Mortality Fell. Did Countries Move Closer Together?</h1>
                 <div class="header-details">
                     <div class="byline">
                         <div class="author-avatars" aria-hidden="true">
@@ -367,6 +368,8 @@
                     <a href="https://dsc106.com/projects/project2/" class="resource-btn" target="_blank" rel="noopener noreferrer"><svg height="16" width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>DSC 106</span></a>
                 </div>
 
+                <p class="deck chart-proposition"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
+
                 <h2 id="for" class="numbered-heading"><span>Visualizations for the proposition</span><span class="num">1</span></h2>
                 <p>
                     Both visualizations for the proposition measure distance between countries in deaths per 1,000 live
@@ -376,7 +379,6 @@
 
                 <section class="method" id="fig1">
                     <h3 class="numbered-heading"><span>Figure 1: Percentile fan</span><span class="num">1.1</span></h3>
-                    <p class="deck chart-proposition"><span>Proposition</span> Under-five mortality rates are converging across countries.</p>
 
                 <figure class="graphic">
                     <div class="gfx-tools">
